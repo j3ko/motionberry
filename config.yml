@@ -1,0 +1,10 @@
+flask:
+  secret_key: "your_secret_key"
+  debug: true
+
+database:
+  uri: "sqlite:///app.db"
+
+custom:
+  some_key: "some_value"
+  another_key: 42

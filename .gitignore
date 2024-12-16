@@ -1,0 +1,81 @@
+# Byte-compiled / optimized / compiled Python files
+*.py[cod]
+__pycache__/
+*.so
+
+# Virtual environments
+env/
+venv/
+ENV/
+.VENV/
+
+# Flask instance and configuration files
+instance/
+config.py
+*.cfg
+*.ini
+*.env
+
+# Log files and local database
+*.log
+*.sqlite3
+*.db
+
+# Secrets
+*.key
+*.pem
+
+# Cache and other temporary files
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+*.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+__MACOSX/
+
+# Python egg metadata
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Testing
+.pytest_cache/
+.tox/
+coverage/
+.coverage
+nosetests.xml
+test-results.xml
+htmlcov/
+
+# Docker-related files
+docker-compose.override.yml
+.env.docker
+
+# IDE/editor-specific files
+*.iml
+*.ipr
+*.iws
+*.idea/
+.vscode/
+
+# System-specific files
+*.~lock.*
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+*.DS_Store
+Thumbs.db
+__MACOSX/
+
+# Ignore compiled migrations
+migrations/
+
+# Ignore recordings
+recordings/
