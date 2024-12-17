@@ -3,10 +3,22 @@ motion:
   mse_threshold: 7
   # Duration in seconds. If no motion is detected within this time, 
   # the current recording is stopped.
-  motion_gap: 2
+  motion_gap: 10
 
 recording:
   # Directory where recordings are saved.
   directory: "recordings"
   # Bitrate at which recordings are saved, in bits per second.
   bitrate: 1000000
+
+notification:
+  app_start:
+    webhook_url: http://127.0.0.1:1880/api/app_start
+  detection_start:
+    webhook_url: http://127.0.0.1:1880/api/detection_start
+  detection_end:
+    webhook_url: http://127.0.0.1:1880/api/detection_end
+  motion_start:
+    webhook_url: http://127.0.0.1:1880/api/motion_start
+  motion_end:
+    webhook_url: http://127.0.0.1:1880/api/motion_end

@@ -9,7 +9,7 @@ from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
 
 class MotionDetector:
-    def __init__(self, video_dir, motion_threshold, max_encoding_time, encoder_bitrate, lores_size=(320, 240), main_size=(1280, 720)):
+    def __init__(self, video_dir, motion_threshold, max_encoding_time, encoder_bitrate, notifiers: list=None, lores_size=(320, 240), main_size=(1280, 720)):
         self.video_dir = Path(video_dir)
         self.video_dir.mkdir(exist_ok=True)
         self.motion_threshold = motion_threshold
@@ -19,6 +19,7 @@ class MotionDetector:
         self.encoding = False
         self.last_motion_time = 0
         self.lores_size = lores_size
+        self.notifiers = notifiers or []
 
         # Configure the camera
         video_config = self.picam2.create_video_configuration(
@@ -45,11 +46,13 @@ class MotionDetector:
                         self.encoder.output = FileOutput(str(filename))
                         self.picam2.start_encoder(self.encoder)
                         self.encoding = True
+                        self._notify("motion_start")
                         print(f"Motion detected! Recording started: {filename}")
                     self.last_motion_time = time.time()
                 elif self.encoding and time.time() - self.last_motion_time > self.max_encoding_time:
                     self.picam2.stop_encoder()
                     self.encoding = False
+                    self._notify("motion_end")
                     print("Recording stopped.")
 
             prev_frame = cur_frame
@@ -62,10 +65,16 @@ class MotionDetector:
             self.is_running = True
             self.thread = threading.Thread(target=self._motion_detection_loop, daemon=True)
             self.thread.start()
+            self._notify("detection_start")
             print("Motion detection started.")
 
     def stop(self):
         self.is_running = False
         if self.thread.is_alive():
             self.thread.join()
+            self._notify("detection_end")
             print("Motion detection stopped.")
+
+    def _notify(self, action, data=None):
+        for notifier in self.notifiers:
+            notifier.notify(action, data)
