@@ -1,10 +1,12 @@
-flask:
-  secret_key: "your_secret_key"
-  debug: true
+motion:
+  # Detection sensitivity threshold. Lower values indicate higher sensitivity.
+  mse_threshold: 7
+  # Duration in seconds. If no motion is detected within this time, 
+  # the current recording is stopped.
+  motion_gap: 2
 
-database:
-  uri: "sqlite:///app.db"
-
-custom:
-  some_key: "some_value"
-  another_key: 42
+recording:
+  # Directory where recordings are saved.
+  directory: "recordings"
+  # Bitrate at which recordings are saved, in bits per second.
+  bitrate: 1000000

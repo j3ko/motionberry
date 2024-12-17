@@ -9,9 +9,11 @@ from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
 
 class MotionDetector:
-    def __init__(self, video_dir="recordings", lores_size=(320, 240), main_size=(1280, 720)):
+    def __init__(self, video_dir, motion_threshold, max_encoding_time, encoder_bitrate, lores_size=(320, 240), main_size=(1280, 720)):
         self.video_dir = Path(video_dir)
         self.video_dir.mkdir(exist_ok=True)
+        self.motion_threshold = motion_threshold
+        self.max_encoding_time = max_encoding_time
         self.picam2 = Picamera2()
         self.is_running = False
         self.encoding = False
@@ -24,7 +26,7 @@ class MotionDetector:
             lores={"size": lores_size, "format": "YUV420"}
         )
         self.picam2.configure(video_config)
-        self.encoder = H264Encoder(1000000)
+        self.encoder = H264Encoder(encoder_bitrate)
 
     def _motion_detection_loop(self):
         w, h = self.lores_size
@@ -37,7 +39,7 @@ class MotionDetector:
 
             if prev_frame is not None:
                 mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
-                if mse > 7:  # Motion detected
+                if mse > self.motion_threshold:  # Motion detected
                     if not self.encoding:
                         filename = self.video_dir / f"motion_{time.strftime('%Y-%m-%d_%H-%M-%S')}.h264"
                         self.encoder.output = FileOutput(str(filename))
@@ -45,7 +47,7 @@ class MotionDetector:
                         self.encoding = True
                         print(f"Motion detected! Recording started: {filename}")
                     self.last_motion_time = time.time()
-                elif self.encoding and time.time() - self.last_motion_time > 2.0:
+                elif self.encoding and time.time() - self.last_motion_time > self.max_encoding_time:
                     self.picam2.stop_encoder()
                     self.encoding = False
                     print("Recording stopped.")
