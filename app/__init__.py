@@ -1,6 +1,7 @@
 from flask import Flask
 from app.api import api_bp
 from app.ui import ui_bp
+from app.lib.camera.camera_manager import CameraManager
 from app.lib.camera.motion_detector import MotionDetector
 from app.lib.notification.webhook_notifier import WebhookNotifier
 from app.lib.notification.logging_notifier import LoggingNotifier
@@ -28,12 +29,16 @@ def create_app(config_file=None):
 
     logging_notifier = LoggingNotifier()
     webhook_notifier = WebhookNotifier(app.config["notification"])
+    
+    app.config["camera_manager"] = CameraManager(
+        video_dir=app.config["recording"]["directory"],
+        encoder_bitrate=app.config["recording"]["bitrate"],
+    )
 
     app.config["motion_detector"] = MotionDetector(
-        video_dir=app.config["recording"]["directory"],
+        camera_manager=app.config["camera_manager"],
         motion_threshold=app.config["motion"]["mse_threshold"],
         max_encoding_time=app.config["motion"]["motion_gap"],
-        encoder_bitrate=app.config["recording"]["bitrate"],
         notifiers=[logging_notifier, webhook_notifier]
     )
 

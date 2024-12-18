@@ -6,7 +6,7 @@ import os
 def status():
     return jsonify({"status": "ok"})
 
-@api_bp.route("/motion_start", methods=["POST"])
+@api_bp.route("/start_motion", methods=["POST"])
 def start_motion_detection():
     motion_detector = current_app.config["motion_detector"]
     try:
@@ -18,7 +18,7 @@ def start_motion_detection():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
         
-@api_bp.route("/motion_stop", methods=["POST"])
+@api_bp.route("/stop_motion", methods=["POST"])
 def stop_motion_detection():
     motion_detector = current_app.config["motion_detector"]
     try:
@@ -47,3 +47,11 @@ def download_recording(filename):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+@api_bp.route('/snapshot', methods=['POST'])
+def take_snapshot():
+    camera_manager = current_app.config["camera_manager"]
+    try:
+        filename = camera_manager.take_snapshot()
+        return jsonify({"message": "Snapshot taken.", "filename": str(filename)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
