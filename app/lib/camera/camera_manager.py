@@ -1,5 +1,7 @@
+import io
 import time
 import threading
+from PIL import Image
 from pathlib import Path
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
@@ -14,6 +16,7 @@ class CameraManager:
         self.camera_lock = threading.Lock()
         self.is_camera_running = False
         self.is_encoding = False
+        self.is_streaming = False
         self.main_size = main_size
         self.lores_size = lores_size
 
@@ -35,7 +38,7 @@ class CameraManager:
     def stop_camera(self):
         """Stops the camera."""
         with self.camera_lock:
-            if self.is_camera_running:
+            if self.is_camera_running and not self.is_streaming and not self.is_encoding:
                 self.picam2.stop()
                 self.is_camera_running = False
                 print("Camera stopped.")
@@ -77,3 +80,22 @@ class CameraManager:
         request.release()
         print(f"Snapshot taken: {filename}")
         return filename
+
+    # Streaming function
+    def generate_frames(self):
+        self.is_streaming = True
+        if not self.is_camera_running:
+            self.start_camera()
+        try:
+            while True:
+                frame = self.picam2.capture_array()
+                stream = io.BytesIO()
+                image = Image.fromarray(frame)
+                image.save(stream, format="JPEG")
+                stream.seek(0)
+                yield (b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + stream.getvalue() + b'\r\n')
+                time.sleep(0.1)
+        finally:
+            self.is_streaming = False
+            self.stop_camera()
