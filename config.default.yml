@@ -5,10 +5,10 @@ motion:
   # the current recording is stopped.
   motion_gap: 10
 
-recording:
-  # Directory where recordings are saved.
-  directory: "recordings"
-  # Bitrate at which recordings are saved, in bits per second.
+capture:
+  # Directory where captures are saved.
+  directory: "captures"
+  # Bitrate at which video captures are saved, in bits per second.
   bitrate: 1000000
 
 notification:

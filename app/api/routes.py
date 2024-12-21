@@ -30,17 +30,17 @@ def stop_motion_detection():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@api_bp.route("/recordings", methods=["GET"])
-def list_recordings():
+@api_bp.route("/captures", methods=["GET"])
+def list_captures():
     motion_detector = current_app.config["motion_detector"]
     try:
         files = os.listdir(motion_detector.video_dir)
-        return jsonify({"recordings": files})
+        return jsonify({"captures": files})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@api_bp.route("/recordings/<filename>", methods=["GET"])
-def download_recording(filename):
+@api_bp.route("/captures/<filename>", methods=["GET"])
+def download_capture(filename):
     motion_detector = current_app.config["motion_detector"]
     try:
         return send_from_directory(motion_detector.video_dir, filename)

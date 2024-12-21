@@ -77,5 +77,8 @@ __MACOSX/
 # Ignore compiled migrations
 migrations/
 
-# Ignore recordings
-recordings/
+# Ignore captures
+captures/
+
+# Ignore config
+config/
