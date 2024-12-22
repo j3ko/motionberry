@@ -8,6 +8,7 @@ env/
 venv/
 ENV/
 .VENV/
+.venv/
 
 # Flask instance and configuration files
 instance/

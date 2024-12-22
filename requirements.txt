@@ -1,6 +1,5 @@
 Flask==3.1.0
 numpy==1.26.3
-picamera2==0.3.23
 Pillow==11.0.0
 PyYAML==6.0.2
 Requests==2.32.3
