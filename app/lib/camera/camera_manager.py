@@ -6,11 +6,10 @@ from pathlib import Path
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
+from .video_processor import VideoProcessor
 
 class CameraManager:
-    def __init__(self, video_dir, encoder_bitrate=5000000, main_size=(1280, 720), lores_size=(320, 240)):
-        self.video_dir = Path(video_dir)
-        self.video_dir.mkdir(exist_ok=True)
+    def __init__(self, video_dir, encoder_bitrate=5000000, video_format="mp4", main_size=(1280, 720), lores_size=(320, 240)):
         self.picam2 = Picamera2()
         self.encoder = H264Encoder(encoder_bitrate)
         self.camera_lock = threading.Lock()
@@ -19,6 +18,7 @@ class CameraManager:
         self.is_streaming = False
         self.main_size = main_size
         self.lores_size = lores_size
+        self.video_processor = VideoProcessor(video_dir, video_format)
 
         # Configure the camera
         video_config = self.picam2.create_video_configuration(
@@ -55,20 +55,25 @@ class CameraManager:
         """Starts encoding video."""
         with self.camera_lock:
             if not self.is_encoding:
-                filename = self.video_dir / f"motion_{time.strftime('%Y-%m-%d_%H-%M-%S')}.h264"
-                self.encoder.output = FileOutput(str(filename))
+                self.current_raw_path = self.video_processor.save_raw_file()
+                self.encoder.output = FileOutput(str(self.current_raw_path))
                 self.picam2.start_encoder(self.encoder)
                 self.is_encoding = True
-                print(f"Recording started: {filename}")
-                return filename
+                print(f"Recording started: {self.current_raw_path}")
 
     def stop_recording(self):
-        """Stops video encoding."""
+        """Stops video encoding and processes the output."""
         with self.camera_lock:
             if self.is_encoding:
                 self.picam2.stop_encoder()
                 self.is_encoding = False
                 print("Recording stopped.")
+                final_path = self.video_processor.process_and_save(self.current_raw_path)
+                print(f"Video saved: {final_path}")
+
+    def cleanup(self):
+        """Cleans up temporary files and folders."""
+        self.video_processor.cleanup()
 
     def take_snapshot(self):
         """Takes a snapshot."""

@@ -6,7 +6,7 @@ import os
 def status():
     return jsonify({"status": "ok"})
 
-@api_bp.route("/start_motion", methods=["POST"])
+@api_bp.route("/enable_detection", methods=["POST"])
 def start_motion_detection():
     motion_detector = current_app.config["motion_detector"]
     try:
@@ -18,7 +18,7 @@ def start_motion_detection():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
         
-@api_bp.route("/stop_motion", methods=["POST"])
+@api_bp.route("/disable_detection", methods=["POST"])
 def stop_motion_detection():
     motion_detector = current_app.config["motion_detector"]
     try:

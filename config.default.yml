@@ -1,24 +1,45 @@
+# Motion detection settings
 motion:
-  # Detection sensitivity threshold. Lower values indicate higher sensitivity.
+
+  # Detection sensitivity threshold. Lower values indicate higher sensitivity (Required)
   mse_threshold: 7
+
   # Duration in seconds. If no motion is detected within this time, 
-  # the current recording is stopped.
+  # the current recording is stopped. (Required)
   motion_gap: 10
 
+# Capture settings
 capture:
-  # Directory where captures are saved.
-  directory: "captures"
-  # Bitrate at which video captures are saved, in bits per second.
+
+  # Capture directory (Required)
+  directory: captures
+  
+  # Raw bitrate (Required)
   bitrate: 1000000
 
+  # Output format for videos (Optional, Default: mp4)
+  # Possible values: mp4, raw
+  video_format: mp4
+
+# Notification Settings
 notification:
-  app_start:
-    webhook_url: http://127.0.0.1:1880/api/app_start
-  detection_start:
-    webhook_url: http://127.0.0.1:1880/api/detection_start
-  detection_end:
-    webhook_url: http://127.0.0.1:1880/api/detection_end
-  motion_start:
-    webhook_url: http://127.0.0.1:1880/api/motion_start
-  motion_end:
-    webhook_url: http://127.0.0.1:1880/api/motion_end
+
+  # Triggered when the application starts
+  application_start:
+    webhook_url: "http://127.0.0.1:1880/api/application_start"
+
+  # Triggered when motion detection is enabled
+  detection_enabled:
+    webhook_url: "http://127.0.0.1:1880/api/detection_enabled"
+
+  # Triggered when motion detection is disabled
+  detection_disabled:
+    webhook_url: "http://127.0.0.1:1880/api/detection_disabled"
+
+  # Triggered when motion is detected and recording starts
+  motion_started:
+    webhook_url: "http://127.0.0.1:1880/api/motion_started"
+
+  # Triggered when motion stops, and recording ends
+  motion_stopped:
+    webhook_url: "http://127.0.0.1:1880/api/motion_stopped"

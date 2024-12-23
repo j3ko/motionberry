@@ -31,13 +31,14 @@ def create_app(config_file=None):
             raise RuntimeError(f"Default configuration file '{default_config_file}' not found.")
 
     app = Flask(__name__)
+    config = app.config
 
     # Load configuration from the specified file
     try:
         with open(config_file, 'r') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
             print(json.dumps(data, indent=4))
-            app.config.update(data)
+            config.update(data)
     except FileNotFoundError:
         raise RuntimeError(f"Configuration file '{config_file}' not found.")
     except yaml.YAMLError as e:
@@ -45,17 +46,18 @@ def create_app(config_file=None):
 
     # Initialize the notifiers and other app components
     logging_notifier = LoggingNotifier()
-    webhook_notifier = WebhookNotifier(app.config["notification"])
+    webhook_notifier = WebhookNotifier(config["notification"])
     
-    app.config["camera_manager"] = CameraManager(
-        video_dir=app.config["capture"]["directory"],
-        encoder_bitrate=app.config["capture"]["bitrate"],
+    config["camera_manager"] = CameraManager(
+        video_dir=config["capture"]["directory"],
+        encoder_bitrate=config["capture"]["bitrate"],
+        video_format=config["capture"].get("video_format", "mp4"),
     )
 
-    app.config["motion_detector"] = MotionDetector(
-        camera_manager=app.config["camera_manager"],
-        motion_threshold=app.config["motion"]["mse_threshold"],
-        max_encoding_time=app.config["motion"]["motion_gap"],
+    config["motion_detector"] = MotionDetector(
+        camera_manager=config["camera_manager"],
+        motion_threshold=config["motion"]["mse_threshold"],
+        max_encoding_time=config["motion"]["motion_gap"],
         notifiers=[logging_notifier, webhook_notifier]
     )
 

@@ -11,7 +11,7 @@ class WebhookNotifier(Notifier):
             thread = threading.Thread(
                 target=self._post, 
                 args=(self.config[action]["webhook_url"], data),
-                daemon=True  # Ensure the thread won't block app shutdown
+                daemon=True,
             )
             thread.start()      
 
