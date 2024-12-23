@@ -40,7 +40,6 @@ class MotionDetector:
             time.sleep(0.1)
 
         self.camera_manager.stop_camera()
-        self.camera_manager.cleanup()
 
     def start(self):
         """Starts motion detection."""

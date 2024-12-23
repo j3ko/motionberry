@@ -1,9 +1,11 @@
+import logging
 import threading
 import requests
 from .notifier import Notifier
 
 class WebhookNotifier(Notifier):
     def __init__(self, config: dict):
+        self.logger = logging.getLogger(__name__)
         self.config = config
 
     def notify(self, action: str, data: dict) -> None:
@@ -19,4 +21,4 @@ class WebhookNotifier(Notifier):
         try:
             response = requests.post(url, json=data, timeout=10)
         except Exception as e:
-            print(f"Unable to connect to {url}: {e}")
+            self.logger.error(f"Unable to connect to {url}: {e}")
