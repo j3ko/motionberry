@@ -8,9 +8,10 @@ from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
 from .video_processor import VideoProcessor
+from .file_manager import FileManager
 
 class CameraManager:
-    def __init__(self, video_processor, encoder_bitrate=5000000, main_size=(1280, 720), lores_size=(320, 240)):
+    def __init__(self, file_manager, video_processor, encoder_bitrate=5000000, main_size=(1280, 720), lores_size=(320, 240)):
         self.logger = logging.getLogger(__name__)
         self.picam2 = Picamera2()
         self.encoder = H264Encoder(encoder_bitrate)
@@ -20,6 +21,7 @@ class CameraManager:
         self.is_streaming = False
         self.main_size = main_size
         self.lores_size = lores_size
+        self.file_manager = file_manager
         self.video_processor = video_processor
 
         # Configure the camera
@@ -58,7 +60,7 @@ class CameraManager:
         """Starts encoding video."""
         with self.camera_lock:
             if not self.is_encoding:
-                self.current_raw_path = self.video_processor.save_raw_file()
+                self.current_raw_path = self.file_manager.save_raw_file()
                 self.encoder.output = FileOutput(str(self.current_raw_path))
                 self.picam2.start_encoder(self.encoder)
                 self.is_encoding = True
@@ -68,11 +70,15 @@ class CameraManager:
         """Stops video encoding and processes the output."""
         with self.camera_lock:
             if self.is_encoding:
-                self.picam2.stop_encoder()
-                self.is_encoding = False
-                self.logger.info("Recording stopped.")
-                final_path = self.video_processor.process_and_save(self.current_raw_path)
-                self.logger.info(f"Video saved: {final_path}")
+                try:
+                    self.picam2.stop_encoder()
+                    self.is_encoding = False
+                    self.logger.info("Recording stopped.")
+                    final_path = self.video_processor.process_and_save(self.current_raw_path)
+                    self.logger.info(f"Video saved: {final_path}")
+                finally:
+                    self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)
+                    self.file_manager.cleanup_output_directory()
 
     def take_snapshot(self):
         """Takes a snapshot."""
@@ -80,7 +86,7 @@ class CameraManager:
             self.start_camera()
         filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
         request = self.picam2.capture_request()
-        request.save("main", str(self.video_processor.video_dir / filename))
+        request.save("main", str(self.file_manager.output_dir / filename))
         request.release()
         self.logger.info(f"Snapshot taken: {filename}")
         return filename

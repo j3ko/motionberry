@@ -3,6 +3,7 @@ from flask.logging import default_handler
 from flask import Flask, current_app
 from app.api import api_bp
 from app.ui import ui_bp
+from app.lib.camera.file_manager import FileManager
 from app.lib.camera.video_processor import VideoProcessor
 from app.lib.camera.camera_manager import CameraManager
 from app.lib.camera.motion_detector import MotionDetector
@@ -28,23 +29,28 @@ def create_app(config_file=None):
 
     # Initialize the notifiers and other app components
     logging_notifier = LoggingNotifier()
-    webhook_notifier = WebhookNotifier(config["notification"])
-    
-    video_dir=config.get("capture", {}).get("directory", "captures")
+    webhook_notifier = WebhookNotifier(config.get("notification", {}))
+    app.config["file_manager"] = FileManager(
+        output_dir=str(config.get("capture", {}).get("directory", "captures")),
+        max_size_mb=int(config.get("capture", {}).get("max_size_mb", 2048)),
+        max_age_days=int(config.get("capture", {}).get("max_age_days", 7)),
+    )
+
     app.config["video_processor"] = VideoProcessor(
-        video_dir=video_dir, 
+        file_manager=app.config["file_manager"],
         video_format=config.get("capture", {}).get("video_format", "mp4"),
     )
 
     app.config["camera_manager"] = CameraManager(
+        file_manager=app.config["file_manager"],
         video_processor=app.config["video_processor"],
-        encoder_bitrate=config["capture"]["bitrate"],
+        encoder_bitrate=int(config.get("capture", {}).get("bitrate", 5000000)),
     )
 
     app.config["motion_detector"] = MotionDetector(
         camera_manager=app.config["camera_manager"],
-        motion_threshold=config["motion"]["mse_threshold"],
-        max_encoding_time=config["motion"]["motion_gap"],
+        motion_threshold=float(config.get("motion", {}).get("mse_threshold", 7)),
+        max_encoding_time=int(config.get("motion", {}).get("motion_gap", 10)),
         notifiers=[logging_notifier, webhook_notifier]
     )
     return app
