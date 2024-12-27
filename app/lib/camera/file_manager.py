@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 import tempfile
 import shutil
@@ -12,7 +11,7 @@ class FileManager:
         self.logger = logging.getLogger(__name__)
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
-        self.tmp_dir_base = Path(tempfile.gettempdir()) / "pimotion2"
+        self.tmp_dir_base = Path(tempfile.gettempdir()) / "motionberry"
         self.tmp_dir_base.mkdir(exist_ok=True)
         self.max_size_bytes = max_size_mb * 1024 * 1024
         self.max_age_seconds = max_age_days * 24 * 60 * 60
@@ -60,7 +59,7 @@ class FileManager:
 
     def _create_tmp_dir(self):
         """Creates a unique temporary directory for a session."""
-        tmp_dir = Path(tempfile.mkdtemp(prefix="pimotion2-", dir=self.tmp_dir_base))
+        tmp_dir = Path(tempfile.mkdtemp(prefix="motion-", dir=self.tmp_dir_base))
         self.logger.debug(f"Temporary directory created: {tmp_dir}")
         return tmp_dir
 

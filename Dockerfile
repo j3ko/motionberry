@@ -26,7 +26,7 @@ RUN apt update && apt install -y --no-install-recommends python3-picamera2 \
     && rm -rf /var/lib/apt/lists/*
    
 # Set the working directory
-WORKDIR /pimotion2
+WORKDIR /motionberry
 
 # Copy the application code into the container
 COPY . .
@@ -37,10 +37,10 @@ RUN python3 -m venv --system-site-packages .venv \
     && pip install --default-timeout=100 --upgrade pip \
     && pip install --default-timeout=100 --no-cache-dir -r requirements.txt
 
-VOLUME ["/pimotion2/config"]
-VOLUME ["/pimotion2/captures"]
+VOLUME ["/motionberry/config"]
+VOLUME ["/motionberry/captures"]
 
 EXPOSE 5000
 
 # Use the virtual environment to run the application
-CMD ["/pimotion2/.venv/bin/python", "run.py"]
+CMD ["/motionberry/.venv/bin/python", "run.py"]

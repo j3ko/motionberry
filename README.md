@@ -1,11 +1,11 @@
-# pimotion2
+# motionberry
 
 ```bash
-docker run --name pimotion2 \
+docker run --name motionberry \
   --privileged \
-  -v <path to config.yml>:/pimotion2/config \
-  -v <path to capture directory>:/pimotion2/captures \
+  -v <path to config.yml>:/motionberry/config \
+  -v <path to capture directory>:/motionberry/captures \
   -v /run/udev:/run/udev:ro \
   -p 5000:5000 \
-  pimotion2
+  motionberry
 ```
