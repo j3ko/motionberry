@@ -10,12 +10,17 @@ env:
     - secure: "OULpw2FDrT3V+I1xgozV4D1vEU3NJmJEyzlsK+a+necHgcZORW2xRMaGmmmTybZMFRLmSQa+aaPleqZprvb15zvGErFIC7zitLXQhDzi6x2WlEd2RSoreK/0ohbZlhQc8y67pPCh00dSDp1nCnIAakj60PgNJqXPG958iMJOQwRNd9+NBhyOrs5IkKHVU7nGpD1xFKasC+6Koj52o/IiKWfY3U7CsGw+Ba88+8SG7Xt3AlXTH/Yb2jxjrsjV0ugjOC4VAZAU7JL743l0nn7+SUr+FdoepMf2dt4FgXbOvkDV/hub+cmynyD4/FM5n4H4zawHlirDUZ4FWVTAvnSaUAIG0ZDpV6h69RRmhyZ5mgHDaIGuBx6YpRPuwxZzj+O+uH7FE7ZE1754EmHbcyWzyTaqmPTpUOlUgoBn7PdfTpCVSdQuKe9pf1S94f6JVB3J3BoJeYlOnya2D2nvQJu4qePMoD8o7jwtTu/KUkJLmrJvndcu8AhbR+SKI/NWtpmapxolWr4XoHrmXS0vMYfve2S3s6t/pFT4ZIldoJg29599oS4KVPsLlYzCsx3VceeVr+bp0xmo9d6SFeFPDNVsliOLVsaKr0GF5HNGzoPQ3ts3TZRU5NGvyHTn0wZJstCuHEBcqu79r2iwxjPSRxgdag1G4X6eoGoOfeDOBXBBJjo="
 
 before_install:
-  - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-  - docker buildx create --use
-  - docker buildx inspect --bootstrap
+  - |
+    if [[ ! ($TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ || $TRAVIS_BRANCH == "main") ]]; then
+      echo "No deployment conditions met; skipping build."
+      exit 0
+    fi
 
 script:
   - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  - docker buildx create --use
+  - docker buildx inspect --bootstrap
   - docker buildx build --platform linux/arm64 -t $IMAGE_NAME --load .
 
 deploy:
