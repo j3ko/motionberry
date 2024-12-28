@@ -1,7 +1,21 @@
 language: generic
 
-arch:
-  - arm64
+services:
+  - docker
+
+env:
+  global:
+    - IMAGE_NAME="motionberry"
+
+before_install:
+  # Install QEMU and set up binfmt for emulating arm64
+  - |
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    docker buildx create --use
+    docker buildx inspect --bootstrap
 
 script:
-  - echo "running build script"
+  # Build and tag the arm64 image
+  - echo "Emulating arm64 architecture on x86 host"
+  - docker buildx build --platform linux/arm64 -t $IMAGE_NAME --load .
+  - echo "Build completed"
