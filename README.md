@@ -61,6 +61,10 @@ To install and run Motionberry natively on your Raspberry Pi, follow these steps
    .venv/bin/python run.py
    ```
 
-# Configuration
+## Configuration
 
-WIP
+For configuration options, refer to [config.default.yml](https://github.com/j3ko/motionberry/blob/main/config.default.yml).
+
+## Reporting Issues
+
+For bugs and issues, please create a GitHub issue [here](https://github.com/j3ko/motionberry/issues).
