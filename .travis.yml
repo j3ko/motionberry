@@ -1,4 +1,7 @@
 language: generic
 
+arch:
+  - arm64
+
 script:
   - echo "running build script"
