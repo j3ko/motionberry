@@ -1,0 +1,31 @@
+language: python
+python:
+  - "3.8"
+
+services:
+  - docker
+
+env:
+  global:
+    - secure: "VlXKeuMmo2tctwL2fIBvEuVpqW6tzob4fDFuyk6oHRdu/zeWXRSCAXTU40Tg1Ls+/8nWreV+Xas7RTPGXTMmPzKhF24QIvql0Gqm+DA15C1i5qzTU0gg6mX87z8e4JFh2kacvf2Wsto8SxK6JKCfwtHM/WVRolSoagMjB10IRB9sBoLMcNwloHM9E7jrgxv4QY5simK4oqJj5HDzYbBE3n+k3qR1yk/UFfQTuKit+tN35ul0A4PEfkTgyOQjNIMGrIgF+x1h2UatJNjtgzTOhk0InJZKeO0uULpG9g9a3/Mtk5vNrmDFzlwRD+pWkOaJJFih3B/hz+fRi6uFCikelokMluD8JAdrLSh2OLrK85y5TkxDb8PMsV7HeZtD1jitlc2U7c2MjLYmtpgE9r5mH9mFboag0sDeu0XuDBjNwwzd1HbImPV2NCgaAN3RNOpSz/X5lJMZLRVNHCY3kP9yP2HWTSPLilJCQuMWIvtg1ACXtrL8agd6DIW5XWtf2QZvnZiw3tsrVr5eKkggdhRfDgG3esi5BqP1FZHJYoLvywQEUQA1x4gnyGOda3yQwsHB8xHSMonqbOTYzIG4CAMCFmJyeQYJvCrZA3QzCxXgRmbUw7K5Kn6c4GqbsFoHhsc6OaJ4YOyf8p+9zTKbvV4y8K4+WZdwaFpwRlHvrIH1puQ="
+    - secure: "OULpw2FDrT3V+I1xgozV4D1vEU3NJmJEyzlsK+a+necHgcZORW2xRMaGmmmTybZMFRLmSQa+aaPleqZprvb15zvGErFIC7zitLXQhDzi6x2WlEd2RSoreK/0ohbZlhQc8y67pPCh00dSDp1nCnIAakj60PgNJqXPG958iMJOQwRNd9+NBhyOrs5IkKHVU7nGpD1xFKasC+6Koj52o/IiKWfY3U7CsGw+Ba88+8SG7Xt3AlXTH/Yb2jxjrsjV0ugjOC4VAZAU7JL743l0nn7+SUr+FdoepMf2dt4FgXbOvkDV/hub+cmynyD4/FM5n4H4zawHlirDUZ4FWVTAvnSaUAIG0ZDpV6h69RRmhyZ5mgHDaIGuBx6YpRPuwxZzj+O+uH7FE7ZE1754EmHbcyWzyTaqmPTpUOlUgoBn7PdfTpCVSdQuKe9pf1S94f6JVB3J3BoJeYlOnya2D2nvQJu4qePMoD8o7jwtTu/KUkJLmrJvndcu8AhbR+SKI/NWtpmapxolWr4XoHrmXS0vMYfve2S3s6t/pFT4ZIldoJg29599oS4KVPsLlYzCsx3VceeVr+bp0xmo9d6SFeFPDNVsliOLVsaKr0GF5HNGzoPQ3ts3TZRU5NGvyHTn0wZJstCuHEBcqu79r2iwxjPSRxgdag1G4X6eoGoOfeDOBXBBJjo="
+
+before_install:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+script:
+  - docker build --platform linux/arm64 -t $IMAGE_NAME .
+
+deploy:
+  provider: script
+  script: 
+    - if [[ $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then 
+        docker push $IMAGE_NAME:$TRAVIS_TAG;
+        docker tag $IMAGE_NAME:$TRAVIS_TAG $IMAGE_NAME:latest;
+        docker push $IMAGE_NAME:latest;
+      elif [[ $TRAVIS_BRANCH == "main" && -z "$TRAVIS_TAG" ]]; then 
+        docker tag $IMAGE_NAME $IMAGE_NAME:edge && docker push $IMAGE_NAME:edge;
+      fi
+  on:
+    branch: main
+    tags: true
