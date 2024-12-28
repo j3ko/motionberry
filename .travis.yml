@@ -21,13 +21,19 @@ script:
   - docker buildx build --platform linux/arm64 -t $IMAGE_NAME --load .
 
 deploy:
-  provider: script
-  script: |
-    if [[ $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then 
+  - provider: script
+    script: |
+        docker tag $IMAGE_NAME $IMAGE_NAME:edge && docker push $IMAGE_NAME:edge;
+    on:
+      all_branches: true
+  - provider: script
+    script: |
       docker push $IMAGE_NAME:$TRAVIS_TAG;
       docker tag $IMAGE_NAME:$TRAVIS_TAG $IMAGE_NAME:latest;
       docker push $IMAGE_NAME:latest;
-    elif [[ -z "$TRAVIS_TAG" ]]; then 
-      docker tag $IMAGE_NAME $IMAGE_NAME:edge && docker push $IMAGE_NAME:edge;
-    fi
+    on:
+      tags: true
+      condition: $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$
+      branch: main
+
 
