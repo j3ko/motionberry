@@ -3,9 +3,9 @@ language: generic
 services:
   - docker
 
-branches:
-  only:
-  - main
+# branches:
+#   only:
+#   - main
 
 env:
   global:
@@ -23,13 +23,7 @@ script:
 deploy:
   - provider: script
     script: |
-      if [[ $TRAVIS_TAG =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then 
-        docker push $IMAGE_NAME:$TRAVIS_TAG;
-        docker tag $IMAGE_NAME:$TRAVIS_TAG $IMAGE_NAME:latest;
-        docker push $IMAGE_NAME:latest;
-      else
         docker tag $IMAGE_NAME $IMAGE_NAME:edge && docker push $IMAGE_NAME:edge;
-      fi
     on:
       all_branches: true
   - provider: script
