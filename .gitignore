@@ -82,4 +82,6 @@ migrations/
 captures/
 
 # Ignore config
-config/
+!config
+config/*
+!config/.gitkeep

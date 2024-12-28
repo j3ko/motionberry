@@ -2,6 +2,7 @@ FROM debian:bookworm
 
 # Install system dependencies and build tools
 RUN apt update && apt install -y --no-install-recommends \
+        gosu \
         build-essential \
         python3-dev \
         python3-venv \
@@ -31,16 +32,18 @@ WORKDIR /motionberry
 # Copy the application code into the container
 COPY . .
 
-# Create and activate a virtual environment, then install Python dependencies
+# Create and activate a virtual environment
 RUN python3 -m venv --system-site-packages .venv \
     && . .venv/bin/activate \
     && pip install --default-timeout=100 --upgrade pip \
     && pip install --default-timeout=100 --no-cache-dir -r requirements.txt
+
+RUN chmod +x /motionberry/entrypoint.sh
 
 VOLUME ["/motionberry/config"]
 VOLUME ["/motionberry/captures"]
 
 EXPOSE 5000
 
-# Use the virtual environment to run the application
+ENTRYPOINT ["/motionberry/entrypoint.sh"]
 CMD ["/motionberry/.venv/bin/python", "run.py"]
