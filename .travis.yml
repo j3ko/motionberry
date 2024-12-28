@@ -3,9 +3,9 @@ language: generic
 services:
   - docker
 
-# branches:
-#   only:
-#   - main
+branches:
+  only:
+  - main
 
 env:
   global:
