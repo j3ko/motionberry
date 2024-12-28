@@ -1,5 +1,8 @@
 language: generic
 
+arch:
+  - arm64
+
 services:
   - docker
 
