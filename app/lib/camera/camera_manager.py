@@ -24,9 +24,8 @@ class CameraManager:
         self.lores_size = lores_size
         self.file_manager = file_manager
         self.video_processor = video_processor
-        self.client_count = 0  # Tracks the number of clients using the camera
+        self.client_count = 0
 
-        # Configure the camera
         video_config = self.picam2.create_video_configuration(
             main={"size": main_size, "format": "RGB888"},
             lores={"size": lores_size, "format": "YUV420"}
