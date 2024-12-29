@@ -10,19 +10,21 @@ from picamera2.outputs import FileOutput
 from .video_processor import VideoProcessor
 from .file_manager import FileManager
 
+
 class CameraManager:
     def __init__(self, file_manager, video_processor, encoder_bitrate=5000000, main_size=(1280, 720), lores_size=(320, 240)):
         self.logger = logging.getLogger(__name__)
         self.picam2 = Picamera2()
         self.encoder = H264Encoder(encoder_bitrate)
         self.camera_lock = threading.Lock()
+        self.client_lock = threading.Lock()
         self.is_camera_running = False
         self.is_encoding = False
-        self.is_streaming = False
         self.main_size = main_size
         self.lores_size = lores_size
         self.file_manager = file_manager
         self.video_processor = video_processor
+        self.client_count = 0  # Tracks the number of clients using the camera
 
         # Configure the camera
         video_config = self.picam2.create_video_configuration(
@@ -30,31 +32,46 @@ class CameraManager:
             lores={"size": lores_size, "format": "YUV420"}
         )
         self.picam2.configure(video_config)
-        self.logger.info("CameraManager initialized.")
+        self.logger.debug("CameraManager initialized.")
 
     def start_camera(self):
-        """Starts the camera."""
-        with self.camera_lock:
-            if not self.is_camera_running:
-                self.picam2.start()
-                self.is_camera_running = True
-                self.logger.info("Camera started.")
+        """Starts the camera or increments the client count."""
+        with self.client_lock:
+            self.client_count += 1
+            self.logger.debug(f"Client added. Total clients: {self.client_count}")
+            if self.client_count == 1:
+                with self.camera_lock:
+                    if not self.is_camera_running:
+                        self.picam2.start()
+                        self.is_camera_running = True
+                        self.logger.info("Camera started.")
 
     def stop_camera(self):
-        """Stops the camera."""
-        with self.camera_lock:
-            if self.is_camera_running and not self.is_streaming and not self.is_encoding:
-                self.picam2.stop()
-                self.is_camera_running = False
-                self.logger.info("Camera stopped.")
+        """Decrements the client count and stops the camera if no clients remain."""
+        with self.client_lock:
+            if self.client_count > 0:
+                self.client_count -= 1
+                self.logger.debug(f"Client removed. Total clients: {self.client_count}")
+                if self.client_count == 0:
+                    with self.camera_lock:
+                        if self.is_camera_running and not self.is_encoding:
+                            self.picam2.stop()
+                            self.is_camera_running = False
+                            self.logger.info("Camera stopped.")
 
     def capture_frame(self, stream="lores"):
         """Captures a frame buffer for analysis."""
         with self.camera_lock:
             if not self.is_camera_running:
                 self.start_camera()
-            frame = self.picam2.capture_buffer(stream)
-        return frame
+            return self.picam2.capture_buffer(stream)
+    
+    def capture_image_array(self):
+        """Captures a frame as an image array."""
+        with self.camera_lock:
+            if not self.is_camera_running:
+                self.start_camera()
+            return self.picam2.capture_array()
 
     def start_recording(self):
         """Starts encoding video."""
@@ -91,25 +108,3 @@ class CameraManager:
         self.logger.info(f"Snapshot taken: {filename}")
         return filename
 
-    # Streaming function
-    def generate_frames(self):
-        self.is_streaming = True
-        if not self.is_camera_running:
-            self.start_camera()
-        self.logger.info("Streaming started.")
-        try:
-            while True:
-                frame = self.picam2.capture_array()
-                stream = io.BytesIO()
-                image = Image.fromarray(frame)
-                image.save(stream, format="JPEG")
-                stream.seek(0)
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + stream.getvalue() + b'\r\n')
-                time.sleep(0.1)
-        except Exception as e:
-            self.logger.error("Error during streaming: %s", e, exc_info=True)
-        finally:
-            self.is_streaming = False
-            self.stop_camera()
-            self.logger.info("Streaming stopped.")

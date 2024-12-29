@@ -7,8 +7,8 @@ def index():
 
 @ui_bp.route('/video_feed')
 def video_feed():
-    camera_manager = current_app.config["camera_manager"]
+    stream_manager = current_app.config["stream_manager"]
     return Response(
-        stream_with_context(camera_manager.generate_frames()), 
+        stream_with_context(stream_manager.generate_frames()), 
         mimetype='multipart/x-mixed-replace; boundary=frame'
     )

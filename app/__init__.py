@@ -6,6 +6,7 @@ from app.ui import ui_bp
 from app.lib.camera.file_manager import FileManager
 from app.lib.camera.video_processor import VideoProcessor
 from app.lib.camera.camera_manager import CameraManager
+from app.lib.camera.stream_manager import StreamManager
 from app.lib.camera.motion_detector import MotionDetector
 from app.lib.notification.webhook_notifier import WebhookNotifier
 from app.lib.notification.logging_notifier import LoggingNotifier
@@ -45,6 +46,10 @@ def create_app(config_file=None):
         file_manager=app.config["file_manager"],
         video_processor=app.config["video_processor"],
         encoder_bitrate=int(config.get("capture", {}).get("bitrate", 5000000)),
+    )
+
+    app.config["stream_manager"] = StreamManager(
+        camera_manager=app.config["camera_manager"]
     )
 
     app.config["motion_detector"] = MotionDetector(
