@@ -1,25 +1,28 @@
 # Motionberry
 
-Motion detection and streaming solution for Raspberry Pi, built using `picamera2`.
+A lightweight solution for motion detection and video streaming on Raspberry Pi, powered by [picamera2](https://github.com/raspberrypi/picamera2).
 
 ## Pre-requisites
 
 - A Raspberry Pi
 - A camera module compatible with picamera2 (e.g., Raspberry Pi Camera Module 3).
+- Raspberry Pi OS 64-it (Bullseye recommended)
 
 ## Docker installation
-Run the following command to deploy Motionberry using Docker:
-```bash
-docker run --name motionberry \
-  --privileged \
-  -e PUID 1000 \
-  -e PGID 1000 \
-  -v <path to config.yml>:/motionberry/config \
-  -v <path to capture directory>:/motionberry/captures \
-  -v /run/udev:/run/udev:ro \
-  -p 5000:5000 \
-  j3ko/motionberry:latest
-```
+To install Motionberry using Docker on your Raspberry Pi, follow these steps:
+1. Install [Docker](https://docs.docker.com/engine/install/debian/)
+1. Run the following command to deploy Motionberry:
+   ```bash
+   docker run --name motionberry \
+     --privileged \
+     -e PUID 1000 \
+     -e PGID 1000 \
+     -v <path to config.yml>:/motionberry/config \
+     -v <path to capture directory>:/motionberry/captures \
+     -v /run/udev:/run/udev:ro \
+     -p 5000:5000 \
+     j3ko/motionberry:latest
+   ```
 
 Explanation of Options:
 
@@ -34,7 +37,7 @@ Replace `<path to config.yml>` and `<path to capture directory>` with appropriat
 
 ## Bare metal installation
 To install and run Motionberry natively on your Raspberry Pi, follow these steps:
-1. Install Required Libraries:
+1. Install the required libraries:
    ```bash
    sudo apt install -y --no-install-recommends \
     git \
@@ -44,11 +47,11 @@ To install and run Motionberry natively on your Raspberry Pi, follow these steps
     python3-numpy \
     python3-picamera2
    ```
-1. Clone the Repository:
+1. Clone the repository:
    ```bash
    git clone https://github.com/j3ko/motionberry.git
    ```
-1. Set Up a Virtual Environment:
+1. Set up a virtual environment:
    ```
    cd motionberry
    python3 -m venv --system-site-packages .venv
@@ -56,7 +59,7 @@ To install and run Motionberry natively on your Raspberry Pi, follow these steps
    pip install --upgrade pip
    pip install --no-cache-dir -r requirements.txt
    ```
-1. Run the Application:
+1. Run the application:
    ```bash
    .venv/bin/python run.py
    ```
