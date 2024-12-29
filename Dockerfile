@@ -3,6 +3,7 @@ FROM debian:bookworm
 # Install system dependencies and build tools
 RUN apt update && apt install -y --no-install-recommends \
         gosu \
+        ffmpeg \
         build-essential \
         python3-dev \
         python3-venv \
