@@ -1,5 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Live Camera Feed</h1>
-<img src="{{ url_for('ui.video_feed') }}" alt="Live Camera Feed">
+  <div class="columns is-centered">
+    <div class="column is-half">
+
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">Live Stream</p>
+          <button class="card-header-icon" aria-label="more options">
+            <span class="icon">
+              <i class="fas fa-expand" aria-hidden="true"></i>
+            </span>
+          </button>
+        </header>
+
+        <div class="card-image">
+          <figure class="image">
+            <img class="video-stream" src="{{ url_for('ui.video_feed') }}" alt="Live Camera Feed">
+          </figure>
+        </div>
+
+        <footer class="card-footer">
+          <a href="#" class="card-footer-item">Detection: ON</a>
+          <a href="#" class="card-footer-item">Snapshot</a>
+        </footer>
+      </div>
+
+    </div>
+  </div>
 {% endblock %}
