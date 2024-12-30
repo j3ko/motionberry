@@ -1,0 +1,6 @@
+.navbar-dropdown a.navbar-item:not(.is-active,.is-selected) {
+  background-color: unset;
+}
+.navbar-dropdown a.navbar-item:hover {
+  background-color: #003b4a;
+}
