@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Motionberry</title>
+    <title>Motionberry {{ version }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='fontawesome/css/all.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bulma/bulma.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bulma/bulmaswatch.min.css') }}">
@@ -13,7 +13,7 @@
     <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
       <div class="navbar-brand">
         <a class="navbar-item" href="#">
-          <span>Motionberry</span>         
+          <img src="{{ url_for('static', filename='motionberry.svg') }}" alt="Motionberry">
         </a>
       </div>
     </nav>
@@ -26,4 +26,9 @@
     </section>
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
 </body>
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>v{{ version }}</p>
+    </div>
+</footer>
 </html>

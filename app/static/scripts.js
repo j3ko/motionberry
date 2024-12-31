@@ -3,20 +3,23 @@ const eventSource = new EventSource("/api/status_stream");
 eventSource.onmessage = function (event) {
   const data = JSON.parse(event.data);
 
-  function toggleStatus(selector, isActive) {
-    const elementOn = document.querySelector(`${selector} > .on`);
-    const elementOff = document.querySelector(`${selector} > .off`);
+function toggleStatus(parentSelector, isActive) {
+  const parentElements = document.querySelectorAll(parentSelector);
+
+  parentElements.forEach((parentElement) => {
+    const elementOn = parentElement.querySelector(".on");
+    const elementOff = parentElement.querySelector(".off");
 
     if (isActive) {
-      elementOn.classList.add("active");
-      elementOff.classList.remove("active");
+      if (elementOn) elementOn.classList.add("active");
+      if (elementOff) elementOff.classList.remove("active");
     } else {
-      elementOn.classList.remove("active");
-      elementOff.classList.add("active");
+      if (elementOn) elementOn.classList.remove("active");
+      if (elementOff) elementOff.classList.add("active");
     }
-  }
+  });
+}
 
-  toggleStatus(".camera-status", data.is_camera_running);
   toggleStatus(".recording-status", data.is_recording);
   toggleStatus(".motion-detection-status", data.is_motion_detecting);
 };

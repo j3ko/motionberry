@@ -10,22 +10,6 @@
 }
 
 /* Status Indicators */
-.camera-status > .on {
-  display: none;
-}
-.camera-status > .on.active {
-  display: block;
-}
-.camera-status > .off {
-  display: block;
-}
-.camera-status > .off.active {
-  display: none;
-}
-
-.recording-status {
-  color: white;
-}
 .recording-status > .on {
   display: none;
 }
@@ -33,21 +17,24 @@
   display: block;
 }
 .recording-status > .off {
-  display: block;
-}
-.recording-status > .off.active {
   display: none;
 }
+.recording-status > .off.active {
+  display: block;
+}
 
+.motion-detection-status .card-header-title {
+  color: white;
+}
 .motion-detection-status > .on {
   display: none;
 }
 .motion-detection-status > .on.active {
-  display: block;
+  display: inherit;
 }
 .motion-detection-status > .off {
-  display: block;
+  display: none;
 }
 .motion-detection-status > .off.active {
-  display: none;
+  display: inherit;
 }

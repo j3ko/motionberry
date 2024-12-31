@@ -7,17 +7,17 @@
         <span class="motion-detection-status">
 
           <header class="card-header off">
-            <p class="card-header-title">Detection Off</p>
+            <p class="card-header-title">&nbsp;</p>
           </header>
 
           <span class="on">
             <span class="recording-status">
               <header class="card-header off has-background-success">
-                <p class="card-header-title">Detection On</p>
+                <p class="card-header-title">&nbsp;</p>
               </header>
     
               <header class="card-header on has-background-warning">
-                <p class="card-header-title">Recording</p>
+                <p class="card-header-title">&nbsp;</p>
               </header>
             </span>
           </span>
@@ -33,12 +33,22 @@
           </figure>
         </div>
 
-        <footer class="card-footer">
-          <span class="motion-detection-status">
-            <a href="{{ url_for('api', 'disable_detection') }}" class="card-footer-item on api-action">Detection: ON</a>
-            <a href="{{ url_for('api', 'enable_detection') }}" class="card-footer-item off api-action">Detection: OFF</a>
-          </span>
-          <a href="{{ url_for('api', 'snapshot') }}" class="card-footer-item api-action">Snapshot</a>
+        <footer class="card-footer motion-detection-status">
+          <a href="{{ url_for('api.stop_motion_detection') }}" class="card-footer-item on api-action">
+            <span class="icon">
+              <i class="fas fa-eye"></i>
+            </span> Detection
+          </a>
+          <a href="{{ url_for('api.start_motion_detection') }}" class="card-footer-item off api-action">
+            <span class="icon">
+              <i class="fas fa-eye-slash"></i>
+            </span> Detection
+          </a>
+          <a href="{{ url_for('api.take_snapshot') }}" class="card-footer-item api-action">
+            <span class="icon">
+              <i class="fas fa-camera"></i>
+            </span> Snapshot
+          </a>
         </footer>
       </div>
 
