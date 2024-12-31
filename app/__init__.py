@@ -8,6 +8,7 @@ from app.lib.camera.video_processor import VideoProcessor
 from app.lib.camera.camera_manager import CameraManager
 from app.lib.camera.stream_manager import StreamManager
 from app.lib.camera.motion_detector import MotionDetector
+from app.lib.camera.status_manager import StatusManager
 from app.lib.notification.webhook_notifier import WebhookNotifier
 from app.lib.notification.logging_notifier import LoggingNotifier
 import yaml
@@ -58,6 +59,12 @@ def create_app(config_file=None):
         max_encoding_time=int(config.get("motion", {}).get("motion_gap", 10)),
         notifiers=[logging_notifier, webhook_notifier]
     )
+
+    app.config["status_manager"] = StatusManager(
+        camera_manager=app.config["camera_manager"],
+        motion_detector=app.config["motion_detector"]
+    )
+
     return app
 
 def load_config(app, config_file=None):

@@ -1,10 +1,15 @@
-from flask import Blueprint, jsonify, request, send_from_directory, current_app
+from flask import Blueprint, jsonify, Response, send_from_directory, current_app, stream_with_context
 from app.api import api_bp
 import os
 
 @api_bp.route("/status", methods=["GET"])
 def status():
     return jsonify({"status": "ok"})
+
+@api_bp.route('/status_stream')
+def status_stream():
+    status_manager = current_app.config["status_manager"]
+    return Response(stream_with_context(status_manager.generate_status()), content_type="text/event-stream")
 
 @api_bp.route("/enable_detection", methods=["POST"])
 def start_motion_detection():

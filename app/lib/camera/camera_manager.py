@@ -19,7 +19,7 @@ class CameraManager:
         self.camera_lock = threading.Lock()
         self.client_lock = threading.Lock()
         self.is_camera_running = False
-        self.is_encoding = False
+        self.is_recording = False
         self.main_size = main_size
         self.lores_size = lores_size
         self.file_manager = file_manager
@@ -53,7 +53,7 @@ class CameraManager:
                 self.logger.debug(f"Client removed. Total clients: {self.client_count}")
                 if self.client_count == 0:
                     with self.camera_lock:
-                        if self.is_camera_running and not self.is_encoding:
+                        if self.is_camera_running and not self.is_recording:
                             self.picam2.stop()
                             self.is_camera_running = False
                             self.logger.info("Camera stopped.")
@@ -75,24 +75,24 @@ class CameraManager:
     def start_recording(self):
         """Starts encoding video."""
         with self.camera_lock:
-            if not self.is_encoding:
+            if not self.is_recording:
                 self.current_raw_path = self.file_manager.save_raw_file()
                 self.encoder.output = FileOutput(str(self.current_raw_path))
+                self.is_recording = True
                 self.picam2.start_encoder(self.encoder)
-                self.is_encoding = True
                 self.logger.info(f"Recording started: {self.current_raw_path}")
 
     def stop_recording(self):
         """Stops video encoding and processes the output."""
         with self.camera_lock:
-            if self.is_encoding:
+            if self.is_recording:
                 try:
                     self.picam2.stop_encoder()
-                    self.is_encoding = False
                     self.logger.info("Recording stopped.")
                     final_path = self.video_processor.process_and_save(self.current_raw_path)
                     self.logger.info(f"Video saved: {final_path}")
                 finally:
+                    self.is_recording = False
                     self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)
                     self.file_manager.cleanup_output_directory()
 
