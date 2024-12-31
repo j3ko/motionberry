@@ -5,7 +5,7 @@
 
       <div class="card">
         <span class="motion-detection-status">
-          
+
           <header class="card-header off">
             <p class="card-header-title">Detection Off</p>
           </header>
@@ -35,10 +35,10 @@
 
         <footer class="card-footer">
           <span class="motion-detection-status">
-            <a href="{{ url_for('api', 'disable_detection') }}" class="card-footer-item on">Detection: ON</a>
-            <a href="{{ url_for('api', 'enable_detection') }}" class="card-footer-item off">Detection: OFF</a>
+            <a href="{{ url_for('api', 'disable_detection') }}" class="card-footer-item on api-action">Detection: ON</a>
+            <a href="{{ url_for('api', 'enable_detection') }}" class="card-footer-item off api-action">Detection: OFF</a>
           </span>
-          <a href="{{ url_for('api', 'snapshot') }}" class="card-footer-item">Snapshot</a>
+          <a href="{{ url_for('api', 'snapshot') }}" class="card-footer-item api-action">Snapshot</a>
         </footer>
       </div>
 

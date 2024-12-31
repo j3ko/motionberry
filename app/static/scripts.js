@@ -24,3 +24,15 @@ eventSource.onmessage = function (event) {
 eventSource.onerror = function() {
   console.error("Error connecting to the status stream.");
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".api-action").forEach(link => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+
+      const url = link.getAttribute("href");
+      fetch(url, { method: "POST" })
+        .catch(error => console.error("API action failed:", error));
+    });
+  });
+});
