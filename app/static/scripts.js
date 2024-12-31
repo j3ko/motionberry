@@ -30,12 +30,39 @@ eventSource.onerror = function() {
 
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".api-action").forEach(link => {
-    link.addEventListener("click", (event) => {
+    link.addEventListener("click", async (event) => {
       event.preventDefault();
 
       const url = link.getAttribute("href");
-      fetch(url, { method: "POST" })
-        .catch(error => console.error("API action failed:", error));
+
+      try {
+        const rsp = await fetch(url, { method: "POST" });
+        const j = await rsp.json();
+
+        if (j.filename) {
+          const fileUrl = `/api/captures/${encodeURIComponent(j.filename)}`;
+
+          try {
+            const fileResponse = await fetch(fileUrl);
+            const blob = await fileResponse.blob();
+
+            // Create a temporary anchor element for download
+            const a = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            a.href = url;
+            a.download = j.filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // Clean up the object URL
+          } catch (error) {
+            console.error("Error downloading the file:", error);
+          }
+        }
+
+      } catch (error) {
+        console.error("API action failed:", error);
+      }
     });
   });
 });

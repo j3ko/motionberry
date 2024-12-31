@@ -37,18 +37,18 @@ def stop_motion_detection():
 
 @api_bp.route("/captures", methods=["GET"])
 def list_captures():
-    motion_detector = current_app.config["motion_detector"]
+    file_manager = current_app.config["file_manager"]
     try:
-        files = os.listdir(motion_detector.video_dir)
+        files = os.listdir(file_manager.output_dir)
         return jsonify({"captures": files})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @api_bp.route("/captures/<filename>", methods=["GET"])
 def download_capture(filename):
-    motion_detector = current_app.config["motion_detector"]
+    file_manager = current_app.config["file_manager"]
     try:
-        return send_from_directory(motion_detector.video_dir, filename)
+        return send_from_directory(file_manager.output_dir, filename)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
