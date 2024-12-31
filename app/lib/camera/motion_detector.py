@@ -11,6 +11,7 @@ class MotionDetector:
         self.last_motion_time = 0
         self.notifiers = notifiers or []
         self.thread = None
+        self._notify("application_started")
 
     def _motion_detection_loop(self):
         prev_frame = None
