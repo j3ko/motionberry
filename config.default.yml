@@ -38,8 +38,8 @@ capture:
 notification:
 
   # Triggered when the application starts
-  application_start:
-    webhook_url: "http://127.0.0.1:1880/api/application_start"
+  application_started:
+    webhook_url: "http://127.0.0.1:1880/api/application_started"
 
   # Triggered when motion detection is enabled
   detection_enabled:

@@ -41,6 +41,7 @@ To install and run Motionberry natively on your Raspberry Pi, follow these steps
    ```bash
    sudo apt install -y --no-install-recommends \
     git \
+    ffmpeg \
     python3-dev \
     python3-venv \
     python3-pip \

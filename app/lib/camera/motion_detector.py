@@ -11,6 +11,7 @@ class MotionDetector:
         self.last_motion_time = 0
         self.notifiers = notifiers or []
         self.thread = None
+        self._notify("application_started")
 
     def _motion_detection_loop(self):
         prev_frame = None
@@ -24,7 +25,7 @@ class MotionDetector:
             if prev_frame is not None:
                 mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
                 if mse > self.motion_threshold:  # Motion detected
-                    if not self.camera_manager.is_encoding:
+                    if not self.camera_manager.is_recording:
                         filename = self.camera_manager.start_recording()
                         self._notify("motion_started", {"filename": str(filename)})
                         self.last_motion_time = time.time()
@@ -32,7 +33,7 @@ class MotionDetector:
                         self.last_motion_time = time.time()
 
                 # Stop recording if no motion for max_encoding_time
-                elif self.camera_manager.is_encoding and time.time() - self.last_motion_time > self.max_encoding_time:
+                elif self.camera_manager.is_recording and time.time() - self.last_motion_time > self.max_encoding_time:
                     self.camera_manager.stop_recording()
                     self._notify("motion_stopped")
 
@@ -53,6 +54,9 @@ class MotionDetector:
         """Stops motion detection."""
         self.is_running = False
         if self.thread and self.thread.is_alive():
+            if self.camera_manager.is_recording:
+                self.camera_manager.stop_recording()
+                self._notify("motion_stopped")
             self.thread.join()
             self._notify("detection_disabled")
 

@@ -1,0 +1,40 @@
+/* Bulma Tweaks */
+.navbar-dropdown a.navbar-item:not(.is-active,.is-selected) {
+  background-color: unset;
+}
+.navbar-dropdown a.navbar-item:hover {
+  background-color: #003b4a;
+}
+.card .card-image img, .file.is-boxed.has-name .file-cta {
+  border-radius: unset;
+}
+
+/* Status Indicators */
+.recording-status > .on {
+  display: none;
+}
+.recording-status > .on.active {
+  display: block;
+}
+.recording-status > .off {
+  display: none;
+}
+.recording-status > .off.active {
+  display: block;
+}
+
+.motion-detection-status .card-header-title {
+  color: white;
+}
+.motion-detection-status > .on {
+  display: none;
+}
+.motion-detection-status > .on.active {
+  display: inherit;
+}
+.motion-detection-status > .off {
+  display: none;
+}
+.motion-detection-status > .off.active {
+  display: inherit;
+}

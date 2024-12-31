@@ -1,10 +1,15 @@
-from flask import Blueprint, jsonify, request, send_from_directory, current_app
+from flask import Blueprint, jsonify, Response, send_from_directory, current_app, stream_with_context
 from app.api import api_bp
 import os
 
 @api_bp.route("/status", methods=["GET"])
 def status():
     return jsonify({"status": "ok"})
+
+@api_bp.route('/status_stream')
+def status_stream():
+    status_manager = current_app.config["status_manager"]
+    return Response(stream_with_context(status_manager.generate_status()), content_type="text/event-stream")
 
 @api_bp.route("/enable_detection", methods=["POST"])
 def start_motion_detection():
@@ -32,18 +37,18 @@ def stop_motion_detection():
 
 @api_bp.route("/captures", methods=["GET"])
 def list_captures():
-    motion_detector = current_app.config["motion_detector"]
+    file_manager = current_app.config["file_manager"]
     try:
-        files = os.listdir(motion_detector.video_dir)
+        files = os.listdir(file_manager.output_dir)
         return jsonify({"captures": files})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 @api_bp.route("/captures/<filename>", methods=["GET"])
 def download_capture(filename):
-    motion_detector = current_app.config["motion_detector"]
+    file_manager = current_app.config["file_manager"]
     try:
-        return send_from_directory(motion_detector.video_dir, filename)
+        return send_from_directory(file_manager.output_dir, filename)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
