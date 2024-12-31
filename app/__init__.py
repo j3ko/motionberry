@@ -15,6 +15,7 @@ import yaml
 import json
 import os
 import shutil
+from .version import __version__
 
 def create_app(config_file=None):
     app = Flask(__name__)
