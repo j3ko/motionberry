@@ -1,9 +1,53 @@
+/* Bulma Tweaks */
 .navbar-dropdown a.navbar-item:not(.is-active,.is-selected) {
   background-color: unset;
 }
 .navbar-dropdown a.navbar-item:hover {
   background-color: #003b4a;
 }
-.video-stream {
+.card .card-image img, .file.is-boxed.has-name .file-cta {
+  border-radius: unset;
+}
 
+/* Status Indicators */
+.camera-status > .on {
+  display: none;
+}
+.camera-status > .on.active {
+  display: block;
+}
+.camera-status > .off {
+  display: block;
+}
+.camera-status > .off.active {
+  display: none;
+}
+
+.recording-status {
+  color: white;
+}
+.recording-status > .on {
+  display: none;
+}
+.recording-status > .on.active {
+  display: block;
+}
+.recording-status > .off {
+  display: block;
+}
+.recording-status > .off.active {
+  display: none;
+}
+
+.motion-detection-status > .on {
+  display: none;
+}
+.motion-detection-status > .on.active {
+  display: block;
+}
+.motion-detection-status > .off {
+  display: block;
+}
+.motion-detection-status > .off.active {
+  display: none;
 }

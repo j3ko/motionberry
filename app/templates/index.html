@@ -4,14 +4,28 @@
     <div class="column is-half">
 
       <div class="card">
-        <header class="card-header">
-          <p class="card-header-title">Live Stream</p>
-          <button class="card-header-icon" aria-label="more options">
-            <span class="icon">
-              <i class="fas fa-expand" aria-hidden="true"></i>
+        <span class="motion-detection-status">
+          
+          <header class="card-header off">
+            <p class="card-header-title">Detection Off</p>
+          </header>
+
+          <span class="on">
+            <span class="recording-status">
+              <header class="card-header off has-background-success">
+                <p class="card-header-title">Detection On</p>
+              </header>
+    
+              <header class="card-header on has-background-warning">
+                <p class="card-header-title">Recording</p>
+              </header>
             </span>
-          </button>
-        </header>
+          </span>
+
+        </span>
+
+
+
 
         <div class="card-image">
           <figure class="image">
@@ -20,8 +34,11 @@
         </div>
 
         <footer class="card-footer">
-          <a href="#" class="card-footer-item">Detection: ON</a>
-          <a href="#" class="card-footer-item">Snapshot</a>
+          <span class="motion-detection-status">
+            <a href="{{ url_for('api', 'disable_detection') }}" class="card-footer-item on">Detection: ON</a>
+            <a href="{{ url_for('api', 'enable_detection') }}" class="card-footer-item off">Detection: OFF</a>
+          </span>
+          <a href="{{ url_for('api', 'snapshot') }}" class="card-footer-item">Snapshot</a>
         </footer>
       </div>
 
