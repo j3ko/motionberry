@@ -2,11 +2,27 @@
 
 A lightweight solution for motion detection and video streaming on Raspberry Pi, powered by [picamera2](https://github.com/raspberrypi/picamera2).
 
+**Tested and optimized for Raspberry Pi Zero 2W with a Camera module v3**
+
+## Features v0.1.0
+
+- Support for Dockerized or bare-metal deployments
+- Responsive user interface
+- Motion-triggered recording
+- Triggerable snapshots (JPEG)
+- Output in raw H.264 or MP4 format
+- API and webhook event integration
+
+<div align="center">
+  <img src="docs/screenshot.png" alt="Screenshot" style="width:100%; height:auto;">
+</div>
+
+
 ## Pre-requisites
 
-- A Raspberry Pi
+- A Raspberry Pi (tested on Raspberry Pi Zero 2W and compatible with other models)
 - A camera module compatible with picamera2 (e.g., Raspberry Pi Camera Module 3).
-- Raspberry Pi OS 64-it (Bullseye recommended)
+- Raspberry Pi OS 64-bit (Bullseye recommended)
 
 ## Docker installation
 To install Motionberry using Docker on your Raspberry Pi, follow these steps:
