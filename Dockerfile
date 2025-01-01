@@ -31,7 +31,7 @@ COPY . .
 RUN python3 -m venv --system-site-packages .venv \
     && . .venv/bin/activate \
     && pip install --default-timeout=100 --upgrade pip \
-    && pip install --default-timeout=100 --no-cache-dir -r requirements.txt
+    && pip install --default-timeout=100 .
 
 RUN chmod +x /motionberry/entrypoint.sh
 
