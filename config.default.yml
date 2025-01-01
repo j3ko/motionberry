@@ -21,6 +21,13 @@ capture:
   # Capture directory (Required)
   directory: captures
   
+   # Resolution (Width x Height) for recorded videos. (Optional, Default [1024, 720])
+  record_size: [1024, 720]
+
+  # Resolution (Width x Height) used for motion detection, typically lower to save processing power.
+  # (Optional, Default [320,240])
+  detect_size: [320, 240]
+
   # Raw bitrate (Required)
   bitrate: 1000000
 
