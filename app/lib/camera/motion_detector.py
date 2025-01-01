@@ -15,7 +15,7 @@ class MotionDetector:
 
     def _motion_detection_loop(self):
         prev_frame = None
-        w, h = self.camera_manager.lores_size
+        w, h = self.camera_manager.detect_size
 
         self.camera_manager.start_camera()
         while self.is_running:

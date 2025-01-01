@@ -48,6 +48,8 @@ def create_app(config_file=None):
         file_manager=app.config["file_manager"],
         video_processor=app.config["video_processor"],
         encoder_bitrate=int(config.get("capture", {}).get("bitrate", 5000000)),
+        record_size=tuple(config.get("capture", {}).get("record_size", [1024, 720])),
+        detect_size=tuple(config.get("capture", {}).get("detect_size", [320, 240])),
     )
 
     app.config["stream_manager"] = StreamManager(
