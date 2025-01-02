@@ -35,13 +35,18 @@ class CameraManager:
         self.logger.debug("CameraManager initialized.")
 
     def _load_tuning(self, tuning_file=None):
-        tuning = None
+        if tuning_file is None:
+            self.logger.debug("No tuning file provided. Using default settings.")
+            return None
+        
         if not tuning_file.endswith(".json"):
             tuning_file += ".json"
+        
         try:
             tuning = Picamera2.load_tuning_file(tuning_file)
         except FileNotFoundError:
             self.logger.error(f"Tuning file '{tuning_file}' not found. Using default settings.")
+            tuning = None
         return tuning
 
     def start_camera(self):
