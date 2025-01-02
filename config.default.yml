@@ -31,6 +31,10 @@ capture:
   # Raw bitrate (Required)
   bitrate: 1000000
 
+  # Tuning file to be use to calibrate common RPi cameras. (Optional, Default None)
+  # List of possible values can be found at: https://github.com/raspberrypi/libcamera/tree/main/src/ipa/rpi/vc4/data
+  # tuning: imx477_noir
+
   # Output format for videos (Optional, Default: mp4)
   # Possible values: mp4, raw
   video_format: mp4
