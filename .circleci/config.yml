@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  build-release:
+  build-latest:
     working_directory: ~/app
     resource_class: arm.large
     docker:
@@ -56,14 +56,14 @@ workflows:
   version: 2
   deploy:
     jobs:
-      - build-release:
+      - build-latest:
           filters:
             tags:
               only: /^v\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
-      - build-edge
-      #     filters:
-      #       branches:
-      #         only: main
+      - build-edge:
+          filters:
+            branches:
+              only: main
 
