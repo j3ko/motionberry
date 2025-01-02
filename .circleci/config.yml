@@ -1,0 +1,69 @@
+version: 2.1
+jobs:
+  build-release:
+    working_directory: ~/app
+    resource_class: arm.large
+    docker:
+      - image: cimg/base:current-22.04
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build latest Docker image
+          command: |
+            echo "Building ARM Docker image..."
+            docker build --platform linux/arm64 -t $DOCKERHUB_USERNAME/$DOCKER_IMAGE:$CIRCLE_TAG .
+
+      - run:
+          name: Push latest Docker image
+          command: |
+            echo "Logging into Docker Hub..."
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+            docker push $DOCKERHUB_USERNAME/$DOCKER_IMAGE:$CIRCLE_TAG
+            docker tag $DOCKERHUB_USERNAME/$DOCKER_IMAGE:$CIRCLE_TAG $DOCKERHUB_USERNAME/$DOCKER_IMAGE:latest;
+            docker push $DOCKERHUB_USERNAME/$DOCKER_IMAGE:latest;
+
+  build-edge:
+    working_directory: ~/app
+    resource_class: arm.large
+    docker:
+      - image: cimg/base:current-22.04
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build edge Docker image
+          command: |
+            echo "Building ARM Docker image..."
+            docker build --platform linux/arm64 -t $DOCKERHUB_USERNAME/$DOCKER_IMAGE:edge .
+
+      - run:
+          name: Push edge Docker image
+          command: |
+            echo "Logging into Docker Hub..."
+            echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin
+            docker push $DOCKERHUB_USERNAME/$DOCKER_IMAGE:edge
+
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - build-latest:
+          filters:
+            tags:
+              only: /^v\d+\.\d+\.\d+$/
+            branches:
+              ignore: /.*/
+      - build-edge:
+          filters:
+            branches:
+              only: main
+
