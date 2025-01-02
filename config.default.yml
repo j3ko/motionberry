@@ -49,21 +49,21 @@ capture:
 notification:
 
   # Triggered when the application starts
-  application_started:
-    webhook_url: "http://127.0.0.1:1880/api/application_started"
+  # application_started:
+  #   webhook_url: "http://127.0.0.1:1880/api/application_started"
 
   # Triggered when motion detection is enabled
-  detection_enabled:
-    webhook_url: "http://127.0.0.1:1880/api/detection_enabled"
+  # detection_enabled:
+  #   webhook_url: "http://127.0.0.1:1880/api/detection_enabled"
 
   # Triggered when motion detection is disabled
-  detection_disabled:
-    webhook_url: "http://127.0.0.1:1880/api/detection_disabled"
+  # detection_disabled:
+  #   webhook_url: "http://127.0.0.1:1880/api/detection_disabled"
 
   # Triggered when motion is detected and recording starts
-  motion_started:
-    webhook_url: "http://127.0.0.1:1880/api/motion_started"
+  # motion_started:
+  #   webhook_url: "http://127.0.0.1:1880/api/motion_started"
 
   # Triggered when motion stops, and recording ends
-  motion_stopped:
-    webhook_url: "http://127.0.0.1:1880/api/motion_stopped"
+  # motion_stopped:
+  #   webhook_url: "http://127.0.0.1:1880/api/motion_stopped"
