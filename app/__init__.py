@@ -82,17 +82,14 @@ def initialize_components(app, config):
 
 def load_config(config_file=None):
     """Loads configuration from config/config.yml."""
-    # Define paths for the base and existing config files
     default_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config.default.yml")
     existing_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config/config.yml")
 
-    # Use the existing config file if none is provided
     if not config_file:
         config_file = existing_config_file
 
-    logger = logging.getLogger(__name__)  # Use Python's logging during initialization
+    logger = logging.getLogger(__name__)
 
-    # If the main config file doesn't exist, copy the base config file to it
     if not os.path.exists(config_file):
         if os.path.exists(default_config_file):
             os.makedirs(os.path.dirname(config_file), exist_ok=True)
@@ -102,7 +99,6 @@ def load_config(config_file=None):
             logger.error(f"Default configuration file '{default_config_file}' not found.")
             raise RuntimeError(f"Default configuration file '{default_config_file}' not found.")
 
-    # Load configuration from the specified file
     try:
         with open(config_file, 'r') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
@@ -121,21 +117,17 @@ def load_config(config_file=None):
 
 def configure_logging(app, config):
     """Configures logging based on application settings."""
-    # Remove the default Flask logging handler if it exists
     if default_handler in app.logger.handlers:
         app.logger.removeHandler(default_handler)
 
-    # Get the logging level from the configuration, default to 'INFO'
     log_level = config.get("logging", {}).get("level", "info").upper()
     numeric_level = getattr(logging, log_level, logging.INFO)
 
-    # Configure the root logger
     logging.basicConfig(
         level=numeric_level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-    # Ensure the app logger inherits the root logger configuration
     app.logger.setLevel(numeric_level)
     app.logger.info(f"Logging configured to {log_level} level.")
