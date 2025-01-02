@@ -8,19 +8,23 @@
 .card .card-image img, .file.is-boxed.has-name .file-cta {
   border-radius: unset;
 }
+.has-header-background-color {
+  background-color: #073642
+}
+
 
 /* Status Indicators */
 .recording-status > .on {
   display: none;
 }
 .recording-status > .on.active {
-  display: block;
+  display: flex;
 }
 .recording-status > .off {
   display: none;
 }
 .recording-status > .off.active {
-  display: block;
+  display: flex;
 }
 
 .motion-detection-status .card-header-title {
@@ -30,11 +34,11 @@
   display: none;
 }
 .motion-detection-status > .on.active {
-  display: inherit;
+  display: flex;
 }
 .motion-detection-status > .off {
   display: none;
 }
 .motion-detection-status > .off.active {
-  display: inherit;
+  display: flex;
 }
