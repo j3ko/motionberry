@@ -56,7 +56,7 @@ workflows:
   version: 2
   deploy:
     jobs:
-      - build-latest:
+      - build-release:
           filters:
             tags:
               only: /^v\d+\.\d+\.\d+$/
