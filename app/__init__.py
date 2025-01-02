@@ -95,6 +95,9 @@ def load_config(app, config_file=None):
     try:
         with open(config_file, 'r') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
+            if data is None:
+                app.logger.info(f"Configuration file '{config_file}' is empty. No updates applied.")
+                data = {}
             app.logger.debug(f"Configuration loaded:\n{json.dumps(data, indent=4)}")
             app.config.update(data)
     except FileNotFoundError:
