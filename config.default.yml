@@ -45,7 +45,7 @@ capture:
   # Maximum age of files in the capture directory in days (Optional, Default: 7)
   max_age_days: 7
 
-# Notification Settings
+# Notification Settings (Optional)
 notification:
 
   # Triggered when the application starts
