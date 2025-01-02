@@ -44,7 +44,7 @@ class CameraManager:
         
         try:
             tuning = Picamera2.load_tuning_file(tuning_file)
-            self.logger.info(f"Loading tuning file '{tuning}'")
+            self.logger.info(f"Loading tuning file '{tuning_file}'")
         except FileNotFoundError:
             self.logger.error(f"Tuning file '{tuning_file}' not found. Using default settings.")
             tuning = None
