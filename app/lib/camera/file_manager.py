@@ -7,36 +7,45 @@ from pathlib import Path
 
 
 class FileManager:
-    def __init__(self, output_dir, max_size_mb=2048, max_age_days=7):
+    def __init__(self, output_dir, max_size_mb=None, max_age_days=None):
         self.logger = logging.getLogger(__name__)
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
         self.tmp_dir_base = Path(tempfile.gettempdir()) / "motionberry"
         self.tmp_dir_base.mkdir(exist_ok=True)
-        self.max_size_bytes = max_size_mb * 1024 * 1024
-        self.max_age_seconds = max_age_days * 24 * 60 * 60
+        self.max_size_bytes = None if max_size_mb is None else max_size_mb * 1024 * 1024
+        self.max_age_seconds = None if max_age_days is None else max_age_days * 24 * 60 * 60
         self.logger.info(f"FileManager initialized with output directory: {self.output_dir}")
-        self.logger.info(f"Max size: {self.max_size_bytes} bytes ({max_size_mb} MB), Max age: {self.max_age_seconds} seconds")
+        if self.max_size_bytes not in (None, 0):
+            self.logger.info(f"Max size: {self.max_size_bytes} bytes ({max_size_mb} MB)")
+        if self.max_age_seconds not in (None, 0):
+            self.logger.info(f"Max age: {self.max_age_seconds} seconds ({max_age_days} days)")
 
     def cleanup_output_directory(self):
         """Cleans up the output directory by size and age constraints."""
-        files = sorted(self.output_dir.iterdir(), key=lambda f: f.stat().st_mtime)
-        total_size = sum(f.stat().st_size for f in files)
+        allowed_extensions = {"h264", "mp4", "jpg"}
+        files = [
+            f for f in sorted(self.output_dir.iterdir(), key=lambda f: f.stat().st_mtime)
+            if f.is_file() and f.suffix.lstrip(".").lower() in allowed_extensions
+        ]
 
-        # Delete oldest files until size is within limits
-        for file in files:
-            if total_size <= self.max_size_bytes:
-                break
-            self.logger.info(f"Deleting file to enforce size limit: {file}")
-            total_size -= file.stat().st_size
-            file.unlink()
-
-        # Delete files older than max age
-        current_time = time.time()
-        for file in files:
-            if current_time - file.stat().st_mtime > self.max_age_seconds:
-                self.logger.info(f"Deleting file to enforce age limit: {file}")
+        # Enforce size limit
+        if self.max_size_bytes not in (None, 0):
+            total_size = sum(f.stat().st_size for f in files)
+            for file in files:
+                if total_size <= self.max_size_bytes:
+                    break
+                self.logger.info(f"Deleting file to enforce size limit: {file}")
+                total_size -= file.stat().st_size
                 file.unlink()
+
+        # Enforce age limit
+        if self.max_age_seconds not in (None, 0):
+            current_time = time.time()
+            for file in files:
+                if current_time - file.stat().st_mtime > self.max_age_seconds:
+                    self.logger.info(f"Deleting file to enforce age limit: {file}")
+                    file.unlink()
 
     def move_to_output(self, src, dest_name):
         """Moves a file to the managed output directory."""

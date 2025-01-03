@@ -39,10 +39,10 @@
   # Possible values: mp4, raw
   # video_format: mp4
 
-  # Maximum total size of the capture directory in MB (Optional, Default: 20480)
+  # Maximum total size of the capture directory in MB (Optional, Default: None)
   # max_size_mb: 20480
 
-  # Maximum age of files in the capture directory in days (Optional, Default: 7)
+  # Maximum age of files in the capture directory in days (Optional, Default: None)
   # max_age_days: 7
 
 # Notification Settings (Optional)
