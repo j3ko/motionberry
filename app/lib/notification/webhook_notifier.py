@@ -9,13 +9,16 @@ class WebhookNotifier(Notifier):
         self.config = config
 
     def notify(self, action: str, data: dict) -> None:
+        if not self.config:
+            return
+
         if action in self.config and "webhook_url" in self.config[action]:
             thread = threading.Thread(
                 target=self._post, 
                 args=(self.config[action]["webhook_url"], data),
                 daemon=True,
             )
-            thread.start()      
+            thread.start()
 
     def _post(self, url, data: dict) -> None:
         try:

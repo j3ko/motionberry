@@ -18,19 +18,30 @@ import shutil
 from .version import __version__
 
 def create_app(config_file=None):
+    # Temporary logging config
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    logger = logging.getLogger(__name__)
+    logger.info("Initializing the application.")
+
     app = Flask(__name__)
 
-    # Load configuration
-    config = load_config(app, config_file)
-
-    # Configure logging
+    config = load_config(config_file)
+    app.config.update(config)
     configure_logging(app, config)
+    initialize_components(app, config)
 
-    # Register blueprints
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(ui_bp)
 
-    # Initialize the notifiers and other app components
+    app.logger.info("Application initialized successfully.")
+    return app
+
+def initialize_components(app, config):
+    """Initialize application components."""
     logging_notifier = LoggingNotifier()
     webhook_notifier = WebhookNotifier(config.get("notification", {}))
     app.config["file_manager"] = FileManager(
@@ -50,6 +61,7 @@ def create_app(config_file=None):
         encoder_bitrate=int(config.get("capture", {}).get("bitrate", 5000000)),
         record_size=tuple(config.get("capture", {}).get("record_size", [1024, 720])),
         detect_size=tuple(config.get("capture", {}).get("detect_size", [320, 240])),
+        tuning_file=config.get("capture", {}).get("tuning", None),
     )
 
     app.config["stream_manager"] = StreamManager(
@@ -68,60 +80,54 @@ def create_app(config_file=None):
         motion_detector=app.config["motion_detector"]
     )
 
-    return app
-
-def load_config(app, config_file=None):
+def load_config(config_file=None):
     """Loads configuration from config/config.yml."""
-    # Define paths for the base and existing config files
     default_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config.default.yml")
     existing_config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "config/config.yml")
 
-    # Use the existing config file if none is provided
     if not config_file:
         config_file = existing_config_file
 
-    # If the main config file doesn't exist, copy the base config file to it
+    logger = logging.getLogger(__name__)
+
     if not os.path.exists(config_file):
         if os.path.exists(default_config_file):
             os.makedirs(os.path.dirname(config_file), exist_ok=True)
             shutil.copy(default_config_file, config_file)
-            app.logger.info(f"Copied '{default_config_file}' to '{config_file}'")
+            logger.info(f"Copied '{default_config_file}' to '{config_file}'")
         else:
-            app.logger.error(f"Default configuration file '{default_config_file}' not found.")
+            logger.error(f"Default configuration file '{default_config_file}' not found.")
             raise RuntimeError(f"Default configuration file '{default_config_file}' not found.")
 
-    # Load configuration from the specified file
     try:
         with open(config_file, 'r') as f:
             data = yaml.load(f, Loader=yaml.FullLoader)
-            app.logger.debug(f"Configuration loaded:\n{json.dumps(data, indent=4)}")
-            app.config.update(data)
+            if data is None:
+                logger.warning(f"Configuration file '{config_file}' is empty. No updates applied.")
+                data = {}
+            logger.debug(f"Configuration loaded:\n{json.dumps(data, indent=4)}")
     except FileNotFoundError:
-        app.logger.error(f"Configuration file '{config_file}' not found.")
+        logger.error(f"Configuration file '{config_file}' not found.")
         raise RuntimeError(f"Configuration file '{config_file}' not found.")
     except yaml.YAMLError as e:
-        app.logger.error(f"Error parsing YAML file: {e}")
+        logger.error(f"Error parsing YAML file: {e}")
         raise RuntimeError(f"Error parsing YAML file: {e}")
-    return app.config
 
+    return data
 
 def configure_logging(app, config):
     """Configures logging based on application settings."""
-    # Remove the default Flask logging handler if it exists
     if default_handler in app.logger.handlers:
         app.logger.removeHandler(default_handler)
 
-    # Get the logging level from the configuration, default to 'INFO'
     log_level = config.get("logging", {}).get("level", "info").upper()
     numeric_level = getattr(logging, log_level, logging.INFO)
 
-    # Configure the root logger
     logging.basicConfig(
         level=numeric_level,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
-    # Ensure the app logger inherits the root logger configuration
     app.logger.setLevel(numeric_level)
     app.logger.info(f"Logging configured to {log_level} level.")

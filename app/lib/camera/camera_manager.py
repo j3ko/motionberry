@@ -12,9 +12,10 @@ from .file_manager import FileManager
 
 
 class CameraManager:
-    def __init__(self, file_manager, video_processor, encoder_bitrate=1000000, record_size=(1280, 720), detect_size=(320, 240)):
+    def __init__(self, file_manager, video_processor, encoder_bitrate=1000000, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
         self.logger = logging.getLogger(__name__)
-        self.picam2 = Picamera2()
+        tuning = self._load_tuning(tuning_file)
+        self.picam2 = Picamera2(tuning=tuning)
         self.encoder = H264Encoder(encoder_bitrate)
         self.camera_lock = threading.Lock()
         self.client_lock = threading.Lock()
@@ -32,6 +33,22 @@ class CameraManager:
         )
         self.picam2.configure(video_config)
         self.logger.debug("CameraManager initialized.")
+
+    def _load_tuning(self, tuning_file=None):
+        if tuning_file is None:
+            self.logger.debug("No tuning file provided. Using default settings.")
+            return None
+        
+        if not tuning_file.endswith(".json"):
+            tuning_file += ".json"
+        
+        try:
+            tuning = Picamera2.load_tuning_file(tuning_file)
+            self.logger.info(f"Loading tuning file '{tuning_file}'")
+        except FileNotFoundError:
+            self.logger.error(f"Tuning file '{tuning_file}' not found. Using default settings.")
+            tuning = None
+        return tuning
 
     def start_camera(self):
         """Starts the camera or increments the client count."""
@@ -91,6 +108,7 @@ class CameraManager:
                     self.logger.info("Recording stopped.")
                     final_path = self.video_processor.process_and_save(self.current_raw_path)
                     self.logger.info(f"Video saved: {final_path}")
+                    return final_path
                 finally:
                     self.is_recording = False
                     self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)

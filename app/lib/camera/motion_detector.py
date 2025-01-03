@@ -26,16 +26,16 @@ class MotionDetector:
                 mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
                 if mse > self.motion_threshold:  # Motion detected
                     if not self.camera_manager.is_recording:
-                        filename = self.camera_manager.start_recording()
-                        self._notify("motion_started", {"filename": str(filename)})
+                        self.camera_manager.start_recording()
+                        self._notify("motion_started")
                         self.last_motion_time = time.time()
                     else:
                         self.last_motion_time = time.time()
 
                 # Stop recording if no motion for max_encoding_time
                 elif self.camera_manager.is_recording and time.time() - self.last_motion_time > self.max_encoding_time:
-                    self.camera_manager.stop_recording()
-                    self._notify("motion_stopped")
+                    final_path = self.camera_manager.stop_recording()
+                    self._notify("motion_stopped", {"filename": str(final_path.name)})
 
             prev_frame = cur_frame
             time.sleep(0.1)
