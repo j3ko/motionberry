@@ -8,8 +8,8 @@ eventSource.onmessage = function (event) {
     const parentElements = document.querySelectorAll(parentSelector);
 
     parentElements.forEach((parentElement) => {
-      const elementOn = parentElement.querySelector("> .on");
-      const elementOff = parentElement.querySelector("> .off");
+      const elementOn = parentElement.querySelector(":scope > .on");
+      const elementOff = parentElement.querySelector(":scope > .off");
 
       if (isActive) {
         if (elementOn) elementOn.classList.add("active");
