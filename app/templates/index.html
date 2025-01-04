@@ -49,6 +49,23 @@
               <i class="fas fa-camera"></i>
             </span> Snapshot
           </a>
+          <div class="dropdown is-right card-footer-item">
+            <div class="dropdown-trigger">
+              <a href="#" onclick="event.preventDefault();" class="card-footer-item">
+                <span class="icon">
+                  <i class="fas fa-scissors"></i>
+                </span> Clip
+              </a>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu3" role="menu">
+              
+              <div class="dropdown-content">
+                <a href="{{ url_for('api.record') }}" class="dropdown-item api-action" data-body='{"duration": 30}'> 30s </a>
+                <a href="{{ url_for('api.record') }}" class="dropdown-item api-action" data-body='{"duration": 60}'> 1m </a>
+              </div>
+
+            </div>
+          </div>
         </footer>
       </div>
 
