@@ -85,8 +85,7 @@ def record():
     camera_manager.record_for_duration(duration, result_queue)
 
     try:
-        # Wait slightly longer than the duration
-        full_path = result_queue.get(timeout=duration + 10)  
+        full_path = result_queue.get()
         if full_path:
             return jsonify({"filename": str(full_path)})
         else:
