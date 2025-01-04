@@ -87,7 +87,7 @@ class CameraManager:
         with self.camera_lock:
             if not self.is_camera_running:
                 self.start_camera()
-            return self.picam2.capture_array()
+            return self.picam2.capture_array("main")
 
     def start_recording(self):
         """Starts encoding video."""
