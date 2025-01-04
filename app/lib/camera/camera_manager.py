@@ -156,9 +156,10 @@ class CameraManager:
         if not self.is_camera_running:
             self.start_camera()
         filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
+        full_path = str(self.file_manager.output_dir / filename)
         request = self.picam2.capture_request()
-        request.save("main", str(self.file_manager.output_dir / filename))
+        request.save("main", full_path)
         request.release()
-        self.logger.info(f"Snapshot taken: {filename}")
-        return filename
+        self.logger.info(f"Snapshot taken: {full_path}")
+        return full_path
 

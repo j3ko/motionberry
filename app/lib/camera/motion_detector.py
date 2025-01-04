@@ -35,7 +35,7 @@ class MotionDetector:
                 # Stop recording if no motion for max_encoding_time
                 elif self.camera_manager.is_recording and time.time() - self.last_motion_time > self.max_encoding_time:
                     final_path = self.camera_manager.stop_recording()
-                    self._notify("motion_stopped", {"filename": str(final_path.name)})
+                    self._notify("motion_stopped", {"filename": str(final_path)})
 
             prev_frame = cur_frame
             time.sleep(0.1)
