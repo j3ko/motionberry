@@ -75,9 +75,9 @@ def record():
 
     try:
         # Wait slightly longer than the duration
-        filename = result_queue.get(timeout=duration + 10)  
-        if filename:
-            return jsonify({"filename": str(filename)})
+        output_path = result_queue.get(timeout=duration + 10)  
+        if output_path:
+            return jsonify({"filename": str(output_path.name)})
         else:
             return jsonify({"error": "Recording failed or another recording is already in progress"}), 500
     except queue.Empty:
