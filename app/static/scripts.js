@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const a = document.createElement("a");
             const fileDownloadUrl = URL.createObjectURL(blob);
             a.href = fileDownloadUrl;
-            a.download = j.filename;
+            a.download = j.filename.split('/').pop();;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
