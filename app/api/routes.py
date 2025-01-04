@@ -1,6 +1,8 @@
-from flask import Blueprint, jsonify, Response, send_from_directory, current_app, stream_with_context
+from flask import Blueprint, jsonify, Response, request, send_from_directory, current_app, stream_with_context
 from app.api import api_bp
+from pathlib import Path
 import os
+import queue
 
 @api_bp.route("/status", methods=["GET"])
 def status():
@@ -44,11 +46,21 @@ def list_captures():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@api_bp.route("/captures/<filename>", methods=["GET"])
-def download_capture(filename):
+@api_bp.route("/captures/<path:input_path>", methods=["GET"])
+def download_capture(input_path):
     file_manager = current_app.config["file_manager"]
+    
+    output_dir_str = str(file_manager.output_dir.resolve())
+    input_path = str(Path(input_path).resolve())
+
     try:
-        return send_from_directory(file_manager.output_dir, filename)
+        if output_dir_str in input_path:
+            input_path = input_path.replace(output_dir_str, "").lstrip("/").lstrip("\\")
+        
+        # Check for traversal attacks
+        safe_filename = Path(input_path).name
+
+        return send_from_directory(file_manager.output_dir, safe_filename)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
@@ -56,7 +68,27 @@ def download_capture(filename):
 def take_snapshot():
     camera_manager = current_app.config["camera_manager"]
     try:
-        filename = camera_manager.take_snapshot()
-        return jsonify({"message": "Snapshot taken.", "filename": str(filename)})
+        full_path = camera_manager.take_snapshot()
+        return jsonify({"message": "Snapshot taken.", "filename": str(full_path)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@api_bp.route('/record', methods=['POST'])
+def record():
+    duration = request.json.get('duration', 0)
+    if duration <= 0:
+        return jsonify({"error": "Invalid duration"}), 400
+
+    result_queue = queue.Queue()
+
+    camera_manager = current_app.config["camera_manager"]
+    camera_manager.record_for_duration(duration, result_queue)
+
+    try:
+        full_path = result_queue.get()
+        if full_path:
+            return jsonify({"filename": str(full_path)})
+        else:
+            return jsonify({"error": "Recording failed or another recording is already in progress"}), 500
+    except queue.Empty:
+        return jsonify({"error": "Recording timed out"}), 500

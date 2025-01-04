@@ -1,8 +1,10 @@
 /* Bulma Tweaks */
-.navbar-dropdown a.navbar-item:not(.is-active,.is-selected) {
+.navbar-dropdown a.navbar-item:not(.is-active,.is-selected), 
+a.dropdown-item, button.dropdown-item {
   background-color: unset;
 }
-.navbar-dropdown a.navbar-item:hover {
+.navbar-dropdown a.navbar-item:hover, 
+a.dropdown-item:hover, button.dropdown-item:hover {
   background-color: #003b4a;
 }
 .card .card-image img, .file.is-boxed.has-name .file-cta {
