@@ -114,6 +114,43 @@ class CameraManager:
                     self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)
                     self.file_manager.cleanup_output_directory()
 
+
+    def record_for_duration(self, duration, result_queue=None):
+        """Records a video for a specified duration in seconds."""
+        if duration <= 0:
+            self.logger.error("Duration must be greater than 0 seconds.")
+            if result_queue:
+                result_queue.put(None)
+            return
+
+        with self.camera_lock:
+            if self.is_recording:
+                self.logger.warning("A recording is already in progress. Ignoring request.")
+                if result_queue:
+                    result_queue.put(None)
+                return
+
+        if not self.is_camera_running:
+            self.start_camera()
+
+        def record():
+            try:
+                self.logger.info(f"Starting recording for {duration} seconds.")
+                self.start_recording()
+                time.sleep(duration)
+                final_path = self.stop_recording()
+                self.logger.info(f"Recording completed and saved to: {final_path}")
+                if result_queue:
+                    result_queue.put(final_path)
+            except Exception as e:
+                self.logger.error(f"Error during recording: {e}")
+                if result_queue:
+                    result_queue.put(None)
+
+        record_thread = threading.Thread(target=record, daemon=True)
+        record_thread.start()
+
+
     def take_snapshot(self):
         """Takes a snapshot."""
         if not self.is_camera_running:

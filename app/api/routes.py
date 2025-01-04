@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, Response, send_from_directory, current_app, stream_with_context
+from flask import Blueprint, jsonify, Response, request, send_from_directory, current_app, stream_with_context
 from app.api import api_bp
 import os
+import queue
 
 @api_bp.route("/status", methods=["GET"])
 def status():
@@ -60,3 +61,24 @@ def take_snapshot():
         return jsonify({"message": "Snapshot taken.", "filename": str(filename)})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@api_bp.route('/record', methods=['POST'])
+def record():
+    duration = request.json.get('duration', 0)
+    if duration <= 0:
+        return jsonify({"error": "Invalid duration"}), 400
+
+    result_queue = queue.Queue()
+
+    camera_manager = current_app.config["camera_manager"]
+    camera_manager.record_for_duration(duration, result_queue)
+
+    try:
+        # Wait slightly longer than the duration
+        filename = result_queue.get(timeout=duration + 10)  
+        if filename:
+            return jsonify({"filename": str(filename)})
+        else:
+            return jsonify({"error": "Recording failed or another recording is already in progress"}), 500
+    except queue.Empty:
+        return jsonify({"error": "Recording timed out"}), 500
