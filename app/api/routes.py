@@ -86,7 +86,7 @@ def record():
     try:
         full_path = result_queue.get()
         if full_path:
-            return jsonify({"filename": str(full_path)})
+            return jsonify({"filename": str(full_path.name)})
         else:
             return jsonify({"error": "Recording failed or another recording is already in progress"}), 500
     except queue.Empty:
