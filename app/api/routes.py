@@ -49,18 +49,17 @@ def list_captures():
 @api_bp.route("/captures/<path:input_path>", methods=["GET"])
 def download_capture(input_path):
     file_manager = current_app.config["file_manager"]
-    
-    output_dir_str = str(file_manager.output_dir.resolve())
-    input_path = str(Path(input_path).resolve())
+    output_dir = file_manager.output_dir.resolve()
 
     try:
-        if output_dir_str in input_path:
-            input_path = input_path.replace(output_dir_str, "").lstrip("/").lstrip("\\")
-        
-        # Check for traversal attacks
-        safe_filename = Path(input_path).name
+        resolved_path = (output_dir / input_path).resolve()
 
-        return send_from_directory(file_manager.output_dir, safe_filename)
+        if not resolved_path.is_relative_to(output_dir):
+            raise ValueError("Invalid path: Outside allowed directory")
+
+        safe_relative_path = resolved_path.relative_to(output_dir)
+
+        return send_from_directory(output_dir, str(safe_relative_path))
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     

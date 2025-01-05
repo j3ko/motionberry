@@ -161,5 +161,5 @@ class CameraManager:
         request.save("main", full_path)
         request.release()
         self.logger.info(f"Snapshot taken: {full_path}")
-        return full_path
+        return filename
 

@@ -22,7 +22,7 @@ class VideoProcessor:
     def convert_to_mp4(self, h264_path):
         """Converts an H.264 file to MP4 using FFmpeg and moves it to the output directory."""
         mp4_filename = h264_path.with_suffix('.mp4').name
-        output_path = self.file_manager.output_dir / mp4_filename
+        output_path = (self.file_manager.output_dir / mp4_filename).resolve()
         try:
             start_time = time.time()
             self.logger.info(f"Starting MP4 conversion for file: {h264_path}")
