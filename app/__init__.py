@@ -25,7 +25,7 @@ def create_app(config_file=None):
         datefmt="%Y-%m-%d %H:%M:%S"
     )
     logger = logging.getLogger(__name__)
-    logger.info("Initializing the application.")
+    logger.info(f"Initializing Motionberry v{__version__}.")
 
     app = Flask(__name__)
 
