@@ -9,7 +9,7 @@ from pathlib import Path
 class FileManager:
     def __init__(self, output_dir, max_size_mb=None, max_age_days=None):
         self.logger = logging.getLogger(__name__)
-        self.output_dir = Path(output_dir)
+        self.output_dir = Path(output_dir).resolve()
         self.output_dir.mkdir(exist_ok=True)
         self.tmp_dir_base = Path(tempfile.gettempdir()) / "motionberry"
         self.tmp_dir_base.mkdir(exist_ok=True)
@@ -49,7 +49,7 @@ class FileManager:
 
     def move_to_output(self, src, dest_name):
         """Moves a file to the managed output directory."""
-        dest_path = self.output_dir / dest_name
+        dest_path = (self.output_dir / dest_name).resolve()
         shutil.move(str(src), str(dest_path))
         self.logger.info(f"File moved to: {dest_path}")
         return dest_path

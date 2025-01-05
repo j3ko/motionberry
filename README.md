@@ -12,7 +12,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - Triggered snapshots (JPEG)
 - Triggered clip recording
 - Output in raw H.264 or MP4 format
-- API and webhook event integration
+- RESTful API and webhook events
 
 <div align="center">
   <img src="docs/screenshot.png" alt="Screenshot" style="width:100%; height:auto;">
