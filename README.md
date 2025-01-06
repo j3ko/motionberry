@@ -15,7 +15,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - RESTful API and webhook events
 
 <div align="center">
-  <img src="docs/screenshot.png" alt="Screenshot" style="width:100%; height:auto;">
+  <img src="https://raw.githubusercontent.com/j3ko/motionberry/main/docs/screenshot.png" alt="Screenshot" style="width:100%; height:auto;">
 </div>
 
 
@@ -27,19 +27,21 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 
 ## Docker installation
 To install Motionberry using Docker on your Raspberry Pi, follow these steps:
-1. Install [Docker](https://docs.docker.com/engine/install/debian/)
-1. Run the following command to deploy Motionberry:
-   ```bash
-   docker run --name motionberry \
-     --privileged \
-     -e PUID 1000 \
-     -e PGID 1000 \
-     -v <path to config.yml>:/motionberry/config \
-     -v <path to capture directory>:/motionberry/captures \
-     -v /run/udev:/run/udev:ro \
-     -p 5000:5000 \
-     j3ko/motionberry:latest
-   ```
+
+1\. Install [Docker](https://docs.docker.com/engine/install/debian/)
+
+2\. Run the following command to deploy Motionberry: 
+```bash
+docker run --name motionberry \
+  --privileged \
+  -e PUID 1000 \
+  -e PGID 1000 \
+  -v <path to config.yml>:/motionberry/config \
+  -v <path to capture directory>:/motionberry/captures \
+  -v /run/udev:/run/udev:ro \
+  -p 5000:5000 \
+  j3ko/motionberry:latest
+```
 
 Explanation of Options:
 
@@ -54,33 +56,34 @@ Replace `<path to config.yml>` and `<path to capture directory>` with appropriat
 
 ## Bare metal installation
 To install and run Motionberry natively on your Raspberry Pi, follow these steps:
-1. Install the required libraries:
-   ```bash
-   sudo apt install -y --no-install-recommends \
-    git \
-    ffmpeg \
-    python3-dev \
-    python3-venv \
-    python3-pip \
-    python3-numpy \
-    python3-picamera2
-   ```
-1. Clone the repository:
-   ```bash
+
+1\. Install the required libraries:
+```bash
+sudo apt install -y --no-install-recommends \
+  git \
+  ffmpeg \
+  python3-dev \
+  python3-venv \
+  python3-pip \
+  python3-numpy \
+  python3-picamera2
+```
+2\. Clone the repository:
+```bash
    git clone https://github.com/j3ko/motionberry.git
-   ```
-1. Set up a virtual environment:
-   ```
-   cd motionberry
-   python3 -m venv --system-site-packages .venv
-   . .venv/bin/activate
-   pip install --upgrade pip
-   pip install .
-   ```
-1. Run the application:
-   ```bash
-   python run.py
-   ```
+```
+3\. Set up a virtual environment:
+```bash
+cd motionberry
+python3 -m venv --system-site-packages .venv
+. .venv/bin/activate
+pip install --upgrade pip
+pip install .
+```
+4\. Run the application:
+```bash
+python run.py
+```
 
 ## Configuration
 
