@@ -1,7 +1,8 @@
 import logging
 from flask.logging import default_handler
-from flask import Flask, current_app
+from flask import Flask
 from app.api import api_bp
+from app.api.routes import *
 from app.ui import ui_bp
 from app.lib.camera.file_manager import FileManager
 from app.lib.camera.video_processor import VideoProcessor
@@ -9,8 +10,11 @@ from app.lib.camera.camera_manager import CameraManager
 from app.lib.camera.stream_manager import StreamManager
 from app.lib.camera.motion_detector import MotionDetector
 from app.lib.camera.status_manager import StatusManager
-from app.lib.notification.webhook_notifier import WebhookNotifier
+from app.lib.notification.webhook_notifier import WebhookNotifier, get_webhook_specs
 from app.lib.notification.logging_notifier import LoggingNotifier
+from apispec import APISpec
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec_webframeworks.flask import FlaskPlugin
 import yaml
 import json
 import os
@@ -36,6 +40,8 @@ def create_app(config_file=None):
 
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(ui_bp)
+
+    register_openapi_spec(app, "swagger/openapi.json")
 
     app.logger.info("Application initialized successfully.")
     return app
@@ -131,3 +137,32 @@ def configure_logging(app, config):
 
     app.logger.setLevel(numeric_level)
     app.logger.info(f"Logging configured to {log_level} level.")
+
+spec = APISpec(
+    title="Motionberry API",
+    version=__version__,
+    openapi_version="3.0.3",
+    plugins=[FlaskPlugin(), MarshmallowPlugin()],
+)
+
+def register_openapi_spec(app, file_path):
+    """Registers API routes and generates the OpenAPI spec."""
+    webhook_specs = get_webhook_specs()
+
+    with app.app_context():
+        spec.path(view=status)
+        spec.path(view=enable_detection)
+        spec.path(view=disable_detection)
+        spec.path(view=list_captures)
+        spec.path(view=download_capture)
+        spec.path(view=take_snapshot)
+        spec.path(view=record)
+
+        for webhook_spec in webhook_specs:
+            for path, definition in webhook_spec.items():
+                spec._paths[path] = definition
+
+        if app.config.get("env", "production") == "development":
+            with open(file_path, "w") as f:
+                json.dump(spec.to_dict(), f, indent=2)
+            print("OpenAPI spec written to openapi.json")

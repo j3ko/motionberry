@@ -42,12 +42,12 @@
         </div>
 
         <footer class="card-footer motion-detection-status">
-          <a href="{{ url_for('api.stop_motion_detection') }}" class="card-footer-item on api-action">
+          <a href="{{ url_for('api.disable_detection') }}" class="card-footer-item on api-action">
             <span class="icon">
               <i class="fas fa-eye"></i>
             </span> Detection
           </a>
-          <a href="{{ url_for('api.start_motion_detection') }}" class="card-footer-item off api-action">
+          <a href="{{ url_for('api.enable_detection') }}" class="card-footer-item off api-action">
             <span class="icon">
               <i class="fas fa-eye-slash"></i>
             </span> Detection
