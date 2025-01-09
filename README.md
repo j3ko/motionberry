@@ -1,8 +1,14 @@
 # Motionberry
 
-A lightweight solution for motion detection and video streaming on Raspberry Pi, powered by [picamera2](https://github.com/raspberrypi/picamera2).
+A lightweight solution for motion detection and video streaming on Raspberry Pi, powered by picamera2
 
 **Tested and optimized for Raspberry Pi Zero 2W with a Camera module v3**
+
+## Quick Links
+
+- [API Documentation](https://j3ko.github.io/motionberry/)
+- [Configuration Options](https://github.com/j3ko/motionberry/blob/main/config.default.yml)
+- [Report Issues](https://github.com/j3ko/motionberry/issues)
 
 ## Features v0.1.0
 
@@ -12,7 +18,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - Triggered snapshots (JPEG)
 - Triggered clip recording
 - Output in raw H.264 or MP4 format
-- RESTful API and webhook events
+- RESTful API and webhook events ([documentation](https://j3ko.github.io/motionberry/))
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/j3ko/motionberry/main/docs/screenshot.png" alt="Screenshot" style="width:100%; height:auto;">
