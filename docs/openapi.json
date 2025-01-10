@@ -1,0 +1,327 @@
+{
+  "paths": {
+    "/api/status": {
+      "get": {
+        "summary": "Check API health status",
+        "description": "Returns the current status of the API to indicate whether it is operational.",
+        "tags": [
+          "Incoming"
+        ],
+        "responses": {
+          "200": {
+            "description": "API is operational.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/enable_detection": {
+      "post": {
+        "summary": "Enable motion detection",
+        "description": "Starts the motion detection process.",
+        "tags": [
+          "Incoming"
+        ],
+        "responses": {
+          "200": {
+            "description": "Motion detection started successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error enabling motion detection."
+          }
+        }
+      }
+    },
+    "/api/disable_detection": {
+      "post": {
+        "summary": "Disable motion detection",
+        "description": "Stops the motion detection process.",
+        "tags": [
+          "Incoming"
+        ],
+        "responses": {
+          "200": {
+            "description": "Motion detection stopped successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error disabling motion detection."
+          }
+        }
+      }
+    },
+    "/api/captures": {
+      "get": {
+        "summary": "List captured files",
+        "description": "Retrieves a list of all captured files in the output directory.",
+        "tags": [
+          "Incoming"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of captures.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "captures": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error listing captures."
+          }
+        }
+      }
+    },
+    "/api/captures/{input_path}": {
+      "get": {
+        "summary": "Download a captured file",
+        "description": "Downloads a specific file from the output directory.",
+        "tags": [
+          "Incoming"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "input_path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Path or filename of the capture to download."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File downloaded successfully.",
+            "content": {
+              "application/octet-stream": {}
+            }
+          },
+          "500": {
+            "description": "Error downloading file."
+          }
+        }
+      }
+    },
+    "/api/snapshot": {
+      "post": {
+        "summary": "Take a snapshot",
+        "description": "Captures a still image using the camera.",
+        "tags": [
+          "Incoming"
+        ],
+        "responses": {
+          "200": {
+            "description": "Snapshot taken successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "filename": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error taking snapshot."
+          }
+        }
+      }
+    },
+    "/api/record": {
+      "post": {
+        "summary": "Record a video",
+        "description": "Starts a video recording for a given duration.",
+        "tags": [
+          "Incoming"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "duration": {
+                    "type": "integer",
+                    "description": "Recording duration in seconds.",
+                    "example": 10
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Video recorded successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "filename": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input data."
+          },
+          "500": {
+            "description": "Error during recording."
+          }
+        }
+      }
+    },
+    "/application_started": {
+      "post": {
+        "summary": "Webhook for application_started",
+        "description": "Triggered by the application_started event.",
+        "tags": [
+          "Outgoing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/detection_enabled": {
+      "post": {
+        "summary": "Webhook for detection_enabled",
+        "description": "Triggered by the detection_enabled event.",
+        "tags": [
+          "Outgoing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/detection_disabled": {
+      "post": {
+        "summary": "Webhook for detection_disabled",
+        "description": "Triggered by the detection_disabled event.",
+        "tags": [
+          "Outgoing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/motion_started": {
+      "post": {
+        "summary": "Webhook for motion_started",
+        "description": "Triggered by the motion_started event.",
+        "tags": [
+          "Outgoing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/motion_stopped": {
+      "post": {
+        "summary": "Webhook for motion_stopped",
+        "description": "Triggered by the motion_stopped event.",
+        "tags": [
+          "Outgoing"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filename": {
+                    "type": "string",
+                    "example": "motion_2025-01-06_00-06-23.mp4"
+                  }
+                },
+                "required": [
+                  "filename"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "info": {
+    "title": "Motionberry API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.0.3"
+}
