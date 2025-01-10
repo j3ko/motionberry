@@ -12,9 +12,6 @@ from app.lib.camera.motion_detector import MotionDetector
 from app.lib.camera.status_manager import StatusManager
 from app.lib.notification.webhook_notifier import WebhookNotifier, get_webhook_specs
 from app.lib.notification.logging_notifier import LoggingNotifier
-from apispec import APISpec
-from apispec.ext.marshmallow import MarshmallowPlugin
-from apispec_webframeworks.flask import FlaskPlugin
 import yaml
 import json
 import os
@@ -41,7 +38,8 @@ def create_app(config_file=None):
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(ui_bp)
 
-    register_openapi_spec(app, "docs/openapi.json")
+    if app.config.get("env", "production") == "development":
+        register_openapi_spec(app, "docs/openapi.json")
 
     app.logger.info("Application initialized successfully.")
     return app
@@ -138,15 +136,18 @@ def configure_logging(app, config):
     app.logger.setLevel(numeric_level)
     app.logger.info(f"Logging configured to {log_level} level.")
 
-spec = APISpec(
-    title="Motionberry API",
-    version=__version__,
-    openapi_version="3.0.3",
-    plugins=[FlaskPlugin(), MarshmallowPlugin()],
-)
-
 def register_openapi_spec(app, file_path):
     """Registers API routes and generates the OpenAPI spec."""
+    from apispec import APISpec
+    from apispec.ext.marshmallow import MarshmallowPlugin
+    from apispec_webframeworks.flask import FlaskPlugin
+
+    spec = APISpec(
+        title="Motionberry API",
+        version=__version__,
+        openapi_version="3.0.3",
+        plugins=[FlaskPlugin(), MarshmallowPlugin()],
+    )
     webhook_specs = get_webhook_specs()
 
     with app.app_context():
@@ -162,7 +163,6 @@ def register_openapi_spec(app, file_path):
             for path, definition in webhook_spec.items():
                 spec._paths[path] = definition
 
-        if app.config.get("env", "production") == "development":
-            with open(file_path, "w") as f:
-                json.dump(spec.to_dict(), f, indent=2)
-            print("OpenAPI spec written to openapi.json")
+        with open(file_path, "w") as f:
+            json.dump(spec.to_dict(), f, indent=2)
+        print("OpenAPI spec written to openapi.json")
