@@ -38,7 +38,7 @@ def create_app(config_file=None):
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(ui_bp)
 
-    if app.config.get("env", "production") == "development":
+    if app.config.get("env", "prod") == "dev":
         register_openapi_spec(app, "docs/openapi.json")
 
     app.logger.info("Application initialized successfully.")
