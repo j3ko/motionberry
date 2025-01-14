@@ -36,7 +36,7 @@ To install Motionberry using Docker on your Raspberry Pi, follow these steps:
 
 1\. Install [Docker](https://docs.docker.com/engine/install/debian/)
 
-2\. Run the following command to deploy Motionberry: 
+2\. Run the following command to deploy Motionberry:
 ```bash
 docker run --name motionberry \
   --privileged \
@@ -94,6 +94,14 @@ python run.py
 ## Configuration
 
 For configuration options, refer to [config.default.yml](https://github.com/j3ko/motionberry/blob/main/config.default.yml).
+
+## Performance Optimization and Examples
+
+Enhance Motionberry's performance by following the [Raspberry Pi tuning guide](https://github.com/j3ko/motionberry/blob/main/docs/examples/performance.md).
+
+Example use case:
+- [Node-RED and Slack Integration](https://github.com/j3ko/motionberry/blob/main/docs/examples/nodered-slack.md): Remotely control Motionberry using a Slack bot and receive event notifications directly in Slack channel.
+
 
 ## Reporting Issues
 
