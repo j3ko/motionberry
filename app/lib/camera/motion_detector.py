@@ -1,9 +1,11 @@
 import time
+import logging
 import numpy as np
-from multiprocessing import Process, Value
+from multiprocessing import Process
 
 class MotionDetector:
     def __init__(self, camera_manager, motion_threshold, max_encoding_time, notifiers=None):
+        self.logger = logging.getLogger(__name__)
         self.camera_manager = camera_manager
         self.motion_threshold = motion_threshold
         self.max_encoding_time = max_encoding_time
