@@ -23,7 +23,7 @@ RUN curl -fsSL https://archive.raspberrypi.org/debian/raspberrypi.gpg.key | gpg 
 RUN apt update && apt install -y --no-install-recommends python3-picamera2 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-   
+
 WORKDIR /motionberry
 
 COPY . .
@@ -42,3 +42,6 @@ EXPOSE 5000
 
 ENTRYPOINT ["/motionberry/entrypoint.sh"]
 CMD ["/motionberry/.venv/bin/python", "run.py"]
+
+HEALTHCHECK --interval=60s --timeout=5s --start-period=180s --retries=3 \
+    CMD curl -f http://localhost:5000/api/status || exit 1
