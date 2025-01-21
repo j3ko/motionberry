@@ -1,7 +1,7 @@
 import time
 import logging
 import numpy as np
-from multiprocessing import Process, Value
+from threading import Thread
 
 class MotionDetector:
     def __init__(self, camera_manager, motion_threshold, max_encoding_time, notifiers=None):
@@ -9,20 +9,20 @@ class MotionDetector:
         self.camera_manager = camera_manager
         self.motion_threshold = motion_threshold
         self.max_encoding_time = max_encoding_time
-        self.is_running = Value('b', False)
+        self.is_running = False
         self.last_motion_time = 0
         self.notifiers = notifiers or []
-        self.process = None
+        self.thread = None
         self._notify("application_started")
 
     def _motion_detection_loop(self):
         prev_frame = None
         w, h = self.camera_manager.detect_size
 
-        while self.is_running.value:
+        while self.is_running:
             try:
                 self.camera_manager.start_camera()
-                while self.is_running.value:
+                while self.is_running:
                     try:
                         cur_frame = self.camera_manager.capture_frame("lores")
                         cur_frame = cur_frame[:w * h].reshape(h, w)
@@ -61,24 +61,24 @@ class MotionDetector:
 
     def start(self):
         """Starts motion detection."""
-        if not self.is_running.value:
-            self.is_running.value = True
-            self.logger.debug("Starting motion detection process...")
-            self.process = Process(target=self._motion_detection_loop, daemon=True)
-            self.process.start()
+        if not self.is_running:
+            self.is_running = True
+            self.logger.debug("Starting motion detection thread...")
+            self.thread = Thread(target=self._motion_detection_loop, daemon=True)
+            self.thread.start()
             self._notify("detection_enabled")
-            self.logger.debug("Motion detection process started.")
+            self.logger.debug("Motion detection thread started.")
         else:
             self.logger.warning("Motion detection is already running.")
 
     def stop(self):
         """Stops motion detection."""
-        self.is_running.value = False
-        if self.process and self.process.is_alive():
+        self.is_running = False
+        if self.thread and self.thread.is_alive():
             if self.camera_manager.is_recording:
                 self.camera_manager.stop_recording()
                 self._notify("motion_stopped")
-            self.process.join()
+            self.thread.join()
             self._notify("detection_disabled")
 
     def _notify(self, action, data=None):
