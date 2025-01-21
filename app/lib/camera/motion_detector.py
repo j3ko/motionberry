@@ -17,10 +17,10 @@ class MotionDetector:
         prev_frame = None
         w, h = self.camera_manager.detect_size
 
-        while self.is_running.value:
+        while self.is_running:
             try:
                 self.camera_manager.start_camera()
-                while self.is_running.value:
+                while self.is_running:
                     try:
                         cur_frame = self.camera_manager.capture_frame("lores")
                         cur_frame = cur_frame[:w * h].reshape(h, w)
@@ -59,11 +59,15 @@ class MotionDetector:
 
     def start(self):
         """Starts motion detection."""
-        if not self.is_running.value:
-            self.is_running.value = True
-            self.process = Process(target=self._motion_detection_loop)
+        if not self.is_running:
+            self.is_running = True
+            self.logger.debug("Starting motion detection process...")
+            self.process = Process(target=self._motion_detection_loop, daemon=True)
             self.process.start()
             self._notify("detection_enabled")
+            self.logger.debug("Motion detection process started.")
+        else:
+            self.logger.warning("Motion detection is already running.")
 
     def stop(self):
         """Stops motion detection."""
