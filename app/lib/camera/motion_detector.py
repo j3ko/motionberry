@@ -1,7 +1,7 @@
 import time
 import logging
 import numpy as np
-from multiprocessing import Process
+from multiprocessing import Process, Value
 
 class MotionDetector:
     def __init__(self, camera_manager, motion_threshold, max_encoding_time, notifiers=None):
@@ -9,7 +9,7 @@ class MotionDetector:
         self.camera_manager = camera_manager
         self.motion_threshold = motion_threshold
         self.max_encoding_time = max_encoding_time
-        self.is_running = False
+        self.is_running = Value('b', False)
         self.last_motion_time = 0
         self.notifiers = notifiers or []
         self.process = None
@@ -19,10 +19,10 @@ class MotionDetector:
         prev_frame = None
         w, h = self.camera_manager.detect_size
 
-        while self.is_running:
+        while self.is_running.value:
             try:
                 self.camera_manager.start_camera()
-                while self.is_running:
+                while self.is_running.value:
                     try:
                         cur_frame = self.camera_manager.capture_frame("lores")
                         cur_frame = cur_frame[:w * h].reshape(h, w)
@@ -61,8 +61,8 @@ class MotionDetector:
 
     def start(self):
         """Starts motion detection."""
-        if not self.is_running:
-            self.is_running = True
+        if not self.is_running.value:
+            self.is_running.value = True
             self.logger.debug("Starting motion detection process...")
             self.process = Process(target=self._motion_detection_loop, daemon=True)
             self.process.start()
