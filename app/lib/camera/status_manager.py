@@ -20,7 +20,7 @@ class StatusManager:
                 data = { 
                     "is_camera_running": self.camera_manager.is_camera_running,
                     "is_recording": self.camera_manager.is_recording,
-                    "is_motion_detecting": self.motion_detector.is_running
+                    "is_motion_detecting": self.motion_detector.is_running.value
                 }
                 yield f"data: {json.dumps(data)}\n\n"
                 time.sleep(1)

@@ -74,7 +74,7 @@ def enable_detection():
     """
     motion_detector = current_app.config["motion_detector"]
     try:
-        if not motion_detector.is_running:
+        if not motion_detector.is_running.value:
             motion_detector.start()
             return jsonify({"status": "Motion detection started."})
         else:
@@ -107,7 +107,7 @@ def disable_detection():
     """
     motion_detector = current_app.config["motion_detector"]
     try:
-        if motion_detector.is_running:
+        if motion_detector.is_running.value:
             motion_detector.stop()
             return jsonify({"status": "Motion detection stopped."})
         else:
