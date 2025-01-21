@@ -31,36 +31,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - A camera module compatible with picamera2 (e.g., Raspberry Pi Camera Module 3).
 - Raspberry Pi OS 64-bit (Bullseye recommended)
 
-## Docker installation
-To install Motionberry using Docker on your Raspberry Pi, follow these steps:
-
-1\. Install [Docker](https://docs.docker.com/engine/install/debian/)
-
-2\. Run the following command to deploy Motionberry: 
-```bash
-docker run --name motionberry \
-  --privileged \
-  -e PUID 1000 \
-  -e PGID 1000 \
-  -v <path to config.yml>:/motionberry/config \
-  -v <path to capture directory>:/motionberry/captures \
-  -v /run/udev:/run/udev:ro \
-  -p 5000:5000 \
-  j3ko/motionberry:latest
-```
-
-Explanation of Options:
-
-- `--privileged`: Required for hardware access, such as the camera module.
-- `-e PUID` / `-e PGID`: Set user and group IDs to match your system's user permissions.
-- `-v <path>`: Map local directories to container paths:
-  - `<path to config.yml>`: Path to your configuration file.
-  - `<path to capture directory>`: Directory where captures will be stored.
-- `-p 5000:5000`: Maps port 5000 on the host to the container.
-
-Replace `<path to config.yml>` and `<path to capture directory>` with appropriate paths on your host machine.
-
-## Bare metal installation
+## Bare metal installation (recommended)
 To install and run Motionberry natively on your Raspberry Pi, follow these steps:
 
 1\. Install the required libraries:
@@ -90,6 +61,35 @@ pip install .
 ```bash
 python run.py
 ```
+
+## Docker installation
+To install Motionberry using Docker on your Raspberry Pi, follow these steps:
+
+1\. Install [Docker](https://docs.docker.com/engine/install/debian/)
+
+2\. Run the following command to deploy Motionberry: 
+```bash
+docker run --name motionberry \
+  --privileged \
+  -e PUID 1000 \
+  -e PGID 1000 \
+  -v <path to config.yml>:/motionberry/config \
+  -v <path to capture directory>:/motionberry/captures \
+  -v /run/udev:/run/udev:ro \
+  -p 5000:5000 \
+  j3ko/motionberry:latest
+```
+
+Explanation of Options:
+
+- `--privileged`: Required for hardware access, such as the camera module.
+- `-e PUID` / `-e PGID`: Set user and group IDs to match your system's user permissions.
+- `-v <path>`: Map local directories to container paths:
+  - `<path to config.yml>`: Path to your configuration file.
+  - `<path to capture directory>`: Directory where captures will be stored.
+- `-p 5000:5000`: Maps port 5000 on the host to the container.
+
+Replace `<path to config.yml>` and `<path to capture directory>` with appropriate paths on your host machine.
 
 ## Configuration
 
