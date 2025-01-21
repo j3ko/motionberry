@@ -7,7 +7,7 @@ class MotionDetector:
         self.camera_manager = camera_manager
         self.motion_threshold = motion_threshold
         self.max_encoding_time = max_encoding_time
-        self.is_running = Value('b', False)
+        self.is_running = False
         self.last_motion_time = 0
         self.notifiers = notifiers or []
         self.process = None
