@@ -31,6 +31,9 @@
   # Raw bitrate (Optional, Default 1000000)
   # bitrate: 1000000
 
+  # Framerate per second (Optional, Default 30)
+  # framerate: 30
+
   # Tuning file to be use to calibrate common RPi cameras. (Optional, Default None)
   # List of possible values can be found at: https://github.com/raspberrypi/libcamera/tree/main/src/ipa/rpi/vc4/data
   # tuning: imx477_noir
