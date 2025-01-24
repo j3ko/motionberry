@@ -38,7 +38,7 @@ WorkingDirectory=$APP_DIR
 ExecStart=$APP_DIR/$PYTHON_ENV_DIR/bin/python $APP_DIR/run.py
 Restart=always
 User=$(whoami)
-Environment="PATH=$APP_DIR/$PYTHON_ENV_DIR/bin"
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$APP_DIR/$PYTHON_ENV_DIR/bin"
 
 [Install]
 WantedBy=multi-user.target

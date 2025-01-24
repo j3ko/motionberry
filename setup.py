@@ -1,17 +1,14 @@
 import os
 from setuptools import setup, find_packages
 
-# Read version from app/version.py
 version = {}
 with open(os.path.join("app", "version.py")) as fp:
     exec(fp.read(), version)
 version = version["__version__"]
 
-# Read README for long description
 with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
 
-# Define requirements
 install_requires = [
     "Flask==3.1.0",
     "numpy==1.26.3",
@@ -23,7 +20,6 @@ install_requires = [
     "marshmallow==3.24.1",
 ]
 
-# Setup function
 setup(
     name="motionberry",
     version=version,
