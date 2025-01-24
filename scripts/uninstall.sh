@@ -26,10 +26,10 @@ if [ -f "$SERVICE_FILE" ]; then
     sudo systemctl daemon-reload
 fi
 
-if [ -d "$PYTHON_ENV_DIR" ]; then
-    echo "Removing virtual environment..."
-    rm -rf "$PYTHON_ENV_DIR"
-fi
+# if [ -d "$PYTHON_ENV_DIR" ]; then
+#     echo "Removing virtual environment..."
+#     rm -rf "$PYTHON_ENV_DIR"
+# fi
 
 echo "Do you want to remove system dependencies installed by Motionberry? (y/n)"
 read -r REMOVE_DEPS

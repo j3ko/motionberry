@@ -10,6 +10,7 @@ SERVICE_NAME="motionberry.service"
 echo "Installing required libraries..."
 sudo apt update
 sudo apt install -y --no-install-recommends \
+    util-linux \
     ffmpeg \
     python3-dev \
     python3-venv \

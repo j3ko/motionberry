@@ -56,6 +56,7 @@ def initialize_components(app, config):
 
     app.config["video_processor"] = VideoProcessor(
         file_manager=app.config["file_manager"],
+        framerate=int(config.get("capture", {}).get("framerate", 30)),
         video_format=config.get("capture", {}).get("video_format", "mp4"),
     )
 
@@ -63,6 +64,7 @@ def initialize_components(app, config):
         file_manager=app.config["file_manager"],
         video_processor=app.config["video_processor"],
         encoder_bitrate=int(config.get("capture", {}).get("bitrate", 5000000)),
+        framerate=int(config.get("capture", {}).get("framerate", 30)),
         record_size=tuple(config.get("capture", {}).get("record_size", [1024, 720])),
         detect_size=tuple(config.get("capture", {}).get("detect_size", [320, 240])),
         tuning_file=config.get("capture", {}).get("tuning", None),

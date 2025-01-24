@@ -2,6 +2,7 @@ FROM debian:bookworm
 
 RUN apt update && apt install -y --no-install-recommends \
         gosu \
+        util-linux \
         ffmpeg \
         build-essential \
         python3-dev \
