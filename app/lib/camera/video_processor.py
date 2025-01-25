@@ -30,7 +30,7 @@ class VideoProcessor:
 
             process = subprocess.run(
                 [
-                    "ionice", "-c", "3", "nice", "-n", "10", "ffmpeg",
+                    "ffmpeg",
                     "-y",
                     "-i", str(h264_path),
                     "-r", str(self.framerate),
