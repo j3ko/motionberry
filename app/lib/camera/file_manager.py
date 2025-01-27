@@ -35,17 +35,23 @@ class FileManager:
             for file in files:
                 if total_size <= self.max_size_bytes:
                     break
-                self.logger.info(f"Deleting file to enforce size limit: {file}")
-                total_size -= file.stat().st_size
-                file.unlink()
+                if file.exists():
+                    self.logger.info(f"Deleting file to enforce size limit: {file}")
+                    total_size -= file.stat().st_size
+                    file.unlink()
+                else:
+                    self.logger.warning(f"File not found during cleanup: {file}")
 
         # Enforce age limit
         if self.max_age_seconds not in (None, 0):
             current_time = time.time()
             for file in files:
-                if current_time - file.stat().st_mtime > self.max_age_seconds:
-                    self.logger.info(f"Deleting file to enforce age limit: {file}")
-                    file.unlink()
+                if file.exists():
+                    if current_time - file.stat().st_mtime > self.max_age_seconds:
+                        self.logger.info(f"Deleting file to enforce age limit: {file}")
+                        file.unlink()
+                else:
+                    self.logger.warning(f"File not found during cleanup: {file}")
 
     def move_to_output(self, src, dest_name):
         """Moves a file to the managed output directory."""
