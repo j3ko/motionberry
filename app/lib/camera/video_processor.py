@@ -1,14 +1,14 @@
 import logging
 import subprocess
 import time
-import os
 from .file_manager import FileManager
 
 
 class VideoProcessor:
-    def __init__(self, file_manager, video_format="mp4"):
+    def __init__(self, file_manager, framerate=30, video_format="mp4"):
         self.logger = logging.getLogger(__name__)
         self.file_manager = file_manager
+        self.framerate=framerate
         self.video_format = video_format.lower()
         self.logger.info(f"VideoProcessor initialized with format: {self.video_format}")
 
@@ -28,15 +28,12 @@ class VideoProcessor:
             start_time = time.time()
             self.logger.info(f"Starting MP4 conversion for file: {h264_path}")
 
-            def set_niceness():
-                os.nice(10)
-                subprocess.run(["ionice", "-c", "3"])
-
             process = subprocess.run(
                 [
                     "ffmpeg",
                     "-y",
                     "-i", str(h264_path),
+                    "-r", str(self.framerate),
                     "-c:v", "copy",
                     # "-preset veryslow",
                     str(output_path)
@@ -44,7 +41,6 @@ class VideoProcessor:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                preexec_fn=set_niceness,
             )
 
             self.logger.debug(f"FFmpeg output:\n{process.stdout}")

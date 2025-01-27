@@ -12,11 +12,12 @@ from .file_manager import FileManager
 
 
 class CameraManager:
-    def __init__(self, file_manager, video_processor, encoder_bitrate=1000000, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
+    def __init__(self, file_manager, video_processor, encoder_bitrate=1000000, framerate=30, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
         self.logger = logging.getLogger(__name__)
         tuning = self._load_tuning(tuning_file)
         self.picam2 = Picamera2(tuning=tuning)
         self.encoder = H264Encoder(encoder_bitrate)
+        self.framerate = framerate
         self.camera_lock = threading.Lock()
         self.client_lock = threading.Lock()
         self.is_camera_running = False
@@ -29,7 +30,8 @@ class CameraManager:
 
         video_config = self.picam2.create_video_configuration(
             main={"size": record_size, "format": "RGB888"},
-            lores={"size": detect_size, "format": "YUV420"}
+            lores={"size": detect_size, "format": "YUV420"},
+            controls={"FrameRate": framerate}
         )
         self.picam2.configure(video_config)
         self.logger.debug("CameraManager initialized.")
