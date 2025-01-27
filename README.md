@@ -10,7 +10,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - [Configuration Options](https://github.com/j3ko/motionberry/blob/main/config.default.yml)
 - [Report Issues](https://github.com/j3ko/motionberry/issues)
 
-## Features v0.1.0
+## Features
 
 - Support for Dockerized or bare-metal deployments
 - Responsive user interface
@@ -19,6 +19,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - Triggered clip recording
 - Output in raw H.264 or MP4 format
 - RESTful API and webhook events ([documentation](https://j3ko.github.io/motionberry/))
+- See [CHANGELOG.md](https://github.com/j3ko/motionberry/blob/main/CHANGELOG.md) for more
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/j3ko/motionberry/main/docs/screenshot.png" alt="Screenshot" style="width:100%; height:auto;">
@@ -32,34 +33,20 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - Raspberry Pi OS 64-bit (Bullseye recommended)
 
 ## Bare metal installation (recommended)
-To install and run Motionberry natively on your Raspberry Pi, follow these steps:
+To install Motionberry as a systemd service on your Raspberry Pi, follow these steps:
 
-1\. Install the required libraries:
+1\. Clone the repository:
 ```bash
-sudo apt install -y --no-install-recommends \
-  git \
-  ffmpeg \
-  python3-dev \
-  python3-venv \
-  python3-pip \
-  python3-numpy \
-  python3-picamera2
+git clone https://github.com/j3ko/motionberry.git
 ```
-2\. Clone the repository:
+2\. Run the installation script:
 ```bash
-   git clone https://github.com/j3ko/motionberry.git
+sudo bash motionberry/scripts/install.sh
 ```
-3\. Set up a virtual environment:
+
+Run the following to uninstall Motionberry:
 ```bash
-cd motionberry
-python3 -m venv --system-site-packages .venv
-. .venv/bin/activate
-pip install --upgrade pip
-pip install .
-```
-4\. Run the application:
-```bash
-python run.py
+sudo bash motionberry/scripts/uninstall.sh
 ```
 
 ## Docker installation
