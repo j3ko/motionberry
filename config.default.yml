@@ -15,6 +15,15 @@
   # the current recording is stopped. (Optional, Default 10)
   # motion_gap: 10
 
+  # Maximum clip length in seconds. If set to 0 or None, this has no effect. 
+  # (Optional, Default: None)
+  # max_clip_length: None
+
+  # Minimum clip length in seconds. If set to 0 or None, this has no effect. 
+  # (Optional, Default: None)
+  # min_clip_length: None
+
+
 # Capture settings
 # capture:
 

@@ -3,14 +3,26 @@ import logging
 import numpy as np
 from threading import Thread
 
+
 class MotionDetector:
-    def __init__(self, camera_manager, motion_threshold, max_encoding_time, notifiers=None):
+    def __init__(
+        self,
+        camera_manager,
+        motion_threshold,
+        motion_gap,
+        min_clip_length=None,
+        max_clip_length=None,
+        notifiers=None,
+    ):
         self.logger = logging.getLogger(__name__)
         self.camera_manager = camera_manager
         self.motion_threshold = motion_threshold
-        self.max_encoding_time = max_encoding_time
+        self.motion_gap = motion_gap
+        self.min_clip_length = min_clip_length
+        self.max_clip_length = max_clip_length
         self.is_running = False
         self.last_motion_time = 0
+        self.recording_start_time = None
         self.notifiers = notifiers or []
         self.thread = None
         self._notify("application_started")
@@ -30,16 +42,47 @@ class MotionDetector:
                 if prev_frame is not None:
                     mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
                     if mse > self.motion_threshold:  # Motion detected
+                        current_time = time.time()
                         if not self.camera_manager.is_recording:
                             self.camera_manager.start_recording()
+                            self.recording_start_time = current_time
                             self._notify("motion_started")
-                            self.last_motion_time = time.time()
+                            self.last_motion_time = current_time
                         else:
-                            self.last_motion_time = time.time()
+                            self.last_motion_time = current_time
 
-                    elif self.camera_manager.is_recording and time.time() - self.last_motion_time > self.max_encoding_time:
-                        final_path = self.camera_manager.stop_recording()
-                        self._notify("motion_stopped", {"filename": str(final_path.name)})
+                    elif self.camera_manager.is_recording:
+                        current_time = time.time()
+                        elapsed_recording_time = current_time - self.recording_start_time
+                        time_since_last_motion = current_time - self.last_motion_time
+
+                        # Enforce max_clip_length if set
+                        if (
+                            self.max_clip_length
+                            and elapsed_recording_time > self.max_clip_length
+                        ):
+                            self.logger.info(
+                                f"Max clip length of {self.max_clip_length}s reached. Stopping recording."
+                            )
+                            final_path = self.camera_manager.stop_recording()
+                            self._notify(
+                                "motion_stopped", {"filename": str(final_path.name)}
+                            )
+                            continue
+
+                        # Enforce stopping based on motion_gap and min_clip_length
+                        if (
+                            time_since_last_motion > self.motion_gap
+                            and (
+                                not self.min_clip_length
+                                or elapsed_recording_time > self.min_clip_length
+                            )
+                        ):
+                            self.logger.info("No motion detected for encoding period.")
+                            final_path = self.camera_manager.stop_recording()
+                            self._notify(
+                                "motion_stopped", {"filename": str(final_path.name)}
+                            )
 
                 prev_frame = cur_frame
                 time.sleep(0.1)

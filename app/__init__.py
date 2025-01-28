@@ -77,7 +77,9 @@ def initialize_components(app, config):
     app.config["motion_detector"] = MotionDetector(
         camera_manager=app.config["camera_manager"],
         motion_threshold=float(config.get("motion", {}).get("mse_threshold", 7)),
-        max_encoding_time=int(config.get("motion", {}).get("motion_gap", 10)),
+        motion_gap=int(config.get("motion", {}).get("motion_gap", 10)),
+        min_clip_length=(config.get("motion", {}).get("min_clip_length", None)),
+        max_clip_length=(config.get("motion", {}).get("max_clip_length", None)),
         notifiers=[logging_notifier, webhook_notifier]
     )
 
