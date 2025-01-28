@@ -5,7 +5,6 @@ from app.api import api_bp
 from app.api.routes import *
 from app.ui import ui_bp
 from app.lib.camera.file_manager import FileManager
-from app.lib.camera.video_processor import VideoProcessor
 from app.lib.camera.camera_manager import CameraManager
 from app.lib.camera.stream_manager import StreamManager
 from app.lib.camera.motion_detector import MotionDetector
@@ -54,15 +53,9 @@ def initialize_components(app, config):
         max_age_days=int(config.get("capture", {}).get("max_age_days", None)),
     )
 
-    app.config["video_processor"] = VideoProcessor(
-        file_manager=app.config["file_manager"],
-        framerate=int(config.get("capture", {}).get("framerate", 30)),
-        video_format=config.get("capture", {}).get("video_format", "mp4"),
-    )
-
     app.config["camera_manager"] = CameraManager(
         file_manager=app.config["file_manager"],
-        video_processor=app.config["video_processor"],
+        video_format=config.get("capture", {}).get("video_format", "mp4"),
         encoder_bitrate=int(config.get("capture", {}).get("bitrate", 5000000)),
         framerate=int(config.get("capture", {}).get("framerate", 30)),
         record_size=tuple(config.get("capture", {}).get("record_size", [1024, 720])),

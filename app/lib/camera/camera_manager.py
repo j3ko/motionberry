@@ -7,12 +7,11 @@ from pathlib import Path
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput, FfmpegOutput
-from .video_processor import VideoProcessor
 from .file_manager import FileManager
 
 
 class CameraManager:
-    def __init__(self, file_manager, video_processor, encoder_bitrate=1000000, framerate=30, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
+    def __init__(self, file_manager, video_format="mp4", encoder_bitrate=1000000, framerate=30, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
         self.logger = logging.getLogger(__name__)
         tuning = self._load_tuning(tuning_file)
         self.picam2 = Picamera2(tuning=tuning)
@@ -25,7 +24,7 @@ class CameraManager:
         self.record_size = record_size
         self.detect_size = detect_size
         self.file_manager = file_manager
-        self.video_processor = video_processor
+        self.video_format = video_format.lower()
         self.client_count = 0
 
         video_config = self.picam2.create_video_configuration(
@@ -96,8 +95,11 @@ class CameraManager:
         with self.camera_lock:
             if not self.is_recording:
                 try:
-                    self.current_raw_path = self.file_manager.save_raw_file()
-                    self.encoder.output = FfmpegOutput(str(self.current_raw_path))
+                    self.current_raw_path = self.file_manager.save_raw_file(self.video_format)
+                    if self.video_format == "h264":
+                        self.encoder.output = FileOutput(str(self.current_raw_path))
+                    else:
+                        self.encoder.output = FfmpegOutput(str(self.current_raw_path))
                     self.is_recording = True
                     self.picam2.start_encoder(self.encoder)
                     self.logger.info(f"Recording started: {self.current_raw_path}")
@@ -113,7 +115,7 @@ class CameraManager:
                 try:
                     self.picam2.stop_encoder()
                     self.logger.info("Recording stopped.")
-                    final_path = self.video_processor.process_and_save(self.current_raw_path)
+                    final_path = self.file_manager.move_to_output(self.current_raw_path, self.current_raw_path.name)
                     self.logger.info(f"Video saved: {final_path}")
                     return final_path
                 finally:

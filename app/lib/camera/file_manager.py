@@ -85,9 +85,9 @@ class FileManager:
         self.logger.debug(f"Generated temporary filename: {tmp_filename}")
         return tmp_filename
 
-    def save_raw_file(self):
+    def save_raw_file(self, ext):
         """Creates a temporary directory and returns the path for saving raw video files."""
         tmp_dir = self._create_tmp_dir()
-        raw_file_path = self._generate_tmp_filename(tmp_dir, "mp4")
+        raw_file_path = self._generate_tmp_filename(tmp_dir, ext)
         self.logger.debug(f"Raw file path generated: {raw_file_path}")
         return raw_file_path
