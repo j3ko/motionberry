@@ -32,6 +32,7 @@ class VideoProcessor:
                 [
                     "ffmpeg",
                     "-y",
+                    "-framerate", str(self.framerate),
                     "-i", str(h264_path),
                     "-r", str(self.framerate),
                     "-c:v", "copy",
