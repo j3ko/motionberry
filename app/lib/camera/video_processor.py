@@ -35,7 +35,7 @@ class VideoProcessor:
                     "-fflags", "+genpts",
                     "-loglevel", "debug",
                     "-r", str(self.framerate),
-                    "-framerate", str(self.framerate),
+                    # "-framerate", str(self.framerate),
                     "-i", str(h264_path),
                     "-c:v", "copy",
                     "-r", str(self.framerate),
