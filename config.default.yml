@@ -48,7 +48,7 @@
   # tuning: imx477_noir
 
   # Output format for videos (Optional, Default: mp4)
-  # Possible values: mp4, h264
+  # Possible values: mp4, raw
   # video_format: mp4
 
   # Maximum total size of the capture directory in MB (Optional, Default: None)

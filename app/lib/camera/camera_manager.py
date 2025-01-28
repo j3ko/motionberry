@@ -3,24 +3,21 @@ import time
 import threading
 import logging
 from PIL import Image
-from collections import deque
 from pathlib import Path
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
-from picamera2.outputs import FileOutput, FfmpegOutput
+from picamera2.outputs import FileOutput
+from .video_processor import VideoProcessor
 from .file_manager import FileManager
 
 
 class CameraManager:
-    def __init__(self, file_manager, video_format="mp4", encoder_bitrate=1000000, framerate=30, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
+    def __init__(self, file_manager, video_processor, encoder_bitrate=1000000, framerate=30, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
         self.logger = logging.getLogger(__name__)
         tuning = self._load_tuning(tuning_file)
         self.picam2 = Picamera2(tuning=tuning)
         self.encoder = H264Encoder(encoder_bitrate)
         self.framerate = framerate
-        self.frame_buffer = deque(maxlen=int(framerate * 3))  # 3 seconds of buffer
-        self.buffer_framerate = framerate
-        self.buffer_active = False
         self.camera_lock = threading.Lock()
         self.client_lock = threading.Lock()
         self.is_camera_running = False
@@ -28,7 +25,7 @@ class CameraManager:
         self.record_size = record_size
         self.detect_size = detect_size
         self.file_manager = file_manager
-        self.video_format = video_format.lower()
+        self.video_processor = video_processor
         self.client_count = 0
 
         video_config = self.picam2.create_video_configuration(
@@ -88,48 +85,23 @@ class CameraManager:
             return self.picam2.capture_buffer(stream)
     
     def capture_image_array(self):
-        """Captures a high-resolution frame and stores it in the rolling buffer."""
+        """Captures a frame as an image array."""
         with self.camera_lock:
             if not self.is_camera_running:
                 self.start_camera()
-            frame = self.picam2.capture_array("main")
-            if self.buffer_active:
-                self.frame_buffer.append(frame)
-            return frame
+            return self.picam2.capture_array("main")
 
     def start_recording(self):
-        """Starts encoding video, including buffered high-resolution frames."""
+        """Starts encoding video."""
         with self.camera_lock:
             if not self.is_recording:
                 try:
-                    # Create a file path for the recording
-                    self.current_raw_path = self.file_manager.save_raw_file(self.video_format)
-                    
-                    # Configure the encoder output based on the video format
-                    if self.video_format == "h264":
-                        self.encoder.output = FileOutput(str(self.current_raw_path))
-                    else:
-                        self.encoder.output = FfmpegOutput(str(self.current_raw_path))
-                    
-                    # Start the recording process
+                    self.current_raw_path = self.file_manager.save_raw_file()
+                    self.encoder.output = FileOutput(str(self.current_raw_path))
                     self.is_recording = True
                     self.picam2.start_encoder(self.encoder)
                     self.logger.info(f"Recording started: {self.current_raw_path}")
-
-                    # Add buffered high-res frames to the recording
-                    if hasattr(self, "frame_buffer") and self.frame_buffer:
-                        self.logger.info("Adding buffered high-resolution frames to the recording.")
-                        for frame in self.frame_buffer:
-                            self.encoder.encode(frame)
-                        self.logger.debug(f"{len(self.frame_buffer)} buffered frames added to the recording.")
-
-                    # Clear the buffer after adding frames
-                    if hasattr(self, "frame_buffer"):
-                        self.frame_buffer.clear()
-                        self.logger.info("Buffer cleared after adding frames to the recording.")
-
                 except Exception as e:
-                    # Handle exceptions during recording
                     self.logger.error(f"Failed to start recording: {e}", exc_info=True)
                     self.is_recording = False
                     raise
@@ -141,7 +113,7 @@ class CameraManager:
                 try:
                     self.picam2.stop_encoder()
                     self.logger.info("Recording stopped.")
-                    final_path = self.file_manager.move_to_output(self.current_raw_path, self.current_raw_path.name)
+                    final_path = self.video_processor.process_and_save(self.current_raw_path)
                     self.logger.info(f"Video saved: {final_path}")
                     return final_path
                 finally:

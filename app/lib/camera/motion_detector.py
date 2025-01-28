@@ -39,9 +39,6 @@ class MotionDetector:
                 cur_frame = self.camera_manager.capture_frame("lores")
                 cur_frame = cur_frame[:w * h].reshape(h, w)
 
-                self.camera_manager.buffer_active = True
-                self.camera_manager.capture_image_array()
-
                 if prev_frame is not None:
                     mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
                     if mse > self.motion_threshold:  # Motion detected
@@ -92,12 +89,10 @@ class MotionDetector:
 
             except Exception as e:
                 self.logger.error(f"Error during motion detection: {e}", exc_info=True)
-                self.camera_manager.buffer_active = False
                 if self.camera_manager.is_camera_running:
                     self.camera_manager.stop_camera()
                 time.sleep(10)
 
-        self.camera_manager.buffer_active = False
         if self.camera_manager.is_camera_running:
             self.camera_manager.stop_camera()
         self.logger.info("Motion detection loop terminated and camera stopped.")
