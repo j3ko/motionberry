@@ -33,11 +33,12 @@ class VideoProcessor:
                     "ffmpeg",
                     "-y",
                     "-fflags", "+genpts",
-                    "-loglevel", "debug",  # Enable debug logging
+                    "-loglevel", "debug",
+                    "-r", str(self.framerate),
                     "-framerate", str(self.framerate),
                     "-i", str(h264_path),
-                    "-r", str(self.framerate),
                     "-c:v", "copy",
+                    "-r", str(self.framerate),
                     str(output_path)
                 ],
                 stdout=subprocess.PIPE,
