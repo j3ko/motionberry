@@ -32,6 +32,7 @@ class VideoProcessor:
                 [
                     "ffmpeg",
                     "-y",
+                    "-fflags", "+genpts",
                     "-loglevel", "debug",  # Enable debug logging
                     "-framerate", str(self.framerate),
                     "-i", str(h264_path),
@@ -44,7 +45,7 @@ class VideoProcessor:
                 text=True,
             )
 
-            self.logger.info(f"FFmpeg stdout:\n{process.stdout}")
+            self.logger.debug(f"FFmpeg stdout:\n{process.stdout}")
             self.logger.error(f"FFmpeg stderr:\n{process.stderr}")
 
             if process.returncode != 0:
