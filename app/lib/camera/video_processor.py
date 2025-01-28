@@ -36,8 +36,9 @@ class VideoProcessor:
                     "-loglevel", "debug",
                     "-r", str(self.framerate),
                     # "-framerate", str(self.framerate),
-                    "-i", str(h264_path),
                     "-c:v", "copy",
+                    "-video_track_timescale", "30",
+                    "-i", str(h264_path),
                     "-r", str(self.framerate),
                     str(output_path)
                 ],
