@@ -32,6 +32,7 @@ class VideoProcessor:
                 [
                     "ffmpeg",
                     "-y",
+                    "-loglevel", "debug",  # Enable debug logging
                     "-framerate", str(self.framerate),
                     "-i", str(h264_path),
                     "-r", str(self.framerate),
