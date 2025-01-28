@@ -6,7 +6,7 @@ from PIL import Image
 from pathlib import Path
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
-from picamera2.outputs import FileOutput
+from picamera2.outputs import FileOutput, FfmpegOutput
 from .video_processor import VideoProcessor
 from .file_manager import FileManager
 
@@ -97,7 +97,7 @@ class CameraManager:
             if not self.is_recording:
                 try:
                     self.current_raw_path = self.file_manager.save_raw_file()
-                    self.encoder.output = FileOutput(str(self.current_raw_path))
+                    self.encoder.output = FfmpegOutput(str(self.current_raw_path))
                     self.is_recording = True
                     self.picam2.start_encoder(self.encoder)
                     self.logger.info(f"Recording started: {self.current_raw_path}")
