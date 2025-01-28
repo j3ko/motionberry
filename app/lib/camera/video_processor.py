@@ -8,7 +8,7 @@ class VideoProcessor:
     def __init__(self, file_manager, framerate=30, video_format="mp4"):
         self.logger = logging.getLogger(__name__)
         self.file_manager = file_manager
-        self.framerate=framerate
+        self.framerate = framerate
         self.video_format = video_format.lower()
         self.logger.info(f"VideoProcessor initialized with format: {self.video_format}")
 
@@ -37,7 +37,6 @@ class VideoProcessor:
                     "-i", str(h264_path),
                     "-r", str(self.framerate),
                     "-c:v", "copy",
-                    # "-preset veryslow",
                     str(output_path)
                 ],
                 stdout=subprocess.PIPE,
@@ -45,11 +44,11 @@ class VideoProcessor:
                 text=True,
             )
 
-            self.logger.debug(f"FFmpeg output:\n{process.stdout}")
+            self.logger.info(f"FFmpeg stdout:\n{process.stdout}")
+            self.logger.error(f"FFmpeg stderr:\n{process.stderr}")
 
             if process.returncode != 0:
                 self.logger.error(f"FFmpeg process failed with return code {process.returncode}")
-                self.logger.error(f"FFmpeg error output:\n{process.stderr}")
                 raise subprocess.CalledProcessError(
                     process.returncode, process.args, process.stdout, process.stderr
                 )
@@ -64,4 +63,3 @@ class VideoProcessor:
         finally:
             self.file_manager.delete_file(h264_path)
         return output_path
-
