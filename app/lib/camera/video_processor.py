@@ -34,12 +34,12 @@ class VideoProcessor:
                     "-y",
                     "-fflags", "+genpts",
                     "-loglevel", "debug",
+                    "-vsync", "2",
                     "-r", str(self.framerate),
                     # "-framerate", str(self.framerate),
                     "-i", str(h264_path),
                     "-r", str(self.framerate),
                     "-c:v", "copy",
-                    "-video_track_timescale", "30",
                     str(output_path)
                 ],
                 stdout=subprocess.PIPE,
