@@ -37,7 +37,7 @@ class VideoProcessor:
                     "-r", str(self.framerate),
                     # "-framerate", str(self.framerate),
                     "-c:v", "copy",
-                    "-video_track_timescale", "30",
+                    "-vsync", "2",
                     "-i", str(h264_path),
                     "-r", str(self.framerate),
                     str(output_path)
