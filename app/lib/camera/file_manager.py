@@ -89,5 +89,8 @@ class FileManager:
         """Creates a temporary directory and returns the path for saving raw video files."""
         tmp_dir = self._create_tmp_dir()
         raw_file_path = self._generate_tmp_filename(tmp_dir, "h264")
+        pts_file_path = os.path.join(tmp_dir, os.path.splitext(raw_file_path)[0] + ".pts")  # Same dir, ".pts" extension
         self.logger.debug(f"Raw file path generated: {raw_file_path}")
-        return raw_file_path
+        self.logger.debug(f"PTS file path generated: {pts_file_path}")
+        return raw_file_path, pts_file_path
+
