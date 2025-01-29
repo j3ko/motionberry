@@ -47,6 +47,7 @@ class VideoProcessor:
 
             if process.returncode != 0:
                 self.logger.error(f"MP4Box process failed with return code {process.returncode}")
+                self.logger.error(f"mkvmerge error output:\n{process.stderr}")
                 raise subprocess.CalledProcessError(
                     process.returncode, process.args, process.stdout, process.stderr
                 )
@@ -64,18 +65,28 @@ class VideoProcessor:
         """Converts an H.264 file to MKV using mkvmerge and an optional PTS file."""
         mkv_filename = h264_path.with_suffix('.mkv').name
         output_path = (self.file_manager.output_dir / mkv_filename).resolve()
-        
+
         try:
             start_time = time.time()
             self.logger.info(f"Starting MKV conversion for file: {h264_path}")
-            
-            command = ["mkvmerge", "-o", str(output_path)]
-            
+
+            # Ensure PTS file has the correct format
             if pts_file and Path(pts_file).exists():
-                command.extend(["--timecodes", "0:" + str(pts_file)])
-            
+                with open(pts_file, "r+") as f:
+                    first_line = f.readline()
+                    if not first_line.startswith("# timestamp format v2"):
+                        self.logger.info(f"Adding missing PTS header to: {pts_file}")
+                        contents = f.read()
+                        f.seek(0)
+                        f.write("# timestamp format v2\n" + first_line + contents)
+
+            command = ["mkvmerge", "-o", str(output_path)]
+
+            if pts_file and Path(pts_file).exists():
+                command.extend(["--timecodes", f"0:{pts_file}"])
+
             command.append(str(h264_path))
-            
+
             process = subprocess.run(
                 command,
                 stdout=subprocess.PIPE,
@@ -88,6 +99,7 @@ class VideoProcessor:
 
             if process.returncode != 0:
                 self.logger.error(f"mkvmerge process failed with return code {process.returncode}")
+                self.logger.error(f"mkvmerge error output:\n{process.stderr}")
                 raise subprocess.CalledProcessError(
                     process.returncode, process.args, process.stdout, process.stderr
                 )
@@ -99,4 +111,5 @@ class VideoProcessor:
                 f"Error during MKV conversion for file {h264_path}: {e}", exc_info=True
             )
             raise
+
         return output_path
