@@ -112,7 +112,7 @@ class CameraManager:
         with self.camera_lock:
             if self.is_recording:
                 try:
-                    self.picam2.stop_recording()
+                    self.picam2.stop_encoder()
                     self.logger.info("Recording stopped.")
                     final_path = self.video_processor.process_and_save(self.current_raw_path)
                     self.logger.info(f"Video saved: {final_path}")
