@@ -55,6 +55,6 @@ class VideoProcessor:
                 f"Error during MP4 conversion for file {h264_path}: {e}", exc_info=True
             )
             raise
-        finally:
-            self.file_manager.delete_file(h264_path)
+        # finally:
+        #     self.file_manager.delete_file(h264_path)
         return output_path

@@ -117,8 +117,8 @@ class CameraManager:
                     return final_path
                 finally:
                     self.is_recording = False
-                    self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)
-                    self.file_manager.cleanup_output_directory()
+                    # self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)
+                    # self.file_manager.cleanup_output_directory()
 
 
     def record_for_duration(self, duration, result_queue=None):
