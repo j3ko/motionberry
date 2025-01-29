@@ -61,6 +61,33 @@ class VideoProcessor:
             raise
         return output_path
 
+    def normalize_pts_file(self, pts_file):
+        """Ensures the PTS file has the correct format and starts at 0."""
+        if not Path(pts_file).exists():
+            return
+
+        with open(pts_file, "r+") as f:
+            lines = f.readlines()
+            
+            # Check and add header if missing
+            if not lines[0].startswith("# timestamp format v2"):
+                header = "# timestamp format v2\n"
+                self.logger.info(f"Adding missing PTS header to: {pts_file}")
+            else:
+                header = lines.pop(0)  # Remove existing header
+            
+            # Convert timestamps to start at 0
+            try:
+                timestamps = [float(line.strip()) for line in lines if line.strip()]
+                min_timestamp = timestamps[0] if timestamps else 0.0
+                normalized_timestamps = [f"{ts - min_timestamp:.6f}\n" for ts in timestamps]
+
+                f.seek(0)
+                f.write(header + "".join(normalized_timestamps))
+                f.truncate()
+            except ValueError:
+                self.logger.error(f"Invalid PTS file format: {pts_file}")
+
     def convert_to_mkv(self, h264_path, pts_file=None):
         """Converts an H.264 file to MKV using mkvmerge and an optional PTS file."""
         mkv_filename = h264_path.with_suffix('.mkv').name
@@ -70,15 +97,8 @@ class VideoProcessor:
             start_time = time.time()
             self.logger.info(f"Starting MKV conversion for file: {h264_path}")
 
-            # Ensure PTS file has the correct format
-            if pts_file and Path(pts_file).exists():
-                with open(pts_file, "r+") as f:
-                    first_line = f.readline()
-                    if not first_line.startswith("# timestamp format v2"):
-                        self.logger.info(f"Adding missing PTS header to: {pts_file}")
-                        contents = f.read()
-                        f.seek(0)
-                        f.write("# timestamp format v2\n" + first_line + contents)
+            if pts_file:
+                self.normalize_pts_file(pts_file)
 
             command = ["mkvmerge", "-o", str(output_path)]
 
