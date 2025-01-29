@@ -34,6 +34,7 @@ class CameraManager:
             controls={"FrameRate": framerate}
         )
         self.picam2.configure(video_config)
+        self.picam2.set_controls({"FrameRate": framerate})
         self.logger.debug("CameraManager initialized.")
 
     def _load_tuning(self, tuning_file=None):
