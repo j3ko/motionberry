@@ -38,8 +38,8 @@ command=$APP_DIR/$PYTHON_ENV_DIR/bin/python $APP_DIR/run.py
 directory=$APP_DIR
 autostart=true
 autorestart=true
-stderr_logfile=/var/log/$SERVICE_NAME.log
-stdout_logfile=/var/log/$SERVICE_NAME.log
+stderr_logfile=/var/log/$SERVICE_NAME.err.log
+stdout_logfile=/var/log/$SERVICE_NAME.out.log
 user=$(whoami)
 environment=PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$APP_DIR/$PYTHON_ENV_DIR/bin"
 EOF
@@ -50,12 +50,7 @@ fi
 echo "Reloading Supervisor, enabling, and starting the Motionberry service..."
 sudo supervisorctl reread
 sudo supervisorctl update
-
-if ! sudo supervisorctl status "$SERVICE_NAME" | grep -q 'RUNNING'; then
-    sudo supervisorctl start "$SERVICE_NAME"
-else
-    echo "Motionberry service is already running."
-fi
+sudo supervisorctl start "$SERVICE_NAME"
 
 echo "Motionberry setup complete. Service status:"
 sudo supervisorctl status "$SERVICE_NAME"
