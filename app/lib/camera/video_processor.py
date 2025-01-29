@@ -3,7 +3,6 @@ import subprocess
 import time
 from .file_manager import FileManager
 
-
 class VideoProcessor:
     def __init__(self, file_manager, framerate=30, video_format="mp4"):
         self.logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ class VideoProcessor:
         return result_path
 
     def convert_to_mp4(self, h264_path):
-        """Converts an H.264 file to MP4 using FFmpeg and moves it to the output directory."""
+        """Converts an H.264 file to MP4 using MP4Box and moves it to the output directory."""
         mp4_filename = h264_path.with_suffix('.mp4').name
         output_path = (self.file_manager.output_dir / mp4_filename).resolve()
         try:
@@ -30,16 +29,9 @@ class VideoProcessor:
 
             process = subprocess.run(
                 [
-                    "ffmpeg",
-                    "-y",
-                    "-fflags", "+genpts",
-                    "-loglevel", "debug",
-                    "-vsync", "2",
-                    "-r", str(self.framerate),
-                    # "-framerate", str(self.framerate),
-                    "-i", str(h264_path),
-                    "-r", str(self.framerate),
-                    "-c:v", "copy",
+                    "MP4Box",
+                    "-add", str(h264_path),
+                    "-fps", str(self.framerate),
                     str(output_path)
                 ],
                 stdout=subprocess.PIPE,
@@ -47,11 +39,11 @@ class VideoProcessor:
                 text=True,
             )
 
-            self.logger.debug(f"FFmpeg stdout:\n{process.stdout}")
-            self.logger.error(f"FFmpeg stderr:\n{process.stderr}")
+            self.logger.debug(f"MP4Box stdout:\n{process.stdout}")
+            self.logger.error(f"MP4Box stderr:\n{process.stderr}")
 
             if process.returncode != 0:
-                self.logger.error(f"FFmpeg process failed with return code {process.returncode}")
+                self.logger.error(f"MP4Box process failed with return code {process.returncode}")
                 raise subprocess.CalledProcessError(
                     process.returncode, process.args, process.stdout, process.stderr
                 )
