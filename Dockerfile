@@ -3,7 +3,8 @@ FROM debian:bookworm
 RUN apt update && apt install -y --no-install-recommends \
         gosu \
         util-linux \
-        ffmpeg \
+        mkvtoolnix \
+        gpac \
         build-essential \
         python3-dev \
         python3-venv \

@@ -35,7 +35,7 @@ echo "Do you want to remove system dependencies installed by Motionberry? (y/n)"
 read -r REMOVE_DEPS
 if [[ "$REMOVE_DEPS" =~ ^[Yy]$ ]]; then
     echo "Removing system dependencies..."
-    sudo apt purge -y --auto-remove ffmpeg python3-dev python3-venv python3-pip python3-numpy python3-picamera2
+    sudo apt purge -y --auto-remove mkvtoolnix gpac python3-dev python3-venv python3-pip python3-numpy python3-picamera2
 fi
 
 echo "Motionberry uninstallation complete."

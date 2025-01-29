@@ -11,7 +11,8 @@ echo "Installing required libraries..."
 sudo apt update
 sudo apt install -y --no-install-recommends \
     util-linux \
-    ffmpeg \
+    mkvtoolnix \
+    gpac \
     python3-dev \
     python3-venv \
     python3-pip \
