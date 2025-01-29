@@ -30,7 +30,8 @@ class CameraManager:
 
         video_config = self.picam2.create_video_configuration(
             main={"size": record_size, "format": "RGB888"},
-            lores={"size": detect_size, "format": "YUV420"}
+            lores={"size": detect_size, "format": "YUV420"},
+            controls={"FrameRate": framerate}
         )
         self.picam2.configure(video_config)
         self.logger.debug("CameraManager initialized.")
