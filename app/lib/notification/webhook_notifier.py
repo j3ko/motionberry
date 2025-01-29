@@ -38,7 +38,7 @@ def get_webhook_specs():
             "payload_schema": {
                 "type": "object",
                 "properties": {
-                    "filename": {"type": "string", "example": "motion_2025-01-06_00-06-23.mp4"},
+                    "filename": {"type": "string", "example": "motion_2025-01-06_00-06-23.mkv"},
                 },
                 "required": ["filename"],
             },

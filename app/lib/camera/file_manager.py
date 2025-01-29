@@ -23,7 +23,7 @@ class FileManager:
 
     def cleanup_output_directory(self):
         """Cleans up the output directory by size and age constraints."""
-        allowed_extensions = {"h264", "mp4", "jpg"}
+        allowed_extensions = {"h264", "mkv", "mp4", "jpg"}
         files = [
             f for f in sorted(self.output_dir.iterdir(), key=lambda f: f.stat().st_mtime)
             if f.is_file() and f.suffix.lstrip(".").lower() in allowed_extensions

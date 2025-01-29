@@ -57,7 +57,7 @@ def initialize_components(app, config):
     app.config["video_processor"] = VideoProcessor(
         file_manager=app.config["file_manager"],
         framerate=int(config.get("capture", {}).get("framerate", 30)),
-        video_format=config.get("capture", {}).get("video_format", "mp4"),
+        video_format=config.get("capture", {}).get("video_format", "mkv"),
     )
 
     app.config["camera_manager"] = CameraManager(

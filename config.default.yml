@@ -47,9 +47,9 @@
   # List of possible values can be found at: https://github.com/raspberrypi/libcamera/tree/main/src/ipa/rpi/vc4/data
   # tuning: imx477_noir
 
-  # Output format for videos (Optional, Default: mp4)
-  # Possible values: mp4, raw
-  # video_format: mp4
+  # Output format for videos (Optional, Default: mkv)
+  # Possible values: mkv, mp4, raw
+  # video_format: mkv
 
   # Maximum total size of the capture directory in MB (Optional, Default: None)
   # max_size_mb: 20480

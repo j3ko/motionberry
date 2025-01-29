@@ -1,6 +1,7 @@
 import logging
 import subprocess
 import time
+from pathlib import Path
 from .file_manager import FileManager
 
 class VideoProcessor:
@@ -11,10 +12,12 @@ class VideoProcessor:
         self.video_format = video_format.lower()
         self.logger.info(f"VideoProcessor initialized with format: {self.video_format}")
 
-    def process_and_save(self, raw_path):
+    def process_and_save(self, raw_path, pts_file=None):
         """Processes the raw file and moves it to the final output directory."""
         if self.video_format == "mp4":
             result_path = self.convert_to_mp4(raw_path)
+        elif self.video_format == "mkv":
+            result_path = self.convert_to_mkv(raw_path, pts_file)
         else:
             result_path = self.file_manager.move_to_output(raw_path, raw_path.name)
         return result_path
@@ -55,6 +58,45 @@ class VideoProcessor:
                 f"Error during MP4 conversion for file {h264_path}: {e}", exc_info=True
             )
             raise
-        # finally:
-        #     self.file_manager.delete_file(h264_path)
+        return output_path
+
+    def convert_to_mkv(self, h264_path, pts_file=None):
+        """Converts an H.264 file to MKV using mkvmerge and an optional PTS file."""
+        mkv_filename = h264_path.with_suffix('.mkv').name
+        output_path = (self.file_manager.output_dir / mkv_filename).resolve()
+        
+        try:
+            start_time = time.time()
+            self.logger.info(f"Starting MKV conversion for file: {h264_path}")
+            
+            command = ["mkvmerge", "-o", str(output_path)]
+            
+            if pts_file and Path(pts_file).exists():
+                command.extend(["--timecodes", "0:" + str(pts_file)])
+            
+            command.append(str(h264_path))
+            
+            process = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+            self.logger.debug(f"mkvmerge stdout:\n{process.stdout}")
+            self.logger.error(f"mkvmerge stderr:\n{process.stderr}")
+
+            if process.returncode != 0:
+                self.logger.error(f"mkvmerge process failed with return code {process.returncode}")
+                raise subprocess.CalledProcessError(
+                    process.returncode, process.args, process.stdout, process.stderr
+                )
+
+            elapsed_time = time.time() - start_time
+            self.logger.info(f"MKV conversion successful: {output_path} (Time: {elapsed_time:.2f}s)")
+        except subprocess.CalledProcessError as e:
+            self.logger.error(
+                f"Error during MKV conversion for file {h264_path}: {e}", exc_info=True
+            )
+            raise
         return output_path

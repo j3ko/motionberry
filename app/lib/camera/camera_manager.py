@@ -114,7 +114,7 @@ class CameraManager:
                 try:
                     self.picam2.stop_encoder()
                     self.logger.info("Recording stopped.")
-                    final_path = self.video_processor.process_and_save(self.current_raw_path)
+                    final_path = self.video_processor.process_and_save(self.current_raw_path, self.current_pts_path)
                     self.logger.info(f"Video saved: {final_path}")
                     return final_path
                 finally:
