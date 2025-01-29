@@ -31,7 +31,7 @@ class VideoProcessor:
                 [
                     "MP4Box",
                     "-add", str(h264_path),
-                    "-fps", str(self.framerate),
+                    # "-fps", str(self.framerate),
                     str(output_path)
                 ],
                 stdout=subprocess.PIPE,
