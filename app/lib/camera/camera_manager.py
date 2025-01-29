@@ -16,7 +16,7 @@ class CameraManager:
         self.logger = logging.getLogger(__name__)
         tuning = self._load_tuning(tuning_file)
         self.picam2 = Picamera2(tuning=tuning)
-        self.encoder = H264Encoder(encoder_bitrate)
+        self.encoder = H264Encoder(bitrate=encoder_bitrate, framerate=framerate, enable_sps_framerate=True)
         self.framerate = framerate
         self.camera_lock = threading.Lock()
         self.client_lock = threading.Lock()
@@ -30,8 +30,7 @@ class CameraManager:
 
         video_config = self.picam2.create_video_configuration(
             main={"size": record_size, "format": "RGB888"},
-            lores={"size": detect_size, "format": "YUV420"},
-            controls={"FrameRate": framerate}
+            lores={"size": detect_size, "format": "YUV420"}
         )
         self.picam2.configure(video_config)
         self.logger.debug("CameraManager initialized.")
