@@ -81,16 +81,17 @@ class FileManager:
     def _generate_tmp_filename(self, tmp_dir, extension):
         """Generates a filename with a timestamp and the given extension in the temporary directory."""
         timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
-        tmp_filename = tmp_dir / f"motion_{timestamp}.{extension}"
+        filename = f"motion_{timestamp}.{extension}"
+        tmp_filename = Path(tmp_dir) / filename 
         self.logger.debug(f"Generated temporary filename: {tmp_filename}")
         return tmp_filename
 
     def save_raw_file(self):
         """Creates a temporary directory and returns the path for saving raw video files."""
-        tmp_dir = self._create_tmp_dir()
-        raw_file_path = self._generate_tmp_filename(tmp_dir, "h264")
-        pts_file_path = os.path.join(tmp_dir, os.path.splitext(raw_file_path)[0] + ".pts")  # Same dir, ".pts" extension
-        self.logger.debug(f"Raw file path generated: {raw_file_path}")
-        self.logger.debug(f"PTS file path generated: {pts_file_path}")
-        return raw_file_path, pts_file_path
+        tmp_dir = self._create_tmp_dir() 
+        raw_file = self._generate_tmp_filename(tmp_dir, "h264") 
+        pts_file = raw_file.with_suffix(".pts") 
+        self.logger.debug(f"Raw file path generated: {raw_file}")
+        self.logger.debug(f"PTS file path generated: {pts_file}")
+        return raw_file, pts_file
 
