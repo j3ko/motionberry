@@ -100,7 +100,7 @@ class CameraManager:
                     self.current_raw_path, self.current_pts_path = self.file_manager.save_raw_file()
                     self.encoder.output = FileOutput(str(self.current_raw_path))
                     self.is_recording = True
-                    self.picam2.start_encoder(encoder=self.encoder, pts=str(self.current_pts_path))
+                    self.picam2.start_recording(encoder=self.encoder, pts=str(self.current_pts_path))
                     self.logger.info(f"Recording started: {self.current_raw_path}")
                 except Exception as e:
                     self.logger.error(f"Failed to start recording: {e}", exc_info=True)
@@ -112,7 +112,7 @@ class CameraManager:
         with self.camera_lock:
             if self.is_recording:
                 try:
-                    self.picam2.stop_encoder()
+                    self.picam2.stop_recording()
                     self.logger.info("Recording stopped.")
                     final_path = self.video_processor.process_and_save(self.current_raw_path)
                     self.logger.info(f"Video saved: {final_path}")
