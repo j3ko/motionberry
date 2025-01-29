@@ -5,27 +5,26 @@ set -e
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 APP_DIR=$(realpath "$SCRIPT_DIR/..")
 PYTHON_ENV_DIR="$APP_DIR/.venv"
-SERVICE_NAME="motionberry.service"
+SERVICE_NAME="motionberry"
 
 echo "Uninstalling Motionberry..."
 
-if systemctl is-active --quiet "$SERVICE_NAME"; then
+# Stop the Supervisor service
+if supervisorctl status "$SERVICE_NAME" | grep -q 'RUNNING'; then
     echo "Stopping Motionberry service..."
-    sudo systemctl stop "$SERVICE_NAME"
+    sudo supervisorctl stop "$SERVICE_NAME"
 fi
 
-if systemctl is-enabled --quiet "$SERVICE_NAME"; then
-    echo "Disabling Motionberry service..."
-    sudo systemctl disable "$SERVICE_NAME"
+# Remove Supervisor configuration file
+SUPERVISOR_CONF_FILE="/etc/supervisor/conf.d/$SERVICE_NAME.conf"
+if [ -f "$SUPERVISOR_CONF_FILE" ]; then
+    echo "Removing Supervisor configuration file..."
+    sudo rm -f "$SUPERVISOR_CONF_FILE"
+    sudo supervisorctl reread
+    sudo supervisorctl update
 fi
 
-SERVICE_FILE="/etc/systemd/system/$SERVICE_NAME"
-if [ -f "$SERVICE_FILE" ]; then
-    echo "Removing systemd service file..."
-    sudo rm -f "$SERVICE_FILE"
-    sudo systemctl daemon-reload
-fi
-
+# # Remove Python virtual environment
 # if [ -d "$PYTHON_ENV_DIR" ]; then
 #     echo "Removing virtual environment..."
 #     rm -rf "$PYTHON_ENV_DIR"
