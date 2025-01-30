@@ -1,7 +1,7 @@
 import logging
-from .notifier import Notifier
+from .event_notifier import EventNotifier
 
-class LoggingNotifier(Notifier):
+class LoggingNotifier(EventNotifier):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 

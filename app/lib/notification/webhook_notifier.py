@@ -1,9 +1,9 @@
 import logging
 import threading
 import requests
-from .notifier import Notifier
+from .event_notifier import EventNotifier
 
-class WebhookNotifier(Notifier):
+class WebhookNotifier(EventNotifier):
     def __init__(self, config: dict):
         self.logger = logging.getLogger(__name__)
         self.config = config
