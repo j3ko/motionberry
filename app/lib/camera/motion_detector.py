@@ -30,12 +30,10 @@ class MotionDetector:
     def _motion_detection_loop(self):
         prev_frame = None
         w, h = self.camera_manager.detect_size
+        self.camera_manager.start_camera()
 
         while self.is_running:
             try:
-                if not self.camera_manager.is_camera_running:
-                    self.camera_manager.start_camera()
-
                 cur_frame = self.camera_manager.capture_frame("lores")
                 cur_frame = cur_frame[:w * h].reshape(h, w)
 
@@ -89,12 +87,12 @@ class MotionDetector:
 
             except Exception as e:
                 self.logger.error(f"Error during motion detection: {e}", exc_info=True)
-                if self.camera_manager.is_camera_running:
-                    self.camera_manager.stop_camera()
+                self.camera_manager.stop_camera()
                 time.sleep(10)
-
-        if self.camera_manager.is_camera_running:
-            self.camera_manager.stop_camera()
+                self.camera_manager.start_camera()
+            
+        # end while
+        self.camera_manager.stop_camera()
         self.logger.info("Motion detection loop terminated and camera stopped.")
 
     def start(self):
