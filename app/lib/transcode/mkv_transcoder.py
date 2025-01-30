@@ -63,7 +63,6 @@ class MKVTranscoder(VideoTranscoder):
             )
 
             logger.debug(f"mkvmerge stdout:\n{process.stdout}")
-            logger.error(f"mkvmerge stderr:\n{process.stderr}")
 
             if process.returncode != 0:
                 logger.error(

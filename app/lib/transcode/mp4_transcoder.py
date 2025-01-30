@@ -31,7 +31,6 @@ class MP4Transcoder(VideoTranscoder):
             )
 
             logger.debug(f"MP4Box stdout:\n{process.stdout}")
-            logger.error(f"MP4Box stderr:\n{process.stderr}")
 
             if process.returncode != 0:
                 logger.error(
