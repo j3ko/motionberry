@@ -31,7 +31,7 @@ class MotionDetector:
         prev_frame = None
         w, h = self.camera_manager.detect_size
         self.camera_manager.start_camera()
-        time.sleep(10)
+        time.sleep(5)
         
         while self.is_running:
             try:
@@ -89,9 +89,9 @@ class MotionDetector:
             except Exception as e:
                 self.logger.error(f"Error during motion detection: {e}", exc_info=True)
                 self.camera_manager.stop_camera()
-                time.sleep(10)
+                time.sleep(5)
                 self.camera_manager.start_camera()
-                time.sleep(10)
+                time.sleep(5)
 
         # end while
         self.camera_manager.stop_camera()
