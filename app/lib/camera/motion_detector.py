@@ -31,7 +31,8 @@ class MotionDetector:
         prev_frame = None
         w, h = self.camera_manager.detect_size
         self.camera_manager.start_camera()
-
+        time.sleep(10)
+        
         while self.is_running:
             try:
                 cur_frame = self.camera_manager.capture_frame("lores")
@@ -90,7 +91,8 @@ class MotionDetector:
                 self.camera_manager.stop_camera()
                 time.sleep(10)
                 self.camera_manager.start_camera()
-            
+                time.sleep(10)
+
         # end while
         self.camera_manager.stop_camera()
         self.logger.info("Motion detection loop terminated and camera stopped.")
