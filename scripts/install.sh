@@ -28,7 +28,8 @@ pip install --upgrade pip
 pip install .
 
 echo "Creating log file and setting permissions..."
-sudo touch "$LOG_FILE"
+TEMP_LOG_FILE=$(mktemp)
+mv "$TEMP_LOG_FILE" "$LOG_FILE"
 sudo chown $(whoami):$(whoami) "$LOG_FILE"
 sudo chmod 644 "$LOG_FILE"
 
@@ -56,7 +57,9 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=$APP_DIR
-ExecStart=$APP_DIR/$PYTHON_ENV_DIR/bin/python $APP_DIR/run.py >> $LOG_FILE 2>&1
+ExecStart=$APP_DIR/$PYTHON_ENV_DIR/bin/python $APP_DIR/run.py
+StandardOutput=file:$LOG_FILE
+StandardError=file:$LOG_FILE
 Restart=always
 User=$(whoami)
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$APP_DIR/$PYTHON_ENV_DIR/bin"
