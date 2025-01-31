@@ -7,6 +7,7 @@ APP_DIR=$(realpath "$SCRIPT_DIR/..")
 PYTHON_ENV_DIR=".venv"
 SERVICE_NAME="motionberry.service"
 LOG_FILE="/var/log/motionberry.log"
+USER_NAME=$(whoami)  # Get the current user
 
 echo "Installing required libraries..."
 sudo apt update
@@ -27,11 +28,6 @@ python3 -m venv --system-site-packages "$PYTHON_ENV_DIR"
 pip install --upgrade pip
 pip install .
 
-echo "Creating log file and setting permissions..."
-touch "$LOG_FILE"
-chown $(whoami):$(whoami) "$LOG_FILE"
-chmod 644 "$LOG_FILE"
-
 echo "Setting up log rotation for $LOG_FILE..."
 sudo tee /etc/logrotate.d/motionberry > /dev/null <<EOF
 $LOG_FILE {
@@ -41,7 +37,7 @@ $LOG_FILE {
     compress
     delaycompress
     notifempty
-    create 644 $(whoami) $(whoami)
+    create 644 $USER_NAME $USER_NAME
 }
 EOF
 
@@ -56,11 +52,12 @@ After=network.target
 [Service]
 Type=simple
 WorkingDirectory=$APP_DIR
+ExecStartPre=/bin/bash -c 'touch $LOG_FILE && chown $USER_NAME:$USER_NAME $LOG_FILE && chmod 644 $LOG_FILE'
 ExecStart=$APP_DIR/$PYTHON_ENV_DIR/bin/python $APP_DIR/run.py
 StandardOutput=file:$LOG_FILE
 StandardError=file:$LOG_FILE
 Restart=always
-User=$(whoami)
+User=$USER_NAME
 Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$APP_DIR/$PYTHON_ENV_DIR/bin"
 
 [Install]
@@ -73,7 +70,7 @@ fi
 echo "Reloading systemd, enabling, and starting the Motionberry service..."
 sudo systemctl daemon-reload
 sudo systemctl enable "$SERVICE_NAME"
-sudo systemctl start "$SERVICE_NAME"
+sudo systemctl restart "$SERVICE_NAME"
 
 echo "Motionberry setup complete. Service status:"
 sudo systemctl status "$SERVICE_NAME"
