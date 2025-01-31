@@ -7,7 +7,7 @@ APP_DIR=$(realpath "$SCRIPT_DIR/..")
 PYTHON_ENV_DIR=".venv"
 SERVICE_NAME="motionberry.service"
 LOG_FILE="/var/log/motionberry.log"
-USER_NAME=$(whoami)  # Get the current user
+USER_NAME=${SUDO_USER:-$(whoami)}
 
 echo "Installing required libraries..."
 sudo apt update
