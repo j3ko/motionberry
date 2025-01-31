@@ -28,10 +28,9 @@ pip install --upgrade pip
 pip install .
 
 echo "Creating log file and setting permissions..."
-TEMP_LOG_FILE=$(mktemp)
-mv "$TEMP_LOG_FILE" "$LOG_FILE"
-sudo chown $(whoami):$(whoami) "$LOG_FILE"
-sudo chmod 644 "$LOG_FILE"
+touch "$LOG_FILE"
+chown $(whoami):$(whoami) "$LOG_FILE"
+chmod 644 "$LOG_FILE"
 
 echo "Setting up log rotation for $LOG_FILE..."
 sudo tee /etc/logrotate.d/motionberry > /dev/null <<EOF
