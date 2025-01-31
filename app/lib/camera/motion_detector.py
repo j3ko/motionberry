@@ -27,6 +27,13 @@ class MotionDetector:
         self.thread = None
         self._notify("application_started")
 
+    def _restart_camera(self):
+        self.logger.warning("Restarting camera...")
+        self.camera_manager.stop_camera()
+        time.sleep(5)
+        self.camera_manager.start_camera()
+        time.sleep(5)
+
     def _motion_detection_loop(self):
         prev_frame = None
         w, h = self.camera_manager.detect_size
@@ -38,7 +45,10 @@ class MotionDetector:
                 cur_frame = self.camera_manager.capture_frame("lores")
                 cur_frame = cur_frame[:w * h].reshape(h, w)
 
-                if prev_frame is not None:
+                if cur_frame is None:
+                    self.logger.error("Empty frame detected.")
+                    self._restart_camera()
+                elif prev_frame is not None:
                     mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
                     if mse > self.motion_threshold:  # Motion detected
                         current_time = time.time()
@@ -88,10 +98,7 @@ class MotionDetector:
 
             except Exception as e:
                 self.logger.error(f"Error during motion detection: {e}", exc_info=True)
-                self.camera_manager.stop_camera()
-                time.sleep(5)
-                self.camera_manager.start_camera()
-                time.sleep(5)
+                self._restart_camera()
 
         # end while
         self.camera_manager.stop_camera()
