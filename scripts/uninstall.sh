@@ -6,6 +6,7 @@ SCRIPT_DIR=$(dirname "$(realpath "$0")")
 APP_DIR=$(realpath "$SCRIPT_DIR/..")
 PYTHON_ENV_DIR="$APP_DIR/.venv"
 SERVICE_NAME="motionberry.service"
+LOGROTATE_FILE="/etc/logrotate.d/motionberry"
 
 echo "Uninstalling Motionberry..."
 
@@ -24,6 +25,11 @@ if [ -f "$SERVICE_FILE" ]; then
     echo "Removing systemd service file..."
     sudo rm -f "$SERVICE_FILE"
     sudo systemctl daemon-reload
+fi
+
+if [ -f "$LOGROTATE_FILE" ]; then
+    echo "Removing logrotate configuration..."
+    sudo rm -f "$LOGROTATE_FILE"
 fi
 
 # if [ -d "$PYTHON_ENV_DIR" ]; then
