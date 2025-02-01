@@ -34,6 +34,22 @@ class MotionDetector:
         self.camera_manager.start_camera()
         time.sleep(5)
 
+    def _is_frame_valid(self, frame):
+        """Check if the frame is valid (not empty, not blank, not corrupted)."""
+        if frame is None:
+            return False
+
+        if np.all(frame == 0):
+            return False
+
+        # if np.var(frame) < 10:
+        #     return False
+
+        if frame.shape != (self.camera_manager.detect_size[1], self.camera_manager.detect_size[0]):
+            return False
+
+        return True
+
     def _motion_detection_loop(self):
         prev_frame = None
         w, h = self.camera_manager.detect_size
@@ -45,10 +61,12 @@ class MotionDetector:
                 cur_frame = self.camera_manager.capture_frame("lores")
                 cur_frame = cur_frame[:w * h].reshape(h, w)
 
-                if cur_frame is None:
-                    self.logger.error("Empty frame detected.")
+                if not self._is_frame_valid(cur_frame):
+                    self.logger.error("Invalid frame detected (empty, blank, or corrupted).")
                     self._restart_camera()
-                elif prev_frame is not None:
+                    continue
+                
+                if prev_frame is not None:
                     mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
                     if mse > self.motion_threshold:  # Motion detected
                         current_time = time.time()
