@@ -45,7 +45,10 @@ class MotionDetector:
         # if np.var(frame) < 10:
         #     return False
 
-        if frame.shape != (self.camera_manager.detect_size[1], self.camera_manager.detect_size[0]):
+        if frame.shape != (
+            self.camera_manager.detect_size[1],
+            self.camera_manager.detect_size[0],
+        ):
             return False
 
         return True
@@ -55,17 +58,19 @@ class MotionDetector:
         w, h = self.camera_manager.detect_size
         self.camera_manager.start_camera()
         time.sleep(5)
-        
+
         while self.is_running:
             try:
                 cur_frame = self.camera_manager.capture_frame("lores")
-                cur_frame = cur_frame[:w * h].reshape(h, w)
+                cur_frame = cur_frame[: w * h].reshape(h, w)
 
                 if not self._is_frame_valid(cur_frame):
-                    self.logger.error("Invalid frame detected (empty, blank, or corrupted).")
+                    self.logger.error(
+                        "Invalid frame detected (empty, blank, or corrupted)."
+                    )
                     self._restart_camera()
                     continue
-                
+
                 if prev_frame is not None:
                     mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
                     if mse > self.motion_threshold:  # Motion detected
@@ -80,7 +85,9 @@ class MotionDetector:
 
                     elif self.camera_manager.is_recording:
                         current_time = time.time()
-                        elapsed_recording_time = current_time - self.recording_start_time
+                        elapsed_recording_time = (
+                            current_time - self.recording_start_time
+                        )
                         time_since_last_motion = current_time - self.last_motion_time
 
                         # Enforce max_clip_length if set
@@ -98,12 +105,9 @@ class MotionDetector:
                             continue
 
                         # Enforce stopping based on motion_gap and min_clip_length
-                        if (
-                            time_since_last_motion > self.motion_gap
-                            and (
-                                not self.min_clip_length
-                                or elapsed_recording_time > self.min_clip_length
-                            )
+                        if time_since_last_motion > self.motion_gap and (
+                            not self.min_clip_length
+                            or elapsed_recording_time > self.min_clip_length
                         ):
                             self.logger.info("No motion detected for encoding period.")
                             final_path = self.camera_manager.stop_recording()
