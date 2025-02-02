@@ -43,6 +43,7 @@ $LOG_FILE {
     delaycompress
     notifempty
     create 644 $USER_NAME $USER_NAME
+    copytruncate
 }
 EOF
 
