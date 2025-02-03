@@ -100,7 +100,7 @@ class CameraManager:
                     self.current_raw_path, self.current_pts_path = self.file_manager.save_raw_file()
                     self.encoder.output = FileOutput(str(self.current_raw_path))
                     self.is_recording = True
-                    self.picam2.start_recording(encoder=self.encoder, output=str(self.current_raw_path), pts=str(self.current_pts_path))
+                    self.picam2.start_encoding(encoder=self.encoder, output=str(self.current_raw_path), pts=str(self.current_pts_path))
                     self.logger.info(f"Recording started: {self.current_raw_path}")
                 except Exception as e:
                     self.logger.error(f"Failed to start recording: {e}", exc_info=True)
@@ -119,8 +119,8 @@ class CameraManager:
                     return final_path
                 finally:
                     self.is_recording = False
-                    self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)
-                    self.file_manager.cleanup_output_directory()
+                    # self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)
+                    # self.file_manager.cleanup_output_directory()
 
 
     def record_for_duration(self, duration, result_queue=None):
