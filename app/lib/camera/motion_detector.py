@@ -42,8 +42,8 @@ class MotionDetector:
         if np.all(frame == 0):
             return False
 
-        # if np.var(frame) < 10:
-        #     return False
+        if np.var(frame) < 10:
+            return False
 
         if frame.shape != (
             self.camera_manager.detect_size[1],
