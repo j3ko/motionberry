@@ -141,8 +141,10 @@ class MotionDetector:
         self.is_running = False
         if self.thread and self.thread.is_alive():
             if self.camera_manager.is_recording:
-                self.camera_manager.stop_recording()
-                self._notify("motion_stopped")
+                final_path = self.camera_manager.stop_recording()
+                self._notify(
+                    "motion_stopped", {"filename": str(final_path.name)}
+                )
             self.thread.join()
             self._notify("detection_disabled")
 
