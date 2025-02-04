@@ -102,10 +102,8 @@ class MotionDetector:
                             self._notify(
                                 "motion_stopped", {"filename": str(final_path.name)}
                             )
-                            continue
-
                         # Enforce stopping based on motion_gap and min_clip_length
-                        if time_since_last_motion > self.motion_gap and (
+                        elif time_since_last_motion > self.motion_gap and (
                             not self.min_clip_length
                             or elapsed_recording_time > self.min_clip_length
                         ):

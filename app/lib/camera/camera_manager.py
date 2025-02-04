@@ -109,9 +109,12 @@ class CameraManager:
 
     def stop_recording(self):
         """Stops video encoding and processes the output."""
+        self.logger.debug("stop_recording: attempting to obtain camera_lock.")
         with self.camera_lock:
+            self.logger.debug(f"stop_recording: is_recording: {self.is_recording}.")
             if self.is_recording:
                 try:
+                    self.logger.debug(f"stop_recording: attempting to stop encoder.")
                     self.picam2.stop_encoder()
                     self.logger.info("Recording stopped.")
                     final_path = self.video_processor.process_and_save(self.current_raw_path, self.current_pts_path)
