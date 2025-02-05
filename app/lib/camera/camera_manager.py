@@ -9,7 +9,7 @@ from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
 from .video_processor import VideoProcessor
 from .file_manager import FileManager
-
+import numpy as np
 
 class CameraManager:
     def __init__(self, file_manager, video_processor, encoder_bitrate=1000000, framerate=30, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
@@ -166,7 +166,7 @@ class CameraManager:
         filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
         full_path = str(self.file_manager.output_dir / filename)
         cur_frame = self.camera_manager.capture_frame("lores")
-        self.logger.debug(f"cur_frame: {cur_frame}")
+        self.logger.debug(f"cur_frame shape: {cur_frame.shape}, min: {np.min(cur_frame)}, max: {np.max(cur_frame)}")
         request = self.picam2.capture_request()
         request.save("main", full_path)
         request.release()
