@@ -165,7 +165,7 @@ class CameraManager:
             self.start_camera()
         filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
         full_path = str(self.file_manager.output_dir / filename)
-        cur_frame = self.camera_manager.capture_frame("lores")
+        cur_frame = self.capture_frame("lores")
         self.logger.debug(f"cur_frame shape: {cur_frame.shape}, min: {np.min(cur_frame)}, max: {np.max(cur_frame)}")
         request = self.picam2.capture_request()
         request.save("main", full_path)
