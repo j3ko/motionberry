@@ -161,6 +161,7 @@ class CameraManager:
 
     def take_snapshot(self):
         """Takes a snapshot with timeout protection."""
+        self.logger.debug(f"Taking snapshot.")
         if not self.is_camera_running:
             self.start_camera()
         
