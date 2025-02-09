@@ -10,7 +10,7 @@ from picamera2.outputs import FileOutput
 from .video_processor import VideoProcessor
 from .file_manager import FileManager
 import numpy as np
-import signal
+import concurrent.futures
 
 class CameraManager:
     def __init__(self, file_manager, video_processor, encoder_bitrate=1000000, framerate=30, record_size=(1280, 720), detect_size=(320, 240), tuning_file=None):
@@ -159,36 +159,30 @@ class CameraManager:
         record_thread = threading.Thread(target=record, daemon=True)
         record_thread.start()
 
-
-    def handler(signum, frame):
-        raise TimeoutError("capture_frame() took too long!")
-
     def take_snapshot(self):
-        """Takes a snapshot with a timeout using signal.alarm()."""
-        self.logger.info(f"Taking snapshot")
+        """Takes a snapshot with timeout protection."""
         if not self.is_camera_running:
             self.start_camera()
-
+        
         filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
         full_path = str(self.file_manager.output_dir / filename)
 
-        # Set a timeout of 3 seconds
-        signal.signal(signal.SIGALRM, self.handler)
-        signal.alarm(3)
-
+        # Run capture_frame with a timeout
         try:
-            cur_frame = self.capture_frame("lores")  # Might hang
-            signal.alarm(0)  # Cancel the alarm if successful
-        except TimeoutError:
-            self.logger.error("Camera capture_frame() timed out! Camera might have crashed.")
-            return None  # Return early or restart the camera
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                future = executor.submit(self.capture_frame, "lores")
+                cur_frame = future.result(timeout=3)  # Set timeout (e.g., 3 seconds)
 
-        self.logger.debug(f"cur_frame shape: {cur_frame.shape}, min: {np.min(cur_frame)}, max: {np.max(cur_frame)}")
+            self.logger.debug(f"cur_frame shape: {cur_frame.shape}, min: {np.min(cur_frame)}, max: {np.max(cur_frame)}")
+
+        except concurrent.futures.TimeoutError:
+            self.logger.error("Camera capture_frame() timed out! Camera might have crashed.")
+            return None  # Return early or trigger a camera restart
 
         request = self.picam2.capture_request()
         request.save("main", full_path)
         request.release()
         self.logger.info(f"Snapshot taken: {full_path}")
-
+        
         return filename
 
