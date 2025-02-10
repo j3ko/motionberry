@@ -199,7 +199,7 @@ class CameraManager:
         try:
             self.logger.debug("Attempting to capture frame using capture_frame().")
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                self.logger.debug(f"capture_frame() called with stream: {stream}")
+                self.logger.debug(f"capture_frame() called")
                 future = executor.submit(self.capture_frame, "lores")
                 cur_frame = future.result(timeout=3)
 
