@@ -80,27 +80,35 @@ class CameraManager:
                             self.logger.info("Camera stopped.")
 
     def capture_frame(self, stream="lores"):
-        """Captures a frame buffer for analysis with timeout handling."""
-        self.logger.debug(f"capture_frame() called with stream: {stream}")
-
+        """Captures a frame buffer for analysis with manual timeout handling."""
         if not self.is_camera_running:
-            self.logger.debug("Camera is not running in capture_frame(). Attempting to start.")
+            self.logger.warning("Camera is not running in capture_frame(). Attempting to start.")
             self.start_camera()
 
-        try:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-                future = executor.submit(self.picam2.capture_buffer, stream)
-                frame = future.result(timeout=3)
+        frame_result = [None]  # Mutable container to store the result
+        capture_complete = threading.Event()
 
-            self.logger.debug("capture_frame() completed successfully.")
-            return frame
+        def capture():
+            """Worker function to capture the frame."""
+            try:
+                frame_result[0] = self.picam2.capture_buffer(stream)
+                capture_complete.set()  # Signal that capture is done
+            except Exception as e:
+                self.logger.error(f"Error in capture_frame(): {e}", exc_info=True)
+                capture_complete.set()  # Ensure the event is set to prevent hanging
 
-        except concurrent.futures.TimeoutError:
-            self.logger.error("capture_frame() timed out! Camera might be unresponsive.")
+        # Start capture in a separate thread
+        capture_thread = threading.Thread(target=capture, daemon=True)
+        capture_thread.start()
+
+        # Wait for capture to complete, but with a timeout
+        if not capture_complete.wait(timeout=3):
+            self.logger.error("capture_frame() timed out! Camera might be unresponsive. Restarting camera...")
+            # self._restart_camera()
             return None  # Prevents hang
-        except Exception as e:
-            self.logger.error(f"Unexpected error in capture_frame(): {e}", exc_info=True)
-            return None  # Prevents hang
+
+        self.logger.debug("capture_frame() completed successfully.")
+        return frame_result[0]
     
     def capture_image_array(self):
         """Captures a frame as an image array."""
@@ -191,6 +199,7 @@ class CameraManager:
         try:
             self.logger.debug("Attempting to capture frame using capture_frame().")
             with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                self.logger.debug(f"capture_frame() called with stream: {stream}")
                 future = executor.submit(self.capture_frame, "lores")
                 cur_frame = future.result(timeout=3)
 
