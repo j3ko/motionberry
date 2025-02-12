@@ -107,7 +107,7 @@ class CameraManager:
             # self._restart_camera()
             return None  # Prevents hang
 
-        self.logger.debug("capture_frame() completed successfully.")
+        # self.logger.debug("capture_frame() completed successfully.")
         return frame_result[0]
     
     def capture_image_array(self):
