@@ -27,32 +27,6 @@ class MotionDetector:
         self.thread = None
         self._notify("application_started")
 
-    def _restart_camera(self):
-        self.logger.warning("Restarting camera...")
-        self.camera_manager.stop_camera()
-        time.sleep(5)
-        self.camera_manager.start_camera()
-        time.sleep(5)
-
-    def _is_frame_valid(self, frame):
-        """Check if the frame is valid (not empty, not blank, not corrupted)."""
-        if frame is None:
-            return False
-
-        if np.all(frame == 0):
-            return False
-
-        # if np.var(frame) < 10:
-        #     return False
-
-        if frame.shape != (
-            self.camera_manager.detect_size[1],
-            self.camera_manager.detect_size[0],
-        ):
-            return False
-
-        return True
-
     def _motion_detection_loop(self):
         prev_frame = None
         w, h = self.camera_manager.detect_size
@@ -63,13 +37,6 @@ class MotionDetector:
             try:
                 cur_frame = self.camera_manager.capture_frame("lores")
                 cur_frame = cur_frame[: w * h].reshape(h, w)
-
-                if not self._is_frame_valid(cur_frame):
-                    self.logger.error(
-                        "Invalid frame detected (empty, blank, or corrupted)."
-                    )
-                    self._restart_camera()
-                    continue
 
                 if prev_frame is not None:
                     mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
@@ -118,7 +85,7 @@ class MotionDetector:
 
             except Exception as e:
                 self.logger.error(f"Error during motion detection: {e}", exc_info=True)
-                self._restart_camera()
+                self.camera_manager.restart_camera()
 
         # end while
         self.camera_manager.stop_camera()
@@ -142,9 +109,7 @@ class MotionDetector:
         if self.thread and self.thread.is_alive():
             if self.camera_manager.is_recording:
                 final_path = self.camera_manager.stop_recording()
-                self._notify(
-                    "motion_stopped", {"filename": str(final_path.name)}
-                )
+                self._notify("motion_stopped", {"filename": str(final_path.name)})
             self.thread.join()
             self._notify("detection_disabled")
 
