@@ -85,7 +85,7 @@ class MotionDetector:
 
             except Exception as e:
                 self.logger.error(f"Error during motion detection: {e}", exc_info=True)
-                self.camera_manager.restart_camera()
+                time.sleep(1)
 
         # end while
         self.camera_manager.stop_camera()

@@ -98,24 +98,32 @@ class CameraManager:
         self.picam2.set_controls({"FrameRate": self.framerate})
 
     def restart_camera(self):
-        """Safely restarts the camera."""
+        """Safely restarts the camera, ensuring encoding is stopped if active."""
         with self.client_lock, self.camera_lock:
             self.logger.warning("Restarting camera.")
+
+            if self.is_recording:
+                self.logger.debug("Recording is active. Stopping recording before restart.")
+                try:
+                    self.stop_recording()
+                    self.logger.debug("Recording stopped successfully.")
+                except Exception as e:
+                    self.logger.error(f"Error stopping recording before restart: {e}")
 
             if self.is_camera_running:
                 try:
                     self.picam2.stop()
-                    self.logger.info("Camera stopped successfully.")
+                    self.logger.debug("Camera stopped successfully.")
                 except Exception as e:
-                    self.logger.warning(f"Error stopping camera: {e}")
+                    self.logger.error(f"Error stopping camera: {e}")
 
                 self.is_camera_running = False
 
             try:
                 self.picam2.close()
-                self.logger.info("Camera instance closed.")
+                self.logger.debug("Camera instance closed.")
             except Exception as e:
-                self.logger.warning(f"Error closing camera: {e}")
+                self.logger.error(f"Error closing camera: {e}")
 
             try:
                 self._initialize_camera()
@@ -128,7 +136,8 @@ class CameraManager:
             except Exception as e:
                 self.logger.error(f"Failed to restart camera: {e}", exc_info=True)
 
-    def _capture_with_timeout(self, capture_function, *args, timeout=3):
+
+    def _capture_with_timeout(self, capture_function, *args, timeout=10):
         """Helper method to handle camera capture with timeout and crash detection."""
         if not self.is_camera_running:
             self.logger.warning(
