@@ -71,7 +71,7 @@ class CameraManager:
     def take_snapshot(self):
         if not self.is_camera_running:
             self.start_camera()
-        self.command_queue.put(("take_snapshot"))
+        self.command_queue.put(("take_snapshot", []))
         filename = self._get_result()
         if not filename:
             self.logger.error("Failed to capture snapshot.")
