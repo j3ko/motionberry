@@ -1,7 +1,8 @@
 import multiprocessing as mp
 import logging
 import queue
-from .camera_process import CameraProcess
+
+from camera_process import CameraProcess
 
 
 class CameraManager:
@@ -12,7 +13,7 @@ class CameraManager:
         self.config = config
         self.command_queue = mp.Queue()
         self.result_queue = mp.Queue()
-        self.status_dict = mp.Manager().dict()
+        self.status_dict = mp.Manager().dict()  # Shared dictionary for status
         self.process = CameraProcess(
             self.command_queue,
             self.result_queue,
@@ -55,6 +56,14 @@ class CameraManager:
 
     def stop_recording(self):
         self.command_queue.put(("stop_recording", []))
+        return self._get_result()
+
+    def record_for_duration(self, duration):
+        self.command_queue.put(("record_for_duration", [duration]))
+        return self._get_result()
+
+    def take_snapshot(self):
+        self.command_queue.put(("take_snapshot", []))
         return self._get_result()
 
     def _get_result(self, timeout=10):

@@ -19,7 +19,7 @@ class CameraProcess(mp.Process):
         super().__init__()
         self.command_queue = command_queue
         self.result_queue = result_queue
-        self.status_dict = status_dict
+        self.status_dict = status_dict  # Shared dict for camera status
         self.file_manager = file_manager
         self.video_processor = video_processor
         self.config = config
@@ -52,6 +52,10 @@ class CameraProcess(mp.Process):
                     self.start_recording()
                 elif command == "stop_recording":
                     self.stop_recording()
+                elif command == "record_for_duration":
+                    self.record_for_duration(*args)
+                elif command == "take_snapshot":
+                    self.take_snapshot()
                 elif command == "restart_camera":
                     self.restart_camera()
             except Exception as e:
@@ -104,3 +108,21 @@ class CameraProcess(mp.Process):
             raw_path, pts_path = self.result_queue.get()
             final_path = self.video_processor.process_and_save(raw_path, pts_path)
             self.result_queue.put(final_path)
+
+    def record_for_duration(self, duration):
+        self.start_recording()
+        self.logger.info(f"Recording for {duration} seconds...")
+        self._wait_with_timeout(duration)
+        self.stop_recording()
+
+    def take_snapshot(self):
+        snapshot_path = self.file_manager.get_snapshot_path()
+        self.picam2.capture_file(str(snapshot_path))
+        self.result_queue.put(snapshot_path)
+
+    def _wait_with_timeout(self, timeout):
+        import time
+
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            time.sleep(0.1)
