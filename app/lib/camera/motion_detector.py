@@ -35,7 +35,7 @@ class MotionDetector:
 
         while self.is_running:
             try:
-                cur_frame = self.camera_manager.capture_frame("lores")
+                cur_frame = self.camera_manager.capture_buffer("lores")
                 cur_frame = cur_frame[: w * h].reshape(h, w)
 
                 if prev_frame is not None:
