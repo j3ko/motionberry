@@ -94,8 +94,4 @@ class FileManager:
         self.logger.debug(f"Raw file path generated: {raw_file}")
         self.logger.debug(f"PTS file path generated: {pts_file}")
         return raw_file, pts_file
-
-    def get_snapshot_path(self):
-        """Generates a unique file path for a snapshot."""
-        filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
-        return self.output_dir / filename
+    

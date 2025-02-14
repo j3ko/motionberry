@@ -1,5 +1,6 @@
 import multiprocessing as mp
 import logging
+import time
 from pathlib import Path
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
@@ -118,7 +119,21 @@ class CameraProcess(mp.Process):
     def take_snapshot(self):
         snapshot_path = self.file_manager.get_snapshot_path()
         self.picam2.capture_file(str(snapshot_path))
-        self.result_queue.put(snapshot_path)
+
+    def take_snapshot(self):
+        """Takes a snapshot and saves it as a JPEG file."""
+        filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
+        full_path = str(self.file_manager.output_dir / filename)
+        try:
+            request = self.picam2.capture_request()
+            request.save("main", full_path)
+            self.logger.info(f"Snapshot taken: {full_path}")
+            self.result_queue.put(filename)
+        except Exception as e:
+            self.logger.error(f"Failed to capture snapshot: {e}")
+            return None
+        finally:
+            request.release()
 
     def _wait_with_timeout(self, timeout):
         import time
