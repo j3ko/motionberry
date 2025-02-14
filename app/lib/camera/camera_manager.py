@@ -15,7 +15,7 @@ class CameraManager:
         self.detect_size = config.get("detect_size", (320, 240))
         self.command_queue = mp.Queue()
         self.result_queue = mp.Queue()
-        self.status_dict = mp.Manager().dict()  # Shared dictionary for status
+        self.status_dict = mp.Manager().dict()
         self.process = CameraProcess(
             self.command_queue,
             self.result_queue,
@@ -62,7 +62,10 @@ class CameraManager:
 
     def stop_recording(self):
         self.command_queue.put(("stop_recording", []))
-        return self._get_result()
+        raw_path, pts_path = self._get_result()            
+        final_path = self.video_processor.process_and_save(raw_path, pts_path)
+        self.status_dict["is_recording"] = False
+        return final_path
 
     def record_for_duration(self, duration):
         if not self.is_camera_running:

@@ -94,21 +94,19 @@ class CameraProcess(mp.Process):
 
     def start_recording(self):
         if not self.status_dict["is_recording"]:
-            raw_path, pts_path = self.file_manager.save_raw_file()
+            self.current_raw_path, self.current_pts_path = self.file_manager.save_raw_file()
             self.picam2.start_encoder(
-                H264Encoder(bitrate=self.encoder_bitrate, framerate=self.framerate),
-                FileOutput(str(raw_path)),
+                encoder=self.encoder,
+                output=str(self.current_raw_path),
+                pts=str(self.current_pts_path),
             )
             self.status_dict["is_recording"] = True
-            self.result_queue.put((raw_path, pts_path))
+            self.result_queue.put((self.current_raw_path, self.current_pts_path))
 
     def stop_recording(self):
         if self.status_dict["is_recording"]:
             self.picam2.stop_encoder()
-            self.status_dict["is_recording"] = False
-            raw_path, pts_path = self.result_queue.get()
-            final_path = self.video_processor.process_and_save(raw_path, pts_path)
-            self.result_queue.put(final_path)
+            self.result_queue.put((self.current_raw_path, self.current_pts_path))
 
     def record_for_duration(self, duration):
         self.start_recording()
