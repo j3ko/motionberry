@@ -36,6 +36,12 @@ class CameraManager:
     def is_recording(self):
         return self.status_dict.get("is_recording", False)
 
+    def start_camera(self):
+        self.command_queue.put(("start_camera", []))
+
+    def stop_camera(self):
+        self.command_queue.put(("stop_camera", []))
+
     def wait_for_restart(self, timeout=10):
         """Waits for the camera to restart and be ready."""
         restarted = self.restart_event.wait(timeout)
