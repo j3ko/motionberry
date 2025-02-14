@@ -112,6 +112,7 @@ class CameraManager:
 
             if self.is_camera_running:
                 try:
+                    self.logger.debug("Stopping camera.")
                     self.picam2.stop()
                     self.logger.debug("Camera stopped successfully.")
                 except Exception as e:
@@ -120,6 +121,7 @@ class CameraManager:
                 self.is_camera_running = False
 
             try:
+                self.logger.debug("Closing camera.")
                 self.picam2.close()
                 self.logger.debug("Camera instance closed.")
             except Exception as e:
