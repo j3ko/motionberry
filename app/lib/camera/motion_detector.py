@@ -37,11 +37,8 @@ class MotionDetector:
             try:
                 cur_frame = self.camera_manager.capture_buffer("lores")
                 if cur_frame is None:
-                    print("Capture failed. Waiting for camera restart...")
-                    if self.camera_manager.wait_for_restart():
-                        print("Camera restarted. Retrying capture...")
-                        cur_frame = self.camera_manager.capture_buffer("lores")
-
+                    raise Exception("cur_frame is None")
+                
                 cur_frame = cur_frame[: w * h].reshape(h, w)
 
                 if prev_frame is not None:
@@ -91,7 +88,8 @@ class MotionDetector:
 
             except Exception as e:
                 self.logger.error(f"Error during motion detection: {e}", exc_info=True)
-                time.sleep(1)
+                self.logger.debug("Capture failed. Waiting for camera restart...")
+                self.camera_manager.wait_for_restart(30)
 
         # end while
         self.camera_manager.stop_camera()

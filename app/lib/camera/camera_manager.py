@@ -17,6 +17,7 @@ class CameraManager:
         self.result_queue = mp.Queue()
         self.status_dict = mp.Manager().dict()
         self.restart_event = mp.Event()
+        self.ready_event = mp.Event()
 
         self.process = CameraProcess(
             self.command_queue,
@@ -25,6 +26,7 @@ class CameraManager:
             video_processor,
             config,
             self.status_dict,
+            self.ready_event,
         )
         self.process.start()
 
@@ -38,34 +40,49 @@ class CameraManager:
 
     def start_camera(self):
         self.command_queue.put(("start_camera", []))
+        if not self.ready_event.wait(timeout=60):
+            self.logger.error("Camera failed to start.")
+            return False
+        return True
 
     def stop_camera(self):
         self.command_queue.put(("stop_camera", []))
 
     def wait_for_restart(self, timeout=10):
-        """Waits for the camera to restart and be ready."""
+        """Blocks until the camera has restarted properly."""
+        self.logger.info("Waiting for camera restart...")
         restarted = self.restart_event.wait(timeout)
         if restarted:
             self.restart_event.clear()
-        return restarted
+            return True
+        return False
 
     def restart_camera(self):
         self.command_queue.put(("restart_camera", []))
-        self._force_restart()
+        return self._force_restart()
+
+    def _wait_for_camera_ready(self):
+        """Ensures that the camera is running before proceeding."""
+        if not self.is_camera_running:
+            if not self.start_camera():
+                return False
+        return self.ready_event.wait(timeout=60)
 
     def capture_buffer(self, stream="lores"):
-        if not self.is_camera_running:
-            self.start_camera()
+        if not self._wait_for_camera_ready():
+            return None
         self.command_queue.put(("capture_buffer", [stream]))
         return self._get_result()
 
     def capture_array(self, stream="main"):
-        if not self.is_camera_running:
-            self.start_camera()
+        if not self._wait_for_camera_ready():
+            return None
         self.command_queue.put(("capture_array", [stream]))
         return self._get_result()
 
     def start_recording(self):
+        if not self._wait_for_camera_ready():
+            return None
         self.command_queue.put(("start_recording", []))
         return self._get_result()
 
@@ -77,14 +94,14 @@ class CameraManager:
         return final_path
 
     def record_for_duration(self, duration):
-        if not self.is_camera_running:
-            self.start_camera()
+        if not self._wait_for_camera_ready():
+            return None
         self.command_queue.put(("record_for_duration", [duration]))
         return self._get_result()
 
     def take_snapshot(self):
-        if not self.is_camera_running:
-            self.start_camera()
+        if not self._wait_for_camera_ready():
+            return None
         self.command_queue.put(("take_snapshot", []))
         filename = self._get_result()
         if not filename:
@@ -97,13 +114,16 @@ class CameraManager:
         try:
             return self.result_queue.get(timeout=timeout)
         except queue.Empty:
-            self.logger.error("Camera process did not respond in time. Restarting process...")
+            self.logger.error(
+                "Camera process did not respond in time. Restarting process..."
+            )
             self._force_restart()
             return None
 
     def _force_restart(self):
         self.logger.warning("Restarting Camera Process...")
-        self.restart_event.set()
+        self.restart_event.clear()
+        self.ready_event.clear()  # Reset readiness
 
         self.process.terminate()
         self.process.join()
@@ -115,7 +135,13 @@ class CameraManager:
             self.video_processor,
             self.config,
             self.status_dict,
+            self.ready_event,  # Pass ready event
         )
         self.process.start()
 
+        if not self.ready_event.wait(timeout=60):
+            self.logger.error("Camera did not start properly.")
+            return False
+
         self.restart_event.set()
+        return True
