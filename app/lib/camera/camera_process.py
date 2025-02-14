@@ -163,14 +163,16 @@ class CameraProcess(mp.Process):
         """Captures a snapshot and saves it as a JPEG file."""
         filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
         full_path = self.file_manager.output_dir / filename
+        request = self.picam2.capture_request()
         try:
-            with self.picam2.capture_request() as request:
-                request.save("main", str(full_path))
+            request.save("main", str(full_path))
             self.logger.info(f"Snapshot taken: {full_path}")
             self.result_queue.put(filename)
         except Exception as e:
             self.logger.error(f"Failed to capture snapshot: {e}", exc_info=True)
             self.result_queue.put(None)
+        finally:
+            request.release()
 
     def _wait_with_timeout(self, timeout):
         """Waits for the specified duration without blocking the process."""
