@@ -2,7 +2,7 @@ import multiprocessing as mp
 import logging
 import queue
 
-from camera_process import CameraProcess
+from .camera_process import CameraProcess
 
 
 class CameraManager:
