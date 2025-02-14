@@ -36,6 +36,12 @@ class MotionDetector:
         while self.is_running:
             try:
                 cur_frame = self.camera_manager.capture_buffer("lores")
+                if cur_frame is None:
+                    print("Capture failed. Waiting for camera restart...")
+                    if self.camera_manager.wait_for_restart():
+                        print("Camera restarted. Retrying capture...")
+                        cur_frame = self.camera_manager.capture_buffer("lores")
+
                 cur_frame = cur_frame[: w * h].reshape(h, w)
 
                 if prev_frame is not None:

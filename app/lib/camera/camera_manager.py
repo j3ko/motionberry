@@ -16,6 +16,8 @@ class CameraManager:
         self.command_queue = mp.Queue()
         self.result_queue = mp.Queue()
         self.status_dict = mp.Manager().dict()
+        self.restart_event = mp.Event()
+
         self.process = CameraProcess(
             self.command_queue,
             self.result_queue,
@@ -34,15 +36,16 @@ class CameraManager:
     def is_recording(self):
         return self.status_dict.get("is_recording", False)
 
-    def start_camera(self):
-        self.command_queue.put(("start_camera", []))
-
-    def stop_camera(self):
-        self.command_queue.put(("stop_camera", []))
+    def wait_for_restart(self, timeout=10):
+        """Waits for the camera to restart and be ready."""
+        restarted = self.restart_event.wait(timeout)
+        if restarted:
+            self.restart_event.clear()
+        return restarted
 
     def restart_camera(self):
         self.command_queue.put(("restart_camera", []))
-        self._force_restart_if_needed()
+        self._force_restart()
 
     def capture_buffer(self, stream="lores"):
         if not self.is_camera_running:
@@ -62,7 +65,7 @@ class CameraManager:
 
     def stop_recording(self):
         self.command_queue.put(("stop_recording", []))
-        raw_path, pts_path = self._get_result()            
+        raw_path, pts_path = self._get_result()
         final_path = self.video_processor.process_and_save(raw_path, pts_path)
         self.status_dict["is_recording"] = False
         return final_path
@@ -88,15 +91,17 @@ class CameraManager:
         try:
             return self.result_queue.get(timeout=timeout)
         except queue.Empty:
-            self.logger.error(
-                "Camera process did not respond in time. Restarting process..."
-            )
-            self._force_restart_if_needed()
+            self.logger.error("Camera process did not respond in time. Restarting process...")
+            self._force_restart()
             return None
 
-    def _force_restart_if_needed(self):
+    def _force_restart(self):
+        self.logger.warning("Restarting Camera Process...")
+        self.restart_event.set()
+
         self.process.terminate()
         self.process.join()
+
         self.process = CameraProcess(
             self.command_queue,
             self.result_queue,
@@ -106,3 +111,5 @@ class CameraManager:
             self.status_dict,
         )
         self.process.start()
+
+        self.restart_event.set()
