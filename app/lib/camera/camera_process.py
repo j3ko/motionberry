@@ -70,6 +70,9 @@ class CameraProcess(mp.Process):
             lores={"size": self.detect_size, "format": "YUV420"},
             controls={"FrameRate": self.framerate},
         )
+        self.encoder = H264Encoder(
+            bitrate=self.encoder_bitrate, framerate=self.framerate, enable_sps_framerate=True
+        )
         self.picam2.configure(video_config)
         self.picam2.set_controls({"FrameRate": self.framerate})
 
