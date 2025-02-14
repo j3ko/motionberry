@@ -1,5 +1,6 @@
 import io
 import time
+import subprocess
 import threading
 import logging
 from PIL import Image
@@ -98,35 +99,39 @@ class CameraManager:
         self.picam2.set_controls({"FrameRate": self.framerate})
 
     def restart_camera(self):
-        """Safely restarts the camera, ensuring encoding is stopped if active."""
+        """Forcefully restart the camera to recover from hangs or crashes."""
         with self.client_lock, self.camera_lock:
-            self.logger.warning("Restarting camera.")
+            self.logger.warning("Force restarting the camera at the system level...")
 
             if self.is_recording:
-                self.logger.debug("Recording is active. Stopping recording before restart.")
                 try:
+                    self.logger.debug("Stopping recording before restart.")
                     self.stop_recording()
-                    self.logger.debug("Recording stopped successfully.")
                 except Exception as e:
-                    self.logger.error(f"Error stopping recording before restart: {e}")
+                    self.logger.error(f"Error stopping recording: {e}")
 
-            if self.is_camera_running:
-                try:
-                    self.logger.debug("Stopping camera.")
-                    self.picam2.stop()
-                    self.logger.debug("Camera stopped successfully.")
-                except Exception as e:
-                    self.logger.error(f"Error stopping camera: {e}")
+            # Kill any hanging Picamera or libcamera processes
+            subprocess.run(
+                ["sudo", "killall", "libcamera-vid"], stderr=subprocess.DEVNULL
+            )
+            subprocess.run(
+                ["sudo", "killall", "libcamera-still"], stderr=subprocess.DEVNULL
+            )
 
-                self.is_camera_running = False
-
+            # Unload and reload camera drivers
             try:
-                self.logger.debug("Closing camera.")
-                self.picam2.close()
-                self.logger.debug("Camera instance closed.")
-            except Exception as e:
-                self.logger.error(f"Error closing camera: {e}")
+                subprocess.run(["sudo", "modprobe", "-r", "bcm2835-v4l2"], check=True)
+                subprocess.run(["sudo", "modprobe", "-r", "vc4"], check=True)
+                time.sleep(1)  # Give some time for unbinding
+                subprocess.run(["sudo", "modprobe", "vc4"], check=True)
+                subprocess.run(["sudo", "modprobe", "bcm2835-v4l2"], check=True)
+                self.logger.info("Camera drivers reloaded successfully.")
+            except subprocess.CalledProcessError as e:
+                self.logger.error(f"Failed to reload camera drivers: {e}")
+                return False
 
+            # Reinitialize Picamera2
+            time.sleep(2)  # Allow drivers to stabilize
             try:
                 self._initialize_camera()
                 if self.client_count > 0:
@@ -137,7 +142,9 @@ class CameraManager:
                     )
             except Exception as e:
                 self.logger.error(f"Failed to restart camera: {e}", exc_info=True)
+                return False
 
+            return True
 
     def _capture_with_timeout(self, capture_function, *args, timeout=10):
         """Helper method to handle camera capture with timeout and crash detection."""
