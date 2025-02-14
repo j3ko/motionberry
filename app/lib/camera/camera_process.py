@@ -117,10 +117,6 @@ class CameraProcess(mp.Process):
         self.stop_recording()
 
     def take_snapshot(self):
-        snapshot_path = self.file_manager.get_snapshot_path()
-        self.picam2.capture_file(str(snapshot_path))
-
-    def take_snapshot(self):
         """Takes a snapshot and saves it as a JPEG file."""
         filename = f"snapshot_{time.strftime('%Y-%m-%d_%H-%M-%S')}.jpg"
         full_path = str(self.file_manager.output_dir / filename)
