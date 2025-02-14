@@ -43,10 +43,14 @@ class CameraManager:
         self._force_restart_if_needed()
 
     def capture_buffer(self, stream="lores"):
+        if not self.is_camera_running:
+            self.start_camera()
         self.command_queue.put(("capture_buffer", [stream]))
         return self._get_result()
 
     def capture_array(self, stream="main"):
+        if not self.is_camera_running:
+            self.start_camera()
         self.command_queue.put(("capture_array", [stream]))
         return self._get_result()
 
@@ -59,10 +63,14 @@ class CameraManager:
         return self._get_result()
 
     def record_for_duration(self, duration):
+        if not self.is_camera_running:
+            self.start_camera()
         self.command_queue.put(("record_for_duration", [duration]))
         return self._get_result()
 
     def take_snapshot(self):
+        if not self.is_camera_running:
+            self.start_camera()
         self.command_queue.put(("take_snapshot", []))
         return self._get_result()
 
