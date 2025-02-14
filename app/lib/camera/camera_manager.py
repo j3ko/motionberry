@@ -11,6 +11,8 @@ class CameraManager:
         self.file_manager = file_manager
         self.video_processor = video_processor
         self.config = config
+        self.record_size = config.get("record_size", (1280, 720))
+        self.detect_size = config.get("detect_size", (320, 240))
         self.command_queue = mp.Queue()
         self.result_queue = mp.Queue()
         self.status_dict = mp.Manager().dict()  # Shared dictionary for status
