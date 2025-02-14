@@ -110,13 +110,22 @@ class CameraManager:
                 except Exception as e:
                     self.logger.error(f"Error stopping recording: {e}")
 
-            # Kill any hanging Picamera or libcamera processes
-            subprocess.run(
-                ["sudo", "killall", "libcamera-vid"], stderr=subprocess.DEVNULL
-            )
-            subprocess.run(
-                ["sudo", "killall", "libcamera-still"], stderr=subprocess.DEVNULL
-            )
+            # Find and kill processes using any /dev/video devices
+            try:
+                result = subprocess.run(
+                    ["ls", "/dev/video*"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                video_devices = result.stdout.strip().split("\n")
+                for device in video_devices:
+                    subprocess.run(["sudo", "fuser", "-k", device], stderr=subprocess.DEVNULL)
+            except subprocess.CalledProcessError:
+                self.logger.warning("No /dev/video devices found.")
+
+            subprocess.run(["sudo", "killall", "libcamera-vid"], stderr=subprocess.DEVNULL)
+            subprocess.run(["sudo", "killall", "libcamera-still"], stderr=subprocess.DEVNULL)
 
             # Unload and reload camera drivers
             try:
