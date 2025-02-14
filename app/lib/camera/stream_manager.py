@@ -25,7 +25,7 @@ class StreamManager:
 
         try:
             while True:
-                frame = self.camera_manager.capture_array()
+                frame = self.camera_manager.capture_image_array()
                 stream = io.BytesIO()
                 image = Image.fromarray(frame)
                 image.save(stream, format="JPEG")
