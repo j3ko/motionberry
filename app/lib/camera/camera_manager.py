@@ -1,4 +1,5 @@
 import io
+import glob
 import time
 import subprocess
 import threading
@@ -110,48 +111,38 @@ class CameraManager:
                 except Exception as e:
                     self.logger.error(f"Error stopping recording: {e}")
 
-            # Find and kill processes using any /dev/video devices
-            try:
-                self.logger.debug("Stopping /dev/video*.")
-                result = subprocess.run(
-                    ["ls", "/dev/video*"],
-                    capture_output=True,
-                    text=True,
-                    check=True
-                )
-                video_devices = result.stdout.strip().split("\n")
+            # Find and kill processes using /dev/video* devices
+            video_devices = glob.glob("/dev/video*")
+            if video_devices:
+                self.logger.debug(f"Stopping devices: {video_devices}")
                 for device in video_devices:
                     subprocess.run(["sudo", "fuser", "-k", device], stderr=subprocess.DEVNULL)
-            except subprocess.CalledProcessError:
+            else:
                 self.logger.warning("No /dev/video devices found.")
 
-            self.logger.debug("Killing libcamera.")
+            self.logger.debug("Killing libcamera processes.")
             subprocess.run(["sudo", "killall", "libcamera-vid"], stderr=subprocess.DEVNULL)
             subprocess.run(["sudo", "killall", "libcamera-still"], stderr=subprocess.DEVNULL)
 
-            # Unload and reload camera drivers
+            # Reload camera drivers
             try:
-                self.logger.debug("Reloading drivers.")
+                self.logger.debug("Reloading bcm2835-v4l2 driver.")
                 subprocess.run(["sudo", "modprobe", "-r", "bcm2835-v4l2"], check=True)
-                subprocess.run(["sudo", "modprobe", "-r", "vc4"], check=True)
-                time.sleep(1)  # Give some time for unbinding
-                subprocess.run(["sudo", "modprobe", "vc4"], check=True)
+                time.sleep(1)
                 subprocess.run(["sudo", "modprobe", "bcm2835-v4l2"], check=True)
-                self.logger.info("Camera drivers reloaded successfully.")
+                self.logger.info("Camera driver reloaded successfully.")
             except subprocess.CalledProcessError as e:
                 self.logger.error(f"Failed to reload camera drivers: {e}")
                 return False
 
             # Reinitialize Picamera2
-            time.sleep(2)  # Allow drivers to stabilize
+            time.sleep(2)
             try:
                 self._initialize_camera()
                 if self.client_count > 0:
                     self.picam2.start()
                     self.is_camera_running = True
-                    self.logger.info(
-                        f"Camera restarted with {self.client_count} active clients."
-                    )
+                    self.logger.info(f"Camera restarted with {self.client_count} active clients.")
             except Exception as e:
                 self.logger.error(f"Failed to restart camera: {e}", exc_info=True)
                 return False
