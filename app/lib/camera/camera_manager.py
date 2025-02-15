@@ -150,7 +150,7 @@ class CameraManager:
             self.logger.error(
                 f"Capture timed out! Camera might be unresponsive. Restarting camera..."
             )
-            self.restart_camera()
+            # self.restart_camera()
             return None
 
         return capture_result[0]
