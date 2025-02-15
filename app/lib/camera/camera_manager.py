@@ -45,7 +45,7 @@ class CameraManager:
             tuning_file += ".json"
 
         try:
-            tuning = self._load_tuning(tuning_file)
+            tuning = Picamera2.load_tuning_file(tuning_file)
             self.logger.info(f"Loading tuning file '{tuning_file}'")
         except FileNotFoundError:
             self.logger.error(
