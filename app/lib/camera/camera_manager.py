@@ -112,6 +112,7 @@ class CameraManager:
 
             # Find and kill processes using any /dev/video devices
             try:
+                self.logger.debug("Stopping /dev/video*.")
                 result = subprocess.run(
                     ["ls", "/dev/video*"],
                     capture_output=True,
@@ -124,11 +125,13 @@ class CameraManager:
             except subprocess.CalledProcessError:
                 self.logger.warning("No /dev/video devices found.")
 
+            self.logger.debug("Killing libcamera.")
             subprocess.run(["sudo", "killall", "libcamera-vid"], stderr=subprocess.DEVNULL)
             subprocess.run(["sudo", "killall", "libcamera-still"], stderr=subprocess.DEVNULL)
 
             # Unload and reload camera drivers
             try:
+                self.logger.debug("Reloading drivers.")
                 subprocess.run(["sudo", "modprobe", "-r", "bcm2835-v4l2"], check=True)
                 subprocess.run(["sudo", "modprobe", "-r", "vc4"], check=True)
                 time.sleep(1)  # Give some time for unbinding
