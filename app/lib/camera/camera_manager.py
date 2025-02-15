@@ -1,18 +1,9 @@
-import io
-import glob
 import time
-import subprocess
 import threading
 import logging
-from PIL import Image
-from pathlib import Path
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
-from .video_processor import VideoProcessor
-from .file_manager import FileManager
-import numpy as np
-import concurrent.futures
 
 
 class CameraManager:
@@ -30,8 +21,10 @@ class CameraManager:
         self.framerate = framerate
         self.camera_lock = threading.Lock()
         self.client_lock = threading.Lock()
+        self.restart_lock = threading.Lock()
         self.is_camera_running = False
         self.is_recording = False
+        self.is_restarting = False
         self.record_size = record_size
         self.detect_size = detect_size
         self.file_manager = file_manager
@@ -88,7 +81,7 @@ class CameraManager:
 
     def _initialize_camera(self, tuning_file=None):
         """Initializes the Picamera2 instance with optional tuning."""
-        tuning = self._load_tuning(tuning_file)
+        tuning = Picamera2.load_tuning_file(tuning_file) if tuning_file else None
         self.picam2 = Picamera2(tuning=tuning)
 
         video_config = self.picam2.create_video_configuration(
@@ -100,31 +93,40 @@ class CameraManager:
         self.picam2.set_controls({"FrameRate": self.framerate})
 
     def restart_camera(self):
-        with self.client_lock, self.camera_lock:
+        """Restarts the camera safely, preventing multiple simultaneous restarts."""
+        if self.is_restarting:
+            self.logger.warning("Restart already in progress. Waiting...")
+            while self.is_restarting:
+                time.sleep(0.5)
+            return
+
+        with self.restart_lock:
+            self.is_restarting = True
             self.logger.warning("Restarting Picamera2 instance...")
-            
             try:
                 self.picam2.close()
             except Exception as e:
                 self.logger.error(f"Error closing camera: {e}")
-            
+
             time.sleep(2)
 
             try:
                 self._initialize_camera(self.tuning_file)
-
                 self.picam2.start()
                 self.is_camera_running = True
                 self.logger.info("Camera successfully restarted.")
-
             except Exception as e:
                 self.logger.error(f"Failed to restart camera: {e}", exc_info=True)
-                return False
-            
-            return True
+            finally:
+                self.is_restarting = False
 
     def _capture_with_timeout(self, capture_function, *args, timeout=10):
         """Helper method to handle camera capture with timeout and crash detection."""
+        if self.is_restarting:
+            self.logger.warning("Capture request while restarting. Waiting...")
+            while self.is_restarting:
+                time.sleep(0.5)
+
         if not self.is_camera_running:
             self.logger.warning(
                 "Camera is not running in capture. Attempting to start."
@@ -135,22 +137,19 @@ class CameraManager:
         capture_complete = threading.Event()
 
         def capture():
-            """Worker function for capturing frames safely."""
             try:
                 capture_result[0] = capture_function(*args)
-                capture_complete.set()
             except Exception as e:
                 self.logger.error(f"Error during capture: {e}", exc_info=True)
+            finally:
                 capture_complete.set()
 
         capture_thread = threading.Thread(target=capture, daemon=True)
         capture_thread.start()
 
         if not capture_complete.wait(timeout):
-            self.logger.error(
-                f"Capture timed out! Camera might be unresponsive. Restarting camera..."
-            )
-            # self.restart_camera()
+            self.logger.error("Capture timed out! Restarting camera...")
+            self.restart_camera()
             return None
 
         return capture_result[0]
