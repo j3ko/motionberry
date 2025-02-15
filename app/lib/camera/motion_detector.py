@@ -36,6 +36,14 @@ class MotionDetector:
         while self.is_running:
             try:
                 cur_frame = self.camera_manager.capture_frame("lores")
+
+                if cur_frame is None:
+                    self.logger.warning(
+                        "Captured frame is None. Possible camera restart in progress."
+                    )
+                    time.sleep(0.5)
+                    continue
+
                 cur_frame = cur_frame[: w * h].reshape(h, w)
 
                 if prev_frame is not None:
@@ -87,7 +95,7 @@ class MotionDetector:
                 self.logger.error(f"Error during motion detection: {e}", exc_info=True)
                 time.sleep(1)
 
-        # end while
+        # Cleanup
         self.camera_manager.stop_camera()
         self.logger.info("Motion detection loop terminated and camera stopped.")
 
