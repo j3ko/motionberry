@@ -81,7 +81,7 @@ class CameraManager:
 
     def _initialize_camera(self, tuning_file=None):
         """Initializes the Picamera2 instance with optional tuning."""
-        tuning = Picamera2.load_tuning_file(tuning_file) if tuning_file else None
+        tuning = self._load_tuning(tuning_file)
         self.picam2 = Picamera2(tuning=tuning)
 
         video_config = self.picam2.create_video_configuration(
