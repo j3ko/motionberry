@@ -93,14 +93,19 @@ class CameraManager:
         self.picam2.set_controls({"FrameRate": self.framerate})
 
     def restart_camera(self):
-        """Restarts the camera and signals waiting threads when done."""
+        """Restarts the camera safely, ensuring only one restart happens at a time."""
         with self.restart_condition:
+            if self.is_restarting:
+                self.logger.info("Restart already in progress. Waiting...")
+                self.restart_condition.wait()
+                return self.is_camera_running
             self.is_restarting = True
-            self.logger.warning("Restarting Picamera2 instance...")
 
+        self.logger.warning("Restarting Picamera2 instance...")
         result = False
         with self.client_lock, self.camera_lock:
             try:
+                self.is_camera_running = False
                 self.picam2.close()
             except Exception as e:
                 self.logger.error(f"Error closing camera: {e}")
@@ -114,7 +119,6 @@ class CameraManager:
                 result = True
             except Exception as e:
                 self.logger.error(f"Failed to restart camera: {e}", exc_info=True)
-                result = False
             finally:
                 with self.restart_condition:
                     self.is_restarting = False
@@ -124,24 +128,22 @@ class CameraManager:
 
     def _capture_with_timeout(self, capture_function, *args, timeout=10):
         """Handles camera capture with timeout and waits if the camera is restarting."""
-
-        # Wait if the camera is in the process of restarting
         with self.restart_condition:
             while self.is_restarting:
-                self.logger.warning("Waiting for camera restart...")
+                self.logger.info("Waiting for camera restart...")
                 self.restart_condition.wait()
 
         if not self.is_camera_running:
-            self.logger.warning(
-                "Camera is not running in capture. Attempting to start."
-            )
+            self.logger.warning("Camera is not running. Attempting to start.")
             self.start_camera()
+            if not self.is_camera_running:
+                self.logger.error("Camera failed to start.")
+                return None
 
         capture_result = [None]
         capture_complete = threading.Event()
 
         def capture():
-            """Worker function for capturing frames safely."""
             try:
                 capture_result[0] = capture_function(*args)
             except Exception as e:
@@ -153,10 +155,10 @@ class CameraManager:
         capture_thread.start()
 
         if not capture_complete.wait(timeout):
-            self.logger.error(
-                "Capture timed out! Camera might be unresponsive. Restarting camera..."
-            )
-            self.restart_camera()
+            self.logger.error("Capture timed out! Camera might be unresponsive. Waiting for restart...")
+            with self.restart_condition:
+                while self.is_restarting:
+                    self.restart_condition.wait()
             return None
 
         return capture_result[0]
