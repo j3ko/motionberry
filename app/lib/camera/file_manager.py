@@ -94,4 +94,4 @@ class FileManager:
         self.logger.debug(f"Raw file path generated: {raw_file}")
         self.logger.debug(f"PTS file path generated: {pts_file}")
         return raw_file, pts_file
-
+    
