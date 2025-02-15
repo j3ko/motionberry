@@ -100,53 +100,24 @@ class CameraManager:
         self.picam2.set_controls({"FrameRate": self.framerate})
 
     def restart_camera(self):
-        """Forcefully restart the camera to recover from hangs or crashes."""
         with self.client_lock, self.camera_lock:
-            self.logger.warning("Force restarting the camera at the system level...")
-
-            if self.is_recording:
-                try:
-                    self.logger.debug("Stopping recording before restart.")
-                    self.stop_recording()
-                except Exception as e:
-                    self.logger.error(f"Error stopping recording: {e}")
-
-            # Find and kill processes using /dev/video* devices
-            video_devices = glob.glob("/dev/video*")
-            if video_devices:
-                self.logger.debug(f"Stopping devices: {video_devices}")
-                for device in video_devices:
-                    subprocess.run(["sudo", "fuser", "-k", device], stderr=subprocess.DEVNULL)
-            else:
-                self.logger.warning("No /dev/video devices found.")
-
-            self.logger.debug("Killing libcamera processes.")
-            subprocess.run(["sudo", "killall", "libcamera-vid"], stderr=subprocess.DEVNULL)
-            subprocess.run(["sudo", "killall", "libcamera-still"], stderr=subprocess.DEVNULL)
-
-            # Reload camera drivers
+            self.logger.warning("Restarting Picamera2 instance...")
+            
             try:
-                self.logger.debug("Reloading bcm2835-v4l2 driver.")
-                subprocess.run(["sudo", "modprobe", "-r", "bcm2835-v4l2"], check=True)
-                time.sleep(1)
-                subprocess.run(["sudo", "modprobe", "bcm2835-v4l2"], check=True)
-                self.logger.info("Camera driver reloaded successfully.")
-            except subprocess.CalledProcessError as e:
-                self.logger.error(f"Failed to reload camera drivers: {e}")
-                return False
-
-            # Reinitialize Picamera2
+                self.picam2.close()
+            except Exception as e:
+                self.logger.error(f"Error closing camera: {e}")
+            
             time.sleep(2)
             try:
                 self._initialize_camera()
                 if self.client_count > 0:
                     self.picam2.start()
                     self.is_camera_running = True
-                    self.logger.info(f"Camera restarted with {self.client_count} active clients.")
             except Exception as e:
                 self.logger.error(f"Failed to restart camera: {e}", exc_info=True)
                 return False
-
+            
             return True
 
     def _capture_with_timeout(self, capture_function, *args, timeout=10):
