@@ -109,11 +109,14 @@ class CameraManager:
                 self.logger.error(f"Error closing camera: {e}")
             
             time.sleep(2)
+
             try:
-                self._initialize_camera()
-                if self.client_count > 0:
-                    self.picam2.start()
-                    self.is_camera_running = True
+                self._initialize_camera(self.tuning_file)
+
+                self.picam2.start()
+                self.is_camera_running = True
+                self.logger.info("Camera successfully restarted.")
+
             except Exception as e:
                 self.logger.error(f"Failed to restart camera: {e}", exc_info=True)
                 return False
