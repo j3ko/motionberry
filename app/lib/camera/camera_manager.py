@@ -96,21 +96,21 @@ class CameraManager:
         """Restarts the camera safely, ensuring only one restart happens at a time."""
         with self.restart_condition:
             if self.is_restarting:
-                self.logger.info("Restart already in progress. Waiting...")
-                self.restart_condition.wait()
-                return self.is_camera_running
+                self.logger.warning("Restart already in progress. Skipping redundant restart.")
+                return
             self.is_restarting = True
 
         self.logger.warning("Restarting Picamera2 instance...")
+
         result = False
         with self.client_lock, self.camera_lock:
             try:
                 self.is_camera_running = False
                 self.picam2.close()
+                time.sleep(2)
             except Exception as e:
                 self.logger.error(f"Error closing camera: {e}")
 
-            time.sleep(2)
             try:
                 self._initialize_camera(self.tuning_file)
                 self.picam2.start()
@@ -119,10 +119,10 @@ class CameraManager:
                 result = True
             except Exception as e:
                 self.logger.error(f"Failed to restart camera: {e}", exc_info=True)
-            finally:
-                with self.restart_condition:
-                    self.is_restarting = False
-                    self.restart_condition.notify_all()
+
+        with self.restart_condition:
+            self.is_restarting = False
+            self.restart_condition.notify_all()
 
         return result
 
@@ -155,10 +155,8 @@ class CameraManager:
         capture_thread.start()
 
         if not capture_complete.wait(timeout):
-            self.logger.error("Capture timed out! Camera might be unresponsive. Waiting for restart...")
-            with self.restart_condition:
-                while self.is_restarting:
-                    self.restart_condition.wait()
+            self.logger.error("Capture timed out! Camera might be unresponsive. Restarting camera now...")
+            self.restart_camera()
             return None
 
         return capture_result[0]
