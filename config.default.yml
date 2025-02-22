@@ -15,6 +15,15 @@
   # the current recording is stopped. (Optional, Default 10)
   # motion_gap: 10
 
+  # Maximum clip length in seconds. If set to 0 or None, this has no effect. 
+  # (Optional, Default: None)
+  # max_clip_length: None
+
+  # Minimum clip length in seconds. If set to 0 or None, this has no effect. 
+  # (Optional, Default: None)
+  # min_clip_length: None
+
+
 # Capture settings
 # capture:
 
@@ -38,9 +47,9 @@
   # List of possible values can be found at: https://github.com/raspberrypi/libcamera/tree/main/src/ipa/rpi/vc4/data
   # tuning: imx477_noir
 
-  # Output format for videos (Optional, Default: mp4)
-  # Possible values: mp4, raw
-  # video_format: mp4
+  # Output format for videos (Optional, Default: mkv)
+  # Possible values: mkv, mp4, raw
+  # video_format: mkv
 
   # Maximum total size of the capture directory in MB (Optional, Default: None)
   # max_size_mb: 20480

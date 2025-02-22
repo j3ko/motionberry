@@ -26,12 +26,23 @@ class StreamManager:
         try:
             while True:
                 frame = self.camera_manager.capture_image_array()
-                stream = io.BytesIO()
-                image = Image.fromarray(frame)
-                image.save(stream, format="JPEG")
-                stream.seek(0)
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + stream.getvalue() + b'\r\n')
+
+                if frame is None:
+                    self.logger.warning("Captured frame is None. Skipping this frame.")
+                    time.sleep(0.1)
+                    continue
+
+                try:
+                    stream = io.BytesIO()
+                    image = Image.fromarray(frame)
+                    image.save(stream, format="JPEG")
+                    stream.seek(0)
+
+                    yield (b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n\r\n' + stream.getvalue() + b'\r\n')
+                except Exception as e:
+                    self.logger.error("Error processing frame: %s", e, exc_info=True)
+                
                 time.sleep(0.1)
         except Exception as e:
             self.logger.error("Error during streaming: %s", e, exc_info=True)

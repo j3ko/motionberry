@@ -17,7 +17,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - Motion-triggered recording
 - Triggered snapshots (JPEG)
 - Triggered clip recording
-- Output in raw H.264 or MP4 format
+- Output in raw H.264, mkv or MP4 format
 - RESTful API and webhook events ([documentation](https://j3ko.github.io/motionberry/))
 - See [CHANGELOG.md](https://github.com/j3ko/motionberry/blob/main/CHANGELOG.md) for more
 

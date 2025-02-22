@@ -23,7 +23,7 @@ class FileManager:
 
     def cleanup_output_directory(self):
         """Cleans up the output directory by size and age constraints."""
-        allowed_extensions = {"h264", "mp4", "jpg"}
+        allowed_extensions = {"h264", "mkv", "mp4", "jpg"}
         files = [
             f for f in sorted(self.output_dir.iterdir(), key=lambda f: f.stat().st_mtime)
             if f.is_file() and f.suffix.lstrip(".").lower() in allowed_extensions
@@ -81,13 +81,17 @@ class FileManager:
     def _generate_tmp_filename(self, tmp_dir, extension):
         """Generates a filename with a timestamp and the given extension in the temporary directory."""
         timestamp = time.strftime('%Y-%m-%d_%H-%M-%S')
-        tmp_filename = tmp_dir / f"motion_{timestamp}.{extension}"
+        filename = f"motion_{timestamp}.{extension}"
+        tmp_filename = Path(tmp_dir) / filename 
         self.logger.debug(f"Generated temporary filename: {tmp_filename}")
         return tmp_filename
 
     def save_raw_file(self):
         """Creates a temporary directory and returns the path for saving raw video files."""
-        tmp_dir = self._create_tmp_dir()
-        raw_file_path = self._generate_tmp_filename(tmp_dir, "h264")
-        self.logger.debug(f"Raw file path generated: {raw_file_path}")
-        return raw_file_path
+        tmp_dir = self._create_tmp_dir() 
+        raw_file = self._generate_tmp_filename(tmp_dir, "h264") 
+        pts_file = raw_file.with_suffix(".pts") 
+        self.logger.debug(f"Raw file path generated: {raw_file}")
+        self.logger.debug(f"PTS file path generated: {pts_file}")
+        return raw_file, pts_file
+

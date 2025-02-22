@@ -49,6 +49,14 @@ def status_stream():
     status_manager = current_app.config["status_manager"]
     return Response(stream_with_context(status_manager.generate_status()), content_type="text/event-stream")
 
+@api_bp.route("/restart", methods=["POST"])
+def restart():
+    camera_manager = current_app.config["camera_manager"]
+    try:
+      camera_manager.restart_camera()
+      return jsonify({"status": "Camera restarted."})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @api_bp.route("/enable_detection", methods=["POST"])
 def enable_detection():
