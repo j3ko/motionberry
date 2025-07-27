@@ -18,8 +18,14 @@ class MotionDetector:
         self.camera_manager = camera_manager
         self.motion_threshold = motion_threshold
         self.motion_gap = motion_gap
-        self.min_clip_length = min_clip_length
-        self.max_clip_length = max_clip_length
+        # Treat 0 as None for min_clip_length and max_clip_length
+        self.min_clip_length = None if min_clip_length == 0 else min_clip_length
+        self.max_clip_length = None if max_clip_length == 0 else max_clip_length
+        # Log warnings if 0 was provided
+        if min_clip_length == 0:
+            self.logger.warning("min_clip_length set to 0, treating as None (no minimum clip length enforced).")
+        if max_clip_length == 0:
+            self.logger.warning("max_clip_length set to 0, treating as None (no maximum clip length enforced).")
         self.is_running = False
         self.last_motion_time = 0
         self.recording_start_time = None
@@ -62,12 +68,14 @@ class MotionDetector:
                         current_time = time.time()
                         elapsed_recording_time = (
                             current_time - self.recording_start_time
+                            if self.recording_start_time is not None
+                            else 0
                         )
                         time_since_last_motion = current_time - self.last_motion_time
 
                         # Enforce max_clip_length if set
                         if (
-                            self.max_clip_length
+                            self.max_clip_length is not None
                             and elapsed_recording_time > self.max_clip_length
                         ):
                             self.logger.info(
@@ -77,16 +85,21 @@ class MotionDetector:
                             self._notify(
                                 "motion_stopped", {"filename": str(final_path.name)}
                             )
+                            self.recording_start_time = None  # Reset recording start time
                         # Enforce stopping based on motion_gap and min_clip_length
-                        elif time_since_last_motion > self.motion_gap and (
-                            not self.min_clip_length
-                            or elapsed_recording_time > self.min_clip_length
+                        elif (
+                            time_since_last_motion > self.motion_gap
+                            and (
+                                self.min_clip_length is None
+                                or elapsed_recording_time >= self.min_clip_length
+                            )
                         ):
                             self.logger.info("No motion detected for encoding period.")
                             final_path = self.camera_manager.stop_recording()
                             self._notify(
                                 "motion_stopped", {"filename": str(final_path.name)}
                             )
+                            self.recording_start_time = None  # Reset recording start time
 
                 prev_frame = cur_frame
                 time.sleep(0.1)
@@ -116,8 +129,20 @@ class MotionDetector:
         self.is_running = False
         if self.thread and self.thread.is_alive():
             if self.camera_manager.is_recording:
-                final_path = self.camera_manager.stop_recording()
-                self._notify("motion_stopped", {"filename": str(final_path.name)})
+                current_time = time.time()
+                elapsed_recording_time = (
+                    current_time - self.recording_start_time
+                    if self.recording_start_time is not None
+                    else 0
+                )
+                # Only stop recording if min_clip_length is None or satisfied
+                if (
+                    self.min_clip_length is None
+                    or elapsed_recording_time >= self.min_clip_length
+                ):
+                    final_path = self.camera_manager.stop_recording()
+                    self._notify("motion_stopped", {"filename": str(final_path.name)})
+                    self.recording_start_time = None  # Reset recording start time
             self.thread.join()
             self._notify("detection_disabled")
 
