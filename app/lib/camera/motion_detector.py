@@ -4,7 +4,6 @@ import numpy as np
 import cv2
 from threading import Thread
 
-
 class MotionDetector:
     def __init__(
         self,
@@ -30,8 +29,8 @@ class MotionDetector:
         self.recording_start_time = None
         self.notifiers = notifiers or []
         self.thread = None
-        self.consecutive_motion_count = 0  # For temporal smoothing
-        self.min_consecutive_frames = 3  # Require 3 consecutive motion detections
+        self.consecutive_motion_count = 0
+        self.min_consecutive_frames = 5  # Increased for more robust detection
         self._notify("application_started")
 
     def _motion_detection_loop(self):
@@ -52,18 +51,21 @@ class MotionDetector:
                     continue
 
                 cur_frame = cur_frame[: w * h].reshape(h, w)
-                # Apply stronger Gaussian blur to reduce noise
-                cur_frame = cv2.GaussianBlur(cur_frame, (9, 9), 0)
+                # Enhanced noise reduction
+                cur_frame = cv2.normalize(cur_frame, None, 0, 255, cv2.NORM_MINMAX)
+                cur_frame = cv2.GaussianBlur(cur_frame, (11, 11), 0)
+                cur_frame = cv2.medianBlur(cur_frame, 5)
 
                 if prev_frame is not None:
-                    prev_frame_blurred = cv2.GaussianBlur(prev_frame, (9, 9), 0)
+                    prev_frame_blurred = cv2.GaussianBlur(prev_frame, (11, 11), 0)
+                    prev_frame_blurred = cv2.medianBlur(prev_frame_blurred, 5)
                     mse = np.square(np.subtract(cur_frame, prev_frame_blurred)).mean()
-                    self.logger.debug(f"MSE: {mse:.4f}")
-
-                    # Dynamic threshold based on frame brightness
                     avg_intensity = np.mean(cur_frame)
-                    dynamic_threshold = self.motion_threshold * (avg_intensity / 255.0)
-                    dynamic_threshold = max(dynamic_threshold, 0.5)  # Minimum threshold
+                    self.logger.debug(f"MSE: {mse:.4f}, Average frame intensity: {avg_intensity:.1f}")
+
+                    # Adjusted dynamic threshold
+                    dynamic_threshold = self.motion_threshold * (0.5 + 0.5 * (avg_intensity / 255.0))
+                    dynamic_threshold = max(dynamic_threshold, 1.0)
                     self.logger.debug(f"Dynamic threshold: {dynamic_threshold:.4f}")
 
                     # Check max_clip_length first, if recording
