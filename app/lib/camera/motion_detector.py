@@ -1,7 +1,6 @@
 import time
 import logging
 import numpy as np
-import cv2  # Add OpenCV import
 from threading import Thread
 
 
@@ -46,13 +45,9 @@ class MotionDetector:
                     continue
 
                 cur_frame = cur_frame[: w * h].reshape(h, w)
-                # Apply Gaussian blur to current frame
-                cur_frame = cv2.GaussianBlur(cur_frame, (5, 5), 0)
 
                 if prev_frame is not None:
-                    # Apply Gaussian blur to previous frame
-                    prev_frame_blurred = cv2.GaussianBlur(prev_frame, (5, 5), 0)
-                    mse = np.square(np.subtract(cur_frame, prev_frame_blurred)).mean()
+                    mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
                     if mse > self.motion_threshold:  # Motion detected
                         current_time = time.time()
                         if not self.camera_manager.is_recording:
