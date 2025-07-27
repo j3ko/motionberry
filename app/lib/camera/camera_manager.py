@@ -92,8 +92,10 @@ class CameraManager:
         self.picam2.configure(video_config)
         self.picam2.set_controls({
             "FrameRate": self.framerate,
-            "ExposureTime": 20000,   # microseconds (20ms = 1/50s)
-            "AnalogueGain": 4.0      # try values between 4.0–8.0
+            "ExposureTime": 20000,  # adjust
+            "AnalogueGain": 4.0,    # adjust
+            "AeEnable": False,      # disable auto exposure
+            "AwbEnable": False,     # optional
         })
 
     def restart_camera(self):
