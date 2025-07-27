@@ -12,7 +12,7 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
         self.pixel_ratio_threshold = np.interp(
             normalized_threshold,
             [1, 10],        # normalized threshold scale
-            [0.005, 0.10]   # raw motion pixel ratio (0.5% to 10%)
+            [0.0001, 0.10]   # raw motion pixel ratio (0.01% to 10%)
         )
         self.logger.debug(
             f"[BackgroundSubtractionAlgorithm] Initialized with normalized_threshold={normalized_threshold}, "
