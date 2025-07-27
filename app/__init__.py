@@ -113,7 +113,7 @@ def load_config(config_file=None):
             if data is None:
                 logger.warning(f"Configuration file '{config_file}' is empty. No updates applied.")
                 data = {}
-            logger.debug(f"Configuration loaded:\n{json.dumps(data, indent=4)}")
+            logger.info(f"Configuration loaded:\n{json.dumps(data, indent=4)}")
     except FileNotFoundError:
         logger.error(f"Configuration file '{config_file}' not found.")
         raise RuntimeError(f"Configuration file '{config_file}' not found.")
