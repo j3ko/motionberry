@@ -1,6 +1,7 @@
 import time
 import logging
 import numpy as np
+import cv2  # Add OpenCV for Gaussian blur
 from threading import Thread
 
 
@@ -51,27 +52,26 @@ class MotionDetector:
                     continue
 
                 cur_frame = cur_frame[: w * h].reshape(h, w)
+                # Apply Gaussian blur to reduce noise
+                cur_frame = cv2.GaussianBlur(cur_frame, (5, 5), 0)
 
                 if prev_frame is not None:
-                    mse = np.square(np.subtract(cur_frame, prev_frame)).mean()
-                    if mse > self.motion_threshold:  # Motion detected
-                        current_time = time.time()
-                        if not self.camera_manager.is_recording:
-                            self.camera_manager.start_recording()
-                            self.recording_start_time = current_time
-                            self._notify("motion_started")
-                            self.last_motion_time = current_time
-                        else:
-                            self.last_motion_time = current_time
+                    # Apply Gaussian blur to previous frame
+                    prev_frame_blurred = cv2.GaussianBlur(prev_frame, (5, 5), 0)
+                    mse = np.square(np.subtract(cur_frame, prev_frame_blurred)).mean()
+                    self.logger.debug(f"MSE: {mse:.4f}")  # Log MSE for debugging
 
-                    elif self.camera_manager.is_recording:
+                    # Check max_clip_length first, if recording
+                    if self.camera_manager.is_recording:
                         current_time = time.time()
                         elapsed_recording_time = (
                             current_time - self.recording_start_time
                             if self.recording_start_time is not None
                             else 0
                         )
-                        time_since_last_motion = current_time - self.last_motion_time
+                        self.logger.debug(
+                            f"Elapsed: {elapsed_recording_time:.1f}s, No motion: {current_time - self.last_motion_time:.1f}s"
+                        )
 
                         # Enforce max_clip_length if set
                         if (
@@ -86,8 +86,28 @@ class MotionDetector:
                                 "motion_stopped", {"filename": str(final_path.name)}
                             )
                             self.recording_start_time = None  # Reset recording start time
-                        # Enforce stopping based on motion_gap and min_clip_length
-                        elif (
+                            continue  # Skip further checks after stopping
+
+                    # Check for motion
+                    if mse > self.motion_threshold:  # Motion detected
+                        current_time = time.time()
+                        if not self.camera_manager.is_recording:
+                            self.camera_manager.start_recording()
+                            self.recording_start_time = current_time
+                            self._notify("motion_started")
+                            self.last_motion_time = current_time
+                        else:
+                            self.last_motion_time = current_time
+                    # Check for stopping based on motion_gap and min_clip_length
+                    elif self.camera_manager.is_recording:
+                        current_time = time.time()
+                        elapsed_recording_time = (
+                            current_time - self.recording_start_time
+                            if self.recording_start_time is not None
+                            else 0
+                        )
+                        time_since_last_motion = current_time - self.last_motion_time
+                        if (
                             time_since_last_motion > self.motion_gap
                             and (
                                 self.min_clip_length is None
