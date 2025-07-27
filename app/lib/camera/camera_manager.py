@@ -87,15 +87,15 @@ class CameraManager:
         video_config = self.picam2.create_video_configuration(
             main={"size": self.record_size, "format": "RGB888"},
             lores={"size": self.detect_size, "format": "YUV420"},
-            controls={"FrameRate": self.framerate},
+            controls={
+                "FrameRate": self.framerate,
+                "AeEnable": True,      # Auto Exposure ON
+                "AwbEnable": True,     # Auto White Balance ON
+            },
         )
         self.picam2.configure(video_config)
         self.picam2.set_controls({
-            "FrameRate": self.framerate,
-            "ExposureTime": 20000,  # adjust
-            "AnalogueGain": 4.0,    # adjust
-            "AeEnable": False,      # disable auto exposure
-            "AwbEnable": False,     # optional
+            "FrameRate": self.framerate
         })
 
     def restart_camera(self):
