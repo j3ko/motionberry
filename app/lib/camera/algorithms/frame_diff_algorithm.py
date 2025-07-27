@@ -18,8 +18,8 @@ class FrameDiffAlgorithm(BaseAlgorithm):
 
     def detect(self, frame: np.ndarray) -> bool:
         if frame is None or frame.ndim < 2:
-            self.logger.warning("[FrameDiffAlgorithm] Received invalid frame.")
-            return False  # Skip processing if frame is invalid
+            self.logger.warning(f"[FrameDiffAlgorithm] Invalid frame: {type(frame)}, shape={getattr(frame, 'shape', 'N/A')}")
+            return False
 
         self.logger.debug(f"[FrameDiffAlgorithm] Frame shape: {frame.shape}, dtype: {frame.dtype}")
         gray = cv2.GaussianBlur(frame, (5, 5), 0)
