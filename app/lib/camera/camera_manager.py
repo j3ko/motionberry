@@ -162,8 +162,17 @@ class CameraManager:
         return capture_result[0]
 
     def capture_frame(self, stream="lores"):
-        """Captures a frame buffer with timeout handling."""
-        return self._capture_with_timeout(self.picam2.capture_buffer, stream)
+        buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
+        if buf is None:
+            return None
+        # reshape based on detect_size (w,h)
+        w, h = self.detect_size
+        try:
+            frame = buf[: w * h].reshape(h, w)
+        except Exception as e:
+            self.logger.error(f"Failed to reshape frame: {e}")
+            return None
+        return frame
 
     def capture_image_array(self):
         """Captures an image array with timeout handling."""
