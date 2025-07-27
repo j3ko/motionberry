@@ -1,7 +1,7 @@
 import time
 import logging
 import numpy as np
-import cv2  # Add OpenCV for Gaussian blur
+import cv2
 from threading import Thread
 
 
@@ -19,10 +19,8 @@ class MotionDetector:
         self.camera_manager = camera_manager
         self.motion_threshold = motion_threshold
         self.motion_gap = motion_gap
-        # Treat 0 as None for min_clip_length and max_clip_length
         self.min_clip_length = None if min_clip_length == 0 else min_clip_length
         self.max_clip_length = None if max_clip_length == 0 else max_clip_length
-        # Log warnings if 0 was provided
         if min_clip_length == 0:
             self.logger.warning("min_clip_length set to 0, treating as None (no minimum clip length enforced).")
         if max_clip_length == 0:
@@ -32,6 +30,8 @@ class MotionDetector:
         self.recording_start_time = None
         self.notifiers = notifiers or []
         self.thread = None
+        self.consecutive_motion_count = 0  # For temporal smoothing
+        self.min_consecutive_frames = 3  # Require 3 consecutive motion detections
         self._notify("application_started")
 
     def _motion_detection_loop(self):
@@ -52,14 +52,19 @@ class MotionDetector:
                     continue
 
                 cur_frame = cur_frame[: w * h].reshape(h, w)
-                # Apply Gaussian blur to reduce noise
-                cur_frame = cv2.GaussianBlur(cur_frame, (5, 5), 0)
+                # Apply stronger Gaussian blur to reduce noise
+                cur_frame = cv2.GaussianBlur(cur_frame, (9, 9), 0)
 
                 if prev_frame is not None:
-                    # Apply Gaussian blur to previous frame
-                    prev_frame_blurred = cv2.GaussianBlur(prev_frame, (5, 5), 0)
+                    prev_frame_blurred = cv2.GaussianBlur(prev_frame, (9, 9), 0)
                     mse = np.square(np.subtract(cur_frame, prev_frame_blurred)).mean()
-                    self.logger.debug(f"MSE: {mse:.4f}")  # Log MSE for debugging
+                    self.logger.debug(f"MSE: {mse:.4f}")
+
+                    # Dynamic threshold based on frame brightness
+                    avg_intensity = np.mean(cur_frame)
+                    dynamic_threshold = self.motion_threshold * (avg_intensity / 255.0)
+                    dynamic_threshold = max(dynamic_threshold, 0.5)  # Minimum threshold
+                    self.logger.debug(f"Dynamic threshold: {dynamic_threshold:.4f}")
 
                     # Check max_clip_length first, if recording
                     if self.camera_manager.is_recording:
@@ -85,21 +90,27 @@ class MotionDetector:
                             self._notify(
                                 "motion_stopped", {"filename": str(final_path.name)}
                             )
-                            self.recording_start_time = None  # Reset recording start time
-                            continue  # Skip further checks after stopping
+                            self.recording_start_time = None
+                            self.consecutive_motion_count = 0
+                            continue
 
-                    # Check for motion
-                    if mse > self.motion_threshold:  # Motion detected
-                        current_time = time.time()
-                        if not self.camera_manager.is_recording:
-                            self.camera_manager.start_recording()
-                            self.recording_start_time = current_time
-                            self._notify("motion_started")
-                            self.last_motion_time = current_time
-                        else:
-                            self.last_motion_time = current_time
+                    # Check for motion with temporal smoothing
+                    if mse > dynamic_threshold:
+                        self.consecutive_motion_count += 1
+                        if self.consecutive_motion_count >= self.min_consecutive_frames:
+                            current_time = time.time()
+                            if not self.camera_manager.is_recording:
+                                self.camera_manager.start_recording()
+                                self.recording_start_time = current_time
+                                self._notify("motion_started")
+                                self.last_motion_time = current_time
+                            else:
+                                self.last_motion_time = current_time
+                    else:
+                        self.consecutive_motion_count = 0
+
                     # Check for stopping based on motion_gap and min_clip_length
-                    elif self.camera_manager.is_recording:
+                    if self.camera_manager.is_recording:
                         current_time = time.time()
                         elapsed_recording_time = (
                             current_time - self.recording_start_time
@@ -107,6 +118,7 @@ class MotionDetector:
                             else 0
                         )
                         time_since_last_motion = current_time - self.last_motion_time
+                        self.logger.debug(f"Checking stop: time_since_last_motion={time_since_last_motion:.1f}s, min_clip_length={self.min_clip_length}")
                         if (
                             time_since_last_motion > self.motion_gap
                             and (
@@ -119,7 +131,8 @@ class MotionDetector:
                             self._notify(
                                 "motion_stopped", {"filename": str(final_path.name)}
                             )
-                            self.recording_start_time = None  # Reset recording start time
+                            self.recording_start_time = None
+                            self.consecutive_motion_count = 0
 
                 prev_frame = cur_frame
                 time.sleep(0.1)
@@ -155,14 +168,14 @@ class MotionDetector:
                     if self.recording_start_time is not None
                     else 0
                 )
-                # Only stop recording if min_clip_length is None or satisfied
                 if (
                     self.min_clip_length is None
                     or elapsed_recording_time >= self.min_clip_length
                 ):
                     final_path = self.camera_manager.stop_recording()
                     self._notify("motion_stopped", {"filename": str(final_path.name)})
-                    self.recording_start_time = None  # Reset recording start time
+                    self.recording_start_time = None
+                    self.consecutive_motion_count = 0
             self.thread.join()
             self._notify("detection_disabled")
 
