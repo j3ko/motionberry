@@ -86,7 +86,7 @@ class CameraManager:
 
         video_config = self.picam2.create_video_configuration(
             main={"size": self.record_size, "format": "RGB888"},
-            lores={"size": self.detect_size, "format": "RGB888"},
+            lores={"size": self.detect_size, "format": "YUV420"},
             controls={
                 "FrameRate": self.framerate,
                 "AeEnable": True,      # Auto Exposure ON
@@ -171,45 +171,13 @@ class CameraManager:
         buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
         if buf is None:
             return None
-
+        # reshape based on detect_size (w,h)
         w, h = self.detect_size
-
-        # Try to get format info from config, fallback to defaults
         try:
-            stream_cfg = self.picam2.configuration.stream_config[stream]
-            fmt = stream_cfg.get("format", "YUV420")
-        except Exception:
-            fmt = "YUV420"
-
-        # Determine expected shape based on format
-        if fmt == "RGB888":
-            expected_size = w * h * 3
-            channels = 3
-        elif fmt in ("YUV420", "YUV420_8"):
-            # For YUV420, the buffer size and layout are different, 
-            # but since your code takes only Y channel, we read only w*h bytes
-            expected_size = w * h
-            channels = 1
-        else:
-            # Default fallback: grayscale
-            expected_size = w * h
-            channels = 1
-
-        if len(buf) < expected_size:
-            self.logger.error(
-                f"Buffer size {len(buf)} is smaller than expected {expected_size} for format {fmt}"
-            )
-            return None
-
-        try:
-            if channels == 1:
-                frame = buf[:expected_size].reshape(h, w)
-            else:
-                frame = buf[:expected_size].reshape(h, w, channels)
+            frame = buf[: w * h].reshape(h, w)
         except Exception as e:
             self.logger.error(f"Failed to reshape frame: {e}")
             return None
-
         return frame
 
     def capture_image_array(self):
