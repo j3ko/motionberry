@@ -7,8 +7,11 @@ class FrameDiffAlgorithm(BaseAlgorithm):
     def __init__(self, normalized_threshold):
         super().__init__(normalized_threshold)
         self.prev_frame = None
-        # Map normalized scale (1-10) to raw MSE threshold
-        self.raw_threshold = np.interp(normalized_threshold, [1, 10], [50, 1500])
+        self.raw_threshold = np.interp(
+            normalized_threshold,
+            [1, 10],        # normalized user scale
+            [0.0, 10.0]     # actual MSE threshold scale
+        )
 
     def detect(self, frame):
         w, h = frame.shape[1], frame.shape[0]

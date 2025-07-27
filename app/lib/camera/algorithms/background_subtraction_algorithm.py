@@ -7,8 +7,11 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
     def __init__(self, normalized_threshold):
         super().__init__(normalized_threshold)
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2()
-        # Map normalized scale (1-10) to % pixel change: 0.005 to 0.1 (0.5% to 10%)
-        self.pixel_ratio_threshold = np.interp(normalized_threshold, [1, 10], [0.005, 0.1])
+        self.pixel_ratio_threshold = np.interp(
+            normalized_threshold,
+            [1, 10],        # normalized scale
+            [0.005, 0.1]    # raw pixel change percentage (0.5% to 10%)
+        )
 
     def detect(self, frame):
         w, h = frame.shape[1], frame.shape[0]
