@@ -85,7 +85,7 @@ class CameraManager:
         self.picam2 = Picamera2(tuning=tuning)
 
         video_config = self.picam2.create_video_configuration(
-            main={"size": self.record_size, "format": "YUV420"},
+            main={"size": self.record_size, "format": "RGB888"},
             lores={"size": self.detect_size, "format": "YUV420"},
             controls={
                 "FrameRate": self.framerate,
