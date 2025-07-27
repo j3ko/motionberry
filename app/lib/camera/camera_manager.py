@@ -90,7 +90,11 @@ class CameraManager:
             controls={"FrameRate": self.framerate},
         )
         self.picam2.configure(video_config)
-        self.picam2.set_controls({"FrameRate": self.framerate})
+        self.picam2.set_controls({
+            "FrameRate": self.framerate,
+            "ExposureTime": 20000,   # microseconds (20ms = 1/50s)
+            "AnalogueGain": 4.0      # try values between 4.0–8.0
+        })
 
     def restart_camera(self):
         """Restarts the camera safely, ensuring only one restart happens at a time."""
