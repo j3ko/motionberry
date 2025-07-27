@@ -8,12 +8,15 @@
 # Motion detection settings
 # motion:
 
-  # Detection sensitivity threshold. Lower values indicate higher sensitivity (Optional, Default 7)
-  # mse_threshold: 7
+  # "frame_diff" or "background" (Optional, Default: frame_diff)
+  # algorithm: frame_diff  
+
+  # Detection sensitivity threshold. 1 (sensitive) to 10 (strict) (Optional, Default: 5)
+  # motion_threshold: 5
 
   # Duration in seconds. If no motion is detected within this time, 
-  # the current recording is stopped. (Optional, Default 10)
-  # motion_gap: 10
+  # the current recording is stopped. (Optional, Default 5)
+  # motion_gap: 5
 
   # Maximum clip length in seconds. If set to 0 or None, this has no effect. 
   # (Optional, Default: None)
