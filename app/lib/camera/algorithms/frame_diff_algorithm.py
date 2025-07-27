@@ -13,10 +13,11 @@ class FrameDiffAlgorithm(BaseAlgorithm):
             [0.0, 10.0]     # actual MSE threshold scale
         )
 
-    def detect(self, frame):
-        w, h = frame.shape[1], frame.shape[0]
-        gray = frame[:w * h].reshape(h, w)
-        gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    def detect(self, frame: np.ndarray) -> bool:
+        if frame is None or frame.ndim < 2:
+            return False  # Skip processing if frame is invalid
+
+        gray = cv2.GaussianBlur(frame, (5, 5), 0)
 
         detected = False
         if self.prev_frame is not None:
