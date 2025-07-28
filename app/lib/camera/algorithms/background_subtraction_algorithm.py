@@ -15,14 +15,14 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
             [0.0001, 0.10]   # raw motion pixel ratio (0.01% to 10%)
         )
         self.logger.debug(
-            f"[BackgroundSubtractionAlgorithm] Initialized with normalized_threshold={normalized_threshold}, "
+            f"Initialized with normalized_threshold={normalized_threshold}, "
             f"pixel_ratio_threshold={self.pixel_ratio_threshold:.4f}"
         )
 
     def detect(self, frame: np.ndarray) -> bool:
         if frame is None or frame.ndim != 2:
             self.logger.warning(
-                f"[BackgroundSubtractionAlgorithm] Invalid frame: {type(frame)}, shape={getattr(frame, 'shape', 'N/A')}"
+                f"Invalid frame: {type(frame)}, shape={getattr(frame, 'shape', 'N/A')}"
             )
             return False
 
@@ -32,8 +32,8 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
         total_pixels = frame.shape[0] * frame.shape[1]
         ratio = motion_pixels / total_pixels if total_pixels else 0
 
-        self.logger.debug(f"[BackgroundSubtractionAlgorithm] Motion pixel ratio: {ratio:.4f}")
+        self.logger.debug(f"Motion pixel ratio: {ratio:.4f}, Threshold: {self.pixel_ratio_threshold:.4f}")
         detected = ratio > self.pixel_ratio_threshold
-        self.logger.debug(f"[BackgroundSubtractionAlgorithm] Motion detected: {detected}")
+        self.logger.debug(f"Motion detected: {detected}")
 
         return detected

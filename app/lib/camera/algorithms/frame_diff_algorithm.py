@@ -12,17 +12,17 @@ class FrameDiffAlgorithm(BaseAlgorithm):
         self.raw_threshold = np.interp(
             normalized_threshold,
             [1, 10],        # normalized user scale
-            [0.0, 10.0]     # actual MSE threshold scale
+            [0.5, 10.0]     # actual MSE threshold scale
         )
         self.logger.debug(
-            f"[FrameDiffAlgorithm] Initialized with normalized_threshold={normalized_threshold}, "
+            f"Initialized with normalized_threshold={normalized_threshold}, "
             f"raw_threshold={self.raw_threshold:.4f}"
         )
 
     def detect(self, frame: np.ndarray) -> bool:
         if frame is None or frame.ndim != 2:
             self.logger.warning(
-                f"[FrameDiffAlgorithm] Invalid frame: {type(frame)}, shape={getattr(frame, 'shape', 'N/A')}"
+                f"Invalid frame: {type(frame)}, shape={getattr(frame, 'shape', 'N/A')}"
             )
             return False
 
@@ -32,11 +32,11 @@ class FrameDiffAlgorithm(BaseAlgorithm):
         if self.prev_frame is not None:
             prev_blurred = cv2.GaussianBlur(self.prev_frame, (5, 5), 0)
             mse = np.mean((blurred - prev_blurred) ** 2)
-            self.logger.debug(f"[FrameDiffAlgorithm] MSE={mse:.4f}, Threshold={self.raw_threshold:.4f}")
+            self.logger.debug(f"MSE: {mse:.4f}, Threshold: {self.raw_threshold:.4f}")
             detected = mse > self.raw_threshold
-            self.logger.debug(f"[FrameDiffAlgorithm] Motion detected: {detected}")
+            self.logger.debug(f"Motion detected: {detected}")
         else:
-            self.logger.debug("[FrameDiffAlgorithm] No previous frame available; skipping comparison.")
+            self.logger.debug("No previous frame available; skipping comparison.")
 
         self.prev_frame = frame.copy()
         return detected

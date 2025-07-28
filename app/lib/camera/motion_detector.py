@@ -32,12 +32,15 @@ class MotionDetector:
         self.is_running = False
         self.last_motion_time = 0
         self.recording_start_time = None
+        self.grace_period = 5
+        self.start_time = None
         self.thread = None
         self._notify("application_started")
 
     def _motion_detection_loop(self):
         self.camera_manager.start_camera()
         time.sleep(5)
+        self.start_time = time.time()
 
         while self.is_running:
             try:
@@ -76,11 +79,14 @@ class MotionDetector:
                         self.recording_start_time = None
 
                 if detected:
-                    if not self.camera_manager.is_recording:
-                        self.camera_manager.start_recording()
-                        self.recording_start_time = current_time
-                        self._notify("motion_started")
-                    self.last_motion_time = current_time
+                    if time.time() - self.start_time < self.grace_period:
+                        self.logger.info("Grace period active: ignoring detected motion.")
+                    else:
+                        if not self.camera_manager.is_recording:
+                            self.camera_manager.start_recording()
+                            self.recording_start_time = current_time
+                            self._notify("motion_started")
+                        self.last_motion_time = current_time
 
                 time.sleep(0.1)
 
