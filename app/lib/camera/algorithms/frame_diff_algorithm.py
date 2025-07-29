@@ -5,19 +5,31 @@ from .base_algorithm import BaseAlgorithm
 
 
 class FrameDiffAlgorithm(BaseAlgorithm):
-    def __init__(self, normalized_threshold: float):
+    def __init__(self, normalized_threshold: float, blur_strength: int = 0, mse_min: float = 0.2, mse_max: float = 10.0):
         super().__init__(normalized_threshold)
         self.logger = logging.getLogger(__name__)
         self.prev_frame: np.ndarray | None = None
+        self.blur_strength = blur_strength
+
+        # Map user threshold (1–10) to an MSE threshold range
         self.raw_threshold = np.interp(
             normalized_threshold,
-            [1, 10],        # normalized user scale
-            [0.5, 10.0]     # actual MSE threshold scale
+            [1, 10],
+            [mse_min, mse_max]
         )
+
         self.logger.debug(
             f"Initialized with normalized_threshold={normalized_threshold}, "
-            f"raw_threshold={self.raw_threshold:.4f}"
+            f"raw_threshold={self.raw_threshold:.4f}, blur_strength={self.blur_strength}"
         )
+
+    def apply_blur(self, frame: np.ndarray) -> np.ndarray:
+        if self.blur_strength <= 0:
+            return frame
+        
+        # Kernel size must be odd and ≥ 3
+        ksize = max(3, self.blur_strength | 1)
+        return cv2.GaussianBlur(frame, (ksize, ksize), 0)
 
     def detect(self, frame: np.ndarray) -> bool:
         if frame is None or frame.ndim != 2:
@@ -26,11 +38,11 @@ class FrameDiffAlgorithm(BaseAlgorithm):
             )
             return False
 
-        blurred = cv2.GaussianBlur(frame, (5, 5), 0)
+        blurred = self.apply_blur(frame)
 
         detected = False
         if self.prev_frame is not None:
-            prev_blurred = cv2.GaussianBlur(self.prev_frame, (5, 5), 0)
+            prev_blurred = self.apply_blur(self.prev_frame)
             mse = np.mean((blurred - prev_blurred) ** 2)
             self.logger.debug(f"MSE: {mse:.4f}, Threshold: {self.raw_threshold:.4f}")
             detected = mse > self.raw_threshold

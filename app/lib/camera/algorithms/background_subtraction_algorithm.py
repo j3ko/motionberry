@@ -5,14 +5,16 @@ from .base_algorithm import BaseAlgorithm
 
 
 class BackgroundSubtractionAlgorithm(BaseAlgorithm):
-    def __init__(self, normalized_threshold: float):
+    def __init__(self, normalized_threshold: float, pixel_ratio_min: float = 0.0001, pixel_ratio_max: float = 0.10):
         super().__init__(normalized_threshold)
         self.logger = logging.getLogger(__name__)
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2()
+        
+        # Map user threshold (1–10) to a pixel ratio threshold range
         self.pixel_ratio_threshold = np.interp(
             normalized_threshold,
-            [1, 10],        # normalized threshold scale
-            [0.0001, 0.10]   # raw motion pixel ratio (0.01% to 10%)
+            [1, 10],
+            [pixel_ratio_min, pixel_ratio_max]
         )
         self.logger.debug(
             f"Initialized with normalized_threshold={normalized_threshold}, "
