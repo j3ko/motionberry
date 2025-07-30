@@ -8,7 +8,7 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
     def __init__(self, normalized_threshold: float, pixel_ratio_min: float = 0.0001, pixel_ratio_max: float = 0.10):
         super().__init__(normalized_threshold)
         self.logger = logging.getLogger(__name__)
-        self.bg_subtractor = cv2.createBackgroundSubtractorMOG2()
+        self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(detectShadows=False)
         
         # Map user threshold (1–10) to a pixel ratio threshold range
         self.pixel_ratio_threshold = np.interp(
