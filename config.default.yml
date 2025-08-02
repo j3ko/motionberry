@@ -1,9 +1,9 @@
-## Logging settings
-# logging:
+# Logging settings
+logging:
 
-  ## Logging level (Optional, Default: info)
-  ## Possible values: debug, info, warning, error, critical
-  # level: info
+  # Logging level (Optional, Default: info)
+  # Possible values: debug, info, warning, error, critical
+  level: info
 
 ## Motion detection settings
 # motion:
