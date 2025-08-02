@@ -9,7 +9,7 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
         super().__init__(normalized_threshold)
         self.logger = logging.getLogger(__name__)
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
-            history=100,
+            history=60,
             varThreshold=16,
             detectShadows=False
         )
@@ -32,7 +32,7 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
             )
             return False
 
-        fg_mask = self.bg_subtractor.apply(frame, learningRate=0.01)
+        fg_mask = self.bg_subtractor.apply(frame)
 
         motion_pixels = cv2.countNonZero(fg_mask)
         total_pixels = frame.shape[0] * frame.shape[1]
