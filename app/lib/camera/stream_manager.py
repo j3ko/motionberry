@@ -33,14 +33,13 @@ class StreamManager:
                     continue
 
                 try:
-                    # stream = io.BytesIO()
-                    # image = Image.fromarray(frame)
-                    # image.save(stream, format="JPEG")
-                    # stream.seek(0)
-                    jpeg = self.camera_manager.capture_jpeg_bytes()
+                    stream = io.BytesIO()
+                    image = Image.fromarray(frame)
+                    image.save(stream, format="JPEG")
+                    stream.seek(0)
 
                     yield (b'--frame\r\n'
-                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg + b'\r\n')
+                        b'Content-Type: image/jpeg\r\n\r\n' + stream.getvalue() + b'\r\n')
                 except Exception as e:
                     self.logger.error("Error processing frame: %s", e, exc_info=True)
                 
