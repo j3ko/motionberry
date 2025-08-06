@@ -28,12 +28,15 @@ class FrameDiffAlgorithm(BaseAlgorithm):
             f"raw_threshold={self.raw_threshold:.4f}, blur_strength={self.blur_strength}"
         )
 
+
     def apply_blur(self, frame: np.ndarray) -> np.ndarray:
         if self.blur_strength <= 0:
             return frame
 
-        ksize = max(3, self.blur_strength | 1)  # Ensure odd and ≥ 3
+        k = int(round(self.blur_strength))
+        ksize = max(3, k | 1)
         return cv2.GaussianBlur(frame, (ksize, ksize), 0)
+
 
     def detect(self, frame: np.ndarray) -> bool:
         if frame is None or frame.ndim != 2:
