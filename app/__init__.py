@@ -76,11 +76,13 @@ def initialize_components(app, config):
 
     app.config["motion_detector"] = MotionDetector(
         camera_manager=app.config["camera_manager"],
-        motion_threshold=float(config.get("motion", {}).get("mse_threshold", 7)),
-        motion_gap=int(config.get("motion", {}).get("motion_gap", 10)),
+        motion_threshold=float(config.get("motion", {}).get("motion_threshold", 5)),
+        blur_strength=float(config.get("motion", {}).get("blur_strength", 0)),
+        motion_gap=int(config.get("motion", {}).get("motion_gap", 5)),
         min_clip_length=(config.get("motion", {}).get("min_clip_length", None)),
         max_clip_length=(config.get("motion", {}).get("max_clip_length", None)),
-        notifiers=[logging_notifier, webhook_notifier]
+        notifiers=[logging_notifier, webhook_notifier],
+        algorithm=config.get("motion", {}).get("algorithm", "frame_diff"),
     )
 
     app.config["status_manager"] = StatusManager(
@@ -113,7 +115,7 @@ def load_config(config_file=None):
             if data is None:
                 logger.warning(f"Configuration file '{config_file}' is empty. No updates applied.")
                 data = {}
-            logger.debug(f"Configuration loaded:\n{json.dumps(data, indent=4)}")
+            logger.info(f"Configuration loaded:\n{json.dumps(data, indent=4)}")
     except FileNotFoundError:
         logger.error(f"Configuration file '{config_file}' not found.")
         raise RuntimeError(f"Configuration file '{config_file}' not found.")

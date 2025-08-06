@@ -29,7 +29,7 @@ class StreamManager:
 
                 if frame is None:
                     self.logger.warning("Captured frame is None. Skipping this frame.")
-                    time.sleep(0.1)
+                    time.sleep(0.25)
                     continue
 
                 try:

@@ -87,10 +87,16 @@ class CameraManager:
         video_config = self.picam2.create_video_configuration(
             main={"size": self.record_size, "format": "RGB888"},
             lores={"size": self.detect_size, "format": "YUV420"},
-            controls={"FrameRate": self.framerate},
+            controls={
+                "FrameRate": self.framerate,
+                "AeEnable": True,      # Auto Exposure ON
+                "AwbEnable": True,     # Auto White Balance ON
+            },
         )
         self.picam2.configure(video_config)
-        self.picam2.set_controls({"FrameRate": self.framerate})
+        self.picam2.set_controls({
+            "FrameRate": self.framerate
+        })
 
     def restart_camera(self):
         """Restarts the camera safely, ensuring only one restart happens at a time."""
@@ -162,8 +168,17 @@ class CameraManager:
         return capture_result[0]
 
     def capture_frame(self, stream="lores"):
-        """Captures a frame buffer with timeout handling."""
-        return self._capture_with_timeout(self.picam2.capture_buffer, stream)
+        buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
+        if buf is None:
+            return None
+        # reshape based on detect_size (w,h)
+        w, h = self.detect_size
+        try:
+            frame = buf[: w * h].reshape(h, w)
+        except Exception as e:
+            self.logger.error(f"Failed to reshape frame: {e}")
+            return None
+        return frame
 
     def capture_image_array(self):
         """Captures an image array with timeout handling."""
