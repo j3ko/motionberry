@@ -17,7 +17,7 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
         self.blur_strength = blur_strength
 
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
-            history=60,
+            history=150,
             varThreshold=16,
             detectShadows=False
         )
