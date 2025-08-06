@@ -5,25 +5,41 @@ from .base_algorithm import BaseAlgorithm
 
 
 class BackgroundSubtractionAlgorithm(BaseAlgorithm):
-    def __init__(self, normalized_threshold: float, pixel_ratio_min: float = 0.0001, pixel_ratio_max: float = 0.10):
+    def __init__(
+        self,
+        normalized_threshold: float,
+        blur_strength: int = 0,
+        pixel_ratio_min: float = 0.0001,
+        pixel_ratio_max: float = 0.10
+    ):
         super().__init__(normalized_threshold)
         self.logger = logging.getLogger(__name__)
+        self.blur_strength = blur_strength
+
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
             history=60,
             varThreshold=16,
             detectShadows=False
         )
-        
-        # Map user threshold (1–10) to a pixel ratio threshold range
+
         self.pixel_ratio_threshold = np.interp(
             normalized_threshold,
             [1, 10],
             [pixel_ratio_min, pixel_ratio_max]
         )
+
         self.logger.debug(
             f"Initialized with normalized_threshold={normalized_threshold}, "
-            f"pixel_ratio_threshold={self.pixel_ratio_threshold:.4f}"
+            f"pixel_ratio_threshold={self.pixel_ratio_threshold:.4f}, "
+            f"blur_strength={self.blur_strength}"
         )
+
+    def apply_blur(self, frame: np.ndarray) -> np.ndarray:
+        if self.blur_strength <= 0:
+            return frame
+
+        ksize = max(3, self.blur_strength | 1)
+        return cv2.GaussianBlur(frame, (ksize, ksize), 0)
 
     def detect(self, frame: np.ndarray) -> bool:
         if frame is None or frame.ndim != 2:
@@ -32,7 +48,8 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
             )
             return False
 
-        fg_mask = self.bg_subtractor.apply(frame)
+        blurred = self.apply_blur(frame)
+        fg_mask = self.bg_subtractor.apply(blurred)
 
         motion_pixels = cv2.countNonZero(fg_mask)
         total_pixels = frame.shape[0] * frame.shape[1]

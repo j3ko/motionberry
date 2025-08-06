@@ -14,6 +14,10 @@ logging:
   ## Detection sensitivity threshold. 1 (sensitive) to 10 (strict) (Optional, Default: 5)
   # motion_threshold: 5
 
+  ## Blur strength for noise reduction. 0 = no blur, higher values apply stronger Gaussian blur. 
+  ## Recommended: 3–7 for low light. Must be an integer >= 0. (Optional, Default: 0)
+  # blur_strength: 0
+
   ## Duration in seconds. If no motion is detected within this time, 
   ## the current recording is stopped. (Optional, Default 5)
   # motion_gap: 5
