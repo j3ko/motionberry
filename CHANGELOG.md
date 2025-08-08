@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/j3ko/motionberry/compare/v0.2.0...v0.3.0) (2025-08-08)
+
+
+### Features
+
+* background subtraction algorithm ([#38](https://github.com/j3ko/motionberry/issues/38)) ([e984bba](https://github.com/j3ko/motionberry/commit/e984bbafcdd70344362e1112e100fe1b76ef872a)), closes [#5](https://github.com/j3ko/motionberry/issues/5)
+* notification upgrades ([#43](https://github.com/j3ko/motionberry/issues/43)) ([aefef8e](https://github.com/j3ko/motionberry/commit/aefef8e395f31f18c53e7755168adbb54a04324b)), closes [#39](https://github.com/j3ko/motionberry/issues/39)
+
 ## [0.2.0](https://github.com/j3ko/motionberry/compare/v0.1.0...v0.2.0) (2025-02-22)
 
 
