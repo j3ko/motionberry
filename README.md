@@ -19,6 +19,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 - Triggered clip recording
 - Output in raw H.264, mkv or MP4 format
 - RESTful API and webhook events ([documentation](https://j3ko.github.io/motionberry/))
+- Optional notifications via [ntfy, Pushover, and webhooks](#notifications)
 - See [CHANGELOG.md](https://github.com/j3ko/motionberry/blob/main/CHANGELOG.md) for more
 
 <div align="center">
@@ -81,6 +82,80 @@ Replace `<path to config.yml>` and `<path to capture directory>` with appropriat
 ## Configuration
 
 For configuration options, refer to [config.default.yml](https://github.com/j3ko/motionberry/blob/main/config.default.yml).
+
+## Notifications
+
+Motionberry supports runtime notifications through flexible REST-compatible services like webhooks, ntfy, and Pushover.
+
+| Type       | Description                                  |
+|------------|----------------------------------------------|
+| `http_post`| Basic POST request with raw body             |
+| `form_post`| Sends as `application/x-www-form-urlencoded` |
+| `json_post`| Sends as `application/json`                  |
+
+### Example: ntfy
+
+Send a plain-text notification via [ntfy.sh](https://ntfy.sh/):
+
+```yaml
+notification:
+  motion_detected:
+    - type: http_post
+      url: "https://ntfy.sh/my-motionberry"
+      headers:
+        Title: "Motion Detected"
+        Tags: "camera,warning"
+      data: "Motion detected!"
+````
+
+### Example: Pushover
+
+Send an alert to your mobile via [Pushover](https://pushover.net/):
+
+```yaml
+notification:
+  motion_detected:
+    - type: form_post
+      url: "https://api.pushover.net/1/messages.json"
+      data:
+        token: "${pushover_token}"
+        user: "${pushover_user}"
+        message: "🚨🚨🚨 Motion Detected! 🚨🚨🚨"
+```
+
+**Tip:** Environment variables like `${pushover_token}` can be used here.
+
+### Dynamic Substitution
+
+Notifications support dynamic placeholders. For example, to send the filename of a recorded clip:
+
+```yaml
+notification:
+  motion_stopped:
+    - type: http_post
+      url: "https://ntfy.sh/my-motionberry"
+      data: "Motion stopped. File saved: ${filename}"
+```
+
+### Supported Notification Actions
+
+| Action Name           | Description                                                    |
+| --------------------- | -------------------------------------------------------------- |
+| `application_started` | Triggered when the application successfully starts.            |
+| `detection_enabled`   | Triggered when motion detection is enabled.                    |
+| `detection_disabled`  | Triggered when motion detection is disabled.                   |
+| `motion_started`      | Triggered when motion is detected and recording starts.        |
+| `motion_stopped`      | Triggered when motion has stopped and recording ends.          |
+| `motion_detected`     | Triggered when motion is detected (independent of recording).  |
+| `motion_ended`        | Triggered when motion ends and a saved file becomes available. |
+
+### Substitution Keys per Action
+
+These keys can be used inside strings with the `${key}` syntax (e.g., `${filename}`).
+
+| Action Name    | Substitution Key | Description                  |
+| -------------- | ---------------- | ---------------------------- |
+| `motion_ended` | `filename`       | The name of the saved video. |
 
 ## Reporting Issues
 
