@@ -1,3 +1,4 @@
+import os
 import logging
 import threading
 import requests
@@ -63,14 +64,17 @@ class WebhookNotifier(EventNotifier):
             self.logger.error(f"JSON POST failed to {url}: {e}")
 
     def _substitute_fields(self, data, context):
+        # Combine context with environment variables (without overwriting context)
+        full_context = {**os.environ, **context}
+
         if isinstance(data, str):
-            return Template(data).safe_substitute(context)
+            return Template(data).safe_substitute(full_context)
         elif isinstance(data, dict):
             return {k: self._substitute_fields(v, context) for k, v in data.items()}
         elif isinstance(data, list):
             return [self._substitute_fields(v, context) for v in data]
         return data
-
+    
 def get_webhook_specs():
     webhook_definitions = [
         {"path": "/application_started"},
