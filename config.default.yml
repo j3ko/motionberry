@@ -5,83 +5,88 @@ logging:
   # Possible values: debug, info, warning, error, critical
   level: info
 
-## Motion detection settings
+# # Motion detection settings
 # motion:
 
-  ## "frame_diff" or "background" (Optional, Default: frame_diff)
-  # algorithm: frame_diff  
+#   # "frame_diff" or "background" (Optional, Default: frame_diff)
+#   algorithm: frame_diff  
 
-  ## Detection sensitivity threshold. 1 (sensitive) to 10 (strict) (Optional, Default: 5)
-  # motion_threshold: 5
+#   # Detection sensitivity threshold. 1 (sensitive) to 10 (strict) (Optional, Default: 5)
+#   motion_threshold: 5
 
-  ## Blur strength for noise reduction. 0 = no blur, higher values apply stronger Gaussian blur. 
-  ## Recommended: 3–7 for low light. Must be an integer >= 0. (Optional, Default: 0)
-  # blur_strength: 0
+#   # Blur strength for noise reduction. 0 = no blur, higher values apply stronger Gaussian blur. 
+#   # Recommended: 3–7 for low light. Must be an integer >= 0. (Optional, Default: 0)
+#   blur_strength: 0
 
-  ## Duration in seconds. If no motion is detected within this time, 
-  ## the current recording is stopped. (Optional, Default 5)
-  # motion_gap: 5
+#   # Duration in seconds. If no motion is detected within this time, 
+#   # the current recording is stopped. (Optional, Default 5)
+#   motion_gap: 5
 
-  ## Maximum clip length in seconds. If set to 0 or None, this has no effect. 
-  ## (Optional, Default: None)
-  # max_clip_length: None
+#   # Maximum clip length in seconds. If set to 0 or None, this has no effect. 
+#   # (Optional, Default: None)
+#   max_clip_length: None
 
-  ## Minimum clip length in seconds. If set to 0 or None, this has no effect. 
-  ## (Optional, Default: None)
-  # min_clip_length: None
+#   # Minimum clip length in seconds. If set to 0 or None, this has no effect. 
+#   # (Optional, Default: None)
+#   min_clip_length: None
 
-## Capture settings
+# # Capture settings
 # capture:
 
-  ## Capture directory (Optional, Default captures)
-  # directory: captures
+#   # Capture directory (Optional, Default captures)
+#   directory: captures
   
-  ## Resolution (Width x Height) for recorded videos. (Optional, Default [1024, 720])
-  # record_size: [1024, 720]
+#   # Resolution (Width x Height) for recorded videos. (Optional, Default [1024, 720])
+#   record_size: [1024, 720]
 
-  ## Resolution (Width x Height) used for motion detection, typically lower to save processing power.
-  ## (Optional, Default [320,240])
-  # detect_size: [320, 240]
+#   # Resolution (Width x Height) used for motion detection, typically lower to save processing power.
+#   # (Optional, Default [320,240])
+#   detect_size: [320, 240]
 
-  ## Raw bitrate (Optional, Default 1000000)
-  # bitrate: 1000000
+#   # Raw bitrate (Optional, Default 1000000)
+#   bitrate: 1000000
 
-  ## Framerate per second (Optional, Default 30)
-  # framerate: 30
+#   # Framerate per second (Optional, Default 30)
+#   framerate: 30
 
-  ## Tuning file to be used to calibrate common RPi cameras. (Optional, Default None)
-  ## List of possible values can be found at: https://github.com/raspberrypi/libcamera/tree/main/src/ipa/rpi/vc4/data
-  # tuning: imx477_noir
+#   # Tuning file to be used to calibrate common RPi cameras. (Optional, Default None)
+#   # List of possible values can be found at: https://github.com/raspberrypi/libcamera/tree/main/src/ipa/rpi/vc4/data
+#   tuning: imx477_noir
 
-  ## Output format for videos (Optional, Default: mkv)
-  ## Possible values: mkv, mp4, raw
-  # video_format: mkv
+#   # Output format for videos (Optional, Default: mkv)
+#   # Possible values: mkv, mp4, raw
+#   video_format: mkv
 
-  ## Maximum total size of the capture directory in MB (Optional, Default: None)
-  # max_size_mb: 20480
+#   # Maximum total size of the capture directory in MB (Optional, Default: None)
+#   max_size_mb: 20480
 
-  ## Maximum age of files in the capture directory in days (Optional, Default: None)
-  # max_age_days: 7
+#   # Maximum age of files in the capture directory in days (Optional, Default: None)
+#   max_age_days: 7
 
-## Notification Settings (Optional)
+# # Notification Settings (Optional)
 # notification:
 
-  ## Triggered when the application starts
-  # application_started:
-  #   webhook_url: "http://127.0.0.1:1880/api/application_started"
+#   # Triggered when the application starts
+#   application_started:
+#     - type: http_post
+#       url: "http://127.0.0.1:1880/api/application_started"
 
-  ## Triggered when motion detection is enabled
-  # detection_enabled:
-  #   webhook_url: "http://127.0.0.1:1880/api/detection_enabled"
+#   # Triggered when motion detection is enabled
+#   detection_enabled:
+#     - type: http_post
+#       url: "http://127.0.0.1:1880/api/detection_enabled"
 
-  ## Triggered when motion detection is disabled
-  # detection_disabled:
-  #   webhook_url: "http://127.0.0.1:1880/api/detection_disabled"
+#   # Triggered when motion detection is disabled
+#   detection_disabled:
+#     - type: http_post
+#       url: "http://127.0.0.1:1880/api/detection_disabled"
 
-  ## Triggered when motion is detected and recording starts
-  # motion_started:
-  #   webhook_url: "http://127.0.0.1:1880/api/motion_started"
+#   # Triggered when motion is detected and recording starts
+#   motion_started:
+#     - type: http_post
+#       url: "http://127.0.0.1:1880/api/motion_started"
 
-  ## Triggered when motion stops, and recording ends
-  # motion_stopped:
-  #   webhook_url: "http://127.0.0.1:1880/api/motion_stopped"
+#   # Triggered when motion stops, and recording ends
+#   motion_stopped:
+#     - type: http_post
+#       url: "http://127.0.0.1:1880/api/motion_stopped"

@@ -1,6 +1,7 @@
 import logging
 import threading
 import requests
+from string import Template
 from .event_notifier import EventNotifier
 
 class WebhookNotifier(EventNotifier):
@@ -9,23 +10,66 @@ class WebhookNotifier(EventNotifier):
         self.config = config
 
     def notify(self, action: str, data: dict) -> None:
-        if not self.config:
+        if not self.config or action not in self.config:
             return
 
-        if action in self.config and "webhook_url" in self.config[action]:
+        actions = self.config[action]
+
+        # Backward compatibility: single webhook_url
+        if isinstance(actions, dict) and "webhook_url" in actions:
+            actions = [{"type": "http_post", "url": actions["webhook_url"]}]
+
+        for action_def in actions:
             thread = threading.Thread(
-                target=self._post, 
-                args=(self.config[action]["webhook_url"], data),
+                target=self._dispatch_action,
+                args=(action_def, data),
                 daemon=True,
             )
             thread.start()
 
-    def _post(self, url, data: dict) -> None:
+    def _dispatch_action(self, action_def: dict, context: dict) -> None:
         try:
-            response = requests.post(url, json=data, timeout=10)
-        except Exception as e:
-            self.logger.error(f"Unable to connect to {url}: {e}")
+            action_type = action_def.get("type")
 
+            action_def = self._substitute_fields(action_def, context)
+
+            if action_type == "http_post":
+                self._post_http(action_def["url"], action_def.get("headers", {}), action_def.get("body", ""))
+            elif action_type == "form_post":
+                self._post_form(action_def["url"], action_def.get("data", {}))
+            elif action_type == "json_post":
+                self._post_json(action_def["url"], action_def.get("json", {}))
+            else:
+                self.logger.warning(f"Unknown notification type: {action_type}")
+        except Exception as e:
+            self.logger.error(f"Failed to dispatch notification: {e}")
+
+    def _post_http(self, url, headers, body):
+        try:
+            requests.post(url, headers=headers, data=body, timeout=10)
+        except Exception as e:
+            self.logger.error(f"HTTP POST failed to {url}: {e}")
+
+    def _post_form(self, url, data):
+        try:
+            requests.post(url, data=data, timeout=10)
+        except Exception as e:
+            self.logger.error(f"Form POST failed to {url}: {e}")
+
+    def _post_json(self, url, json_data):
+        try:
+            requests.post(url, json=json_data, timeout=10)
+        except Exception as e:
+            self.logger.error(f"JSON POST failed to {url}: {e}")
+
+    def _substitute_fields(self, data, context):
+        if isinstance(data, str):
+            return Template(data).safe_substitute(context)
+        elif isinstance(data, dict):
+            return {k: self._substitute_fields(v, context) for k, v in data.items()}
+        elif isinstance(data, list):
+            return [self._substitute_fields(v, context) for v in data]
+        return data
 
 def get_webhook_specs():
     webhook_definitions = [
