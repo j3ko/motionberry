@@ -1,5 +1,6 @@
 import time
 import logging
+from collections import deque
 from threading import Thread
 
 from .algorithms import get_motion_algorithm
@@ -16,6 +17,7 @@ class MotionDetector:
         max_clip_length=None,
         notifiers=None,
         algorithm="frame_diff",  # "frame_diff" or "background"
+        buffer_duration=2, # seconds
     ):
         self.logger = logging.getLogger(__name__)
         self.camera_manager = camera_manager
@@ -29,7 +31,7 @@ class MotionDetector:
         if max_clip_length == 0:
             self.logger.warning("max_clip_length set to 0, treating as None.")
         self.notifiers = notifiers or []
-
+        self.frame_buffer = deque(maxlen=int(buffer_duration * self.camera_manager.framerate))
         self.is_running = False
         self.last_motion_time = 0
         self.recording_start_time = None
@@ -51,6 +53,8 @@ class MotionDetector:
                     self.logger.warning("Captured frame is None. Camera restart?")
                     time.sleep(0.5)
                     continue
+
+                self.frame_buffer.append(frame)
 
                 detected = self.algorithm.detect(frame)
 
