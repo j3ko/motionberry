@@ -12,8 +12,8 @@ def index():
     return render_template("index.html", stream=stream)
 
 @ui_bp.route('/video_feed')
-@ui_bp.route('/video_feed/<stream>')
-def video_feed(stream="main"):
+def video_feed():
+    stream = request.args.get('stream', 'main')
     stream_manager = current_app.config["stream_manager"]
     return Response(
         stream_with_context(stream_manager.generate_frames(stream)), 
