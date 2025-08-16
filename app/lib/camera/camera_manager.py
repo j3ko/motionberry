@@ -192,9 +192,30 @@ class CameraManager:
             self.logger.error(f"Failed to extract Y plane from frame: {e}", exc_info=True)
             return None
 
+    # def capture_image_array(self):
+    #     """Captures an image array with timeout handling."""
+    #     return self._capture_with_timeout(self.picam2.capture_array, "main")
+
     def capture_image_array(self):
         """Captures an image array with timeout handling."""
-        return self._capture_with_timeout(self.picam2.capture_array, "main")
+        self.logger.debug("Attempting to capture image array from lores stream")
+        frame = self._capture_with_timeout(self.picam2.capture_array, "lores")
+        self.logger.debug("Capture_with_timeout returned, frame: %s", "None" if frame is None else "valid")
+        if frame is None:
+            self.logger.warning("Captured frame is None. Camera restart?")
+            return None
+        self.logger.debug(f"Raw frame shape: {frame.shape}, size: {frame.nbytes}, dtype: {frame.dtype}")
+        try:
+            if len(frame.shape) == 3 and frame.shape[2] >= 1:
+                y_plane = frame[:, :, 0]
+                self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
+                return y_plane
+            else:
+                self.logger.error(f"Unexpected frame shape: {frame.shape}")
+                return None
+        except Exception as e:
+            self.logger.error(f"Failed to process image array: {e}", exc_info=True)
+            return None
 
     def take_snapshot(self):
         """Takes a snapshot and saves it as a JPEG file with timeout handling."""
