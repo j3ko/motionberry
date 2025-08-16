@@ -25,6 +25,7 @@ class StreamManager:
 
         try:
             while True:
+                self.logger.info(f"Capturing frame from camera...{stream}", stream=stream)
                 frame = self.camera_manager.capture_image_array(stream)
 
                 if frame is None:
