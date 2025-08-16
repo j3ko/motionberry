@@ -169,7 +169,7 @@ class CameraManager:
             self.restart_camera()
             return None
 
-        self.logger.debug("Capture completed successfully")
+        self.logger.debug("Capture completed successfully, result: %s", "None" if capture_result[0] is None else "valid")
         return capture_result[0]
 
     def capture_frame(self, stream="lores"):
@@ -199,27 +199,25 @@ class CameraManager:
 
     def capture_image_array(self):
         """Captures an image array with timeout handling."""
-        self.logger.debug("Attempting to capture image array from lores stream")
-        frame = self._capture_with_timeout(self.picam2.capture_array, "lores")
-        self.logger.debug("Capture_with_timeout returned, frame: %s", "None" if frame is None else "valid")
-        if frame is None:
-            self.logger.warning("Captured frame is None. Camera restart?")
+        self.logger.debug("Attempting to capture image array from lores stream using capture_buffer")
+        buf = self._capture_with_timeout(self.picam2.capture_buffer, "lores")
+        if buf is None:
+            self.logger.warning("Captured buffer is None. Camera restart?")
             return None
-        self.logger.debug(f"Raw frame shape: {frame.shape}, size: {frame.nbytes}, dtype: {frame.dtype}")
+        self.logger.debug(f"Buffer size: {len(buf)}")
         try:
             w, h = self.detect_size  # Should be (320, 240)
-            expected_size = w * h * 1.5  # Full YUV420 size
-            if frame.nbytes != expected_size:
-                self.logger.error(f"Buffer size {frame.nbytes} does not match expected {expected_size} for {w}x{h}")
-            if len(frame.shape) == 3 and frame.shape[2] >= 1:
-                y_plane = frame[:, :, 0]
-                self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
-                return y_plane
-            else:
-                self.logger.error(f"Unexpected frame shape: {frame.shape}")
+            expected_y_size = w * h  # Size of Y plane only
+            self.logger.debug(f"Expected Y plane size: {expected_y_size}")
+            if len(buf) < expected_y_size:
+                self.logger.error(f"Buffer size {len(buf)} too small for Y plane of {expected_y_size}")
                 return None
+            # Extract Y plane (first w * h bytes for YUV420)
+            y_plane = np.frombuffer(buf[:w * h], dtype=np.uint8).reshape(h, w)
+            self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
+            return y_plane
         except Exception as e:
-            self.logger.error(f"Failed to process image array: {e}", exc_info=True)
+            self.logger.error(f"Failed to process buffer: {e}", exc_info=True)
             return None
 
     def take_snapshot(self):
