@@ -47,24 +47,20 @@ class MotionDetector:
         self._notify("application_started")
 
     def _save_buffer_frame_as_jpeg(self, frame):
-        """Generate grayscale JPEG preview from lores frame."""
-        if frame is None:
-            self.logger.warning("No frame provided. Failed to generate preview.")
+        if frame is None or frame.size == 0:
+            self.logger.warning("Invalid frame provided. Failed to generate preview.")
             return None
 
         try:
-            # If frame is already 2D (grayscale), just use it directly
             if len(frame.shape) == 2:
                 y_plane = frame
             else:
-                # If 3D, take first channel (Y plane)
                 y_plane = frame[:, :, 0]
-
+            y_plane = np.clip(y_plane, 0, 255).astype(np.uint8)
             pil_img = Image.fromarray(y_plane, mode="L")
             buffer = io.BytesIO()
             pil_img.save(buffer, format="JPEG")
             return buffer.getvalue()
-
         except Exception as e:
             self.logger.error(f"Failed to generate JPEG from frame: {e}", exc_info=True)
             return None
