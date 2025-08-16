@@ -34,13 +34,13 @@ class StreamManager:
                     continue
 
                 try:
-                    stream = io.BytesIO()
+                    stream_bytes = io.BytesIO()
                     image = Image.fromarray(frame)
-                    image.save(stream, format="JPEG")
-                    stream.seek(0)
+                    image.save(stream_bytes, format="JPEG")
+                    stream_bytes.seek(0)
 
                     yield (b'--frame\r\n'
-                        b'Content-Type: image/jpeg\r\n\r\n' + stream.getvalue() + b'\r\n')
+                        b'Content-Type: image/jpeg\r\n\r\n' + stream_bytes.getvalue() + b'\r\n')
                 except Exception as e:
                     self.logger.error("Error processing frame: %s", e, exc_info=True)
                 
