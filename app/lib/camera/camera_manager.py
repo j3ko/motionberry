@@ -191,7 +191,7 @@ class CameraManager:
 
     def capture_image_array(self):
         """Captures an image array with timeout handling."""
-        return self._capture_with_timeout(self.picam2.capture_array, "main")
+        return self._capture_with_timeout(self.picam2.capture_array, "lores")
 
     def take_snapshot(self):
         """Takes a snapshot and saves it as a JPEG file with timeout handling."""
