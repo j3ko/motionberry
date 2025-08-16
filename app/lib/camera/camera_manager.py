@@ -202,17 +202,17 @@ class CameraManager:
     #     """Captures an image array with timeout handling."""
     #     return self._capture_with_timeout(self.picam2.capture_array, "main")
 
-    def capture_image_array(self):
+    def capture_image_array(self, stream="main"):
         """Captures an image array with timeout handling."""
         self.logger.debug("Attempting to capture image array from lores stream using capture_buffer")
-        buf = self._capture_with_timeout(self.picam2.capture_buffer, "lores")
+        buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
         if buf is None:
             self.logger.warning("Captured buffer is None. Camera restart?")
             return None
         self.logger.debug(f"Buffer size: {len(buf)}")
         try:
             w, h = self.detect_size  # (320, 240)
-            expected_y_size = w * h  # Size of Y plane data
+            # expected_y_size = w * h  # Size of Y plane data
             yuv_height = int(h * 1.5)  # Full YUV420 height
             if len(buf) % yuv_height != 0:
                 self.logger.error(f"Buffer size {len(buf)} not divisible by YUV height {yuv_height}")
@@ -228,27 +228,6 @@ class CameraManager:
         except Exception as e:
             self.logger.error(f"Failed to process buffer: {e}", exc_info=True)
             return None
-
-    # bypass
-    # def capture_image_array(self):
-    #     self.logger.debug("Attempting direct capture from lores stream")
-    #     buf = self.picam2.capture_buffer("lores")
-    #     self.logger.debug(f"Direct capture buffer size: {len(buf)}")
-    #     if buf is None:
-    #         self.logger.warning("Direct capture returned None. Camera issue?")
-    #         return None
-    #     try:
-    #         w, h = self.detect_size
-    #         yuv_height = int(h * 1.5)
-    #         stride = len(buf) // yuv_height
-    #         self.logger.debug(f"Direct capture stride: {stride}")
-    #         image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
-    #         y_plane = image[:h, :w]
-    #         self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
-    #         return y_plane
-    #     except Exception as e:
-    #         self.logger.error(f"Failed to process direct buffer: {e}", exc_info=True)
-    #         return None
 
     def take_snapshot(self):
         """Takes a snapshot and saves it as a JPEG file with timeout handling."""
