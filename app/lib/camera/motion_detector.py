@@ -47,7 +47,6 @@ class MotionDetector:
         self._notify("application_started")
 
     def _save_buffer_frame_as_jpeg(self, frame):
-        """Generate grayscale JPEG preview from lores frame."""
         if frame is None or frame.size == 0 or len(frame.shape) not in (2, 3):
             self.logger.warning("Invalid frame shape or empty frame. Failed to generate preview.")
             return None

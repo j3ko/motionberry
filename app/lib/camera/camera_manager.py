@@ -171,12 +171,18 @@ class CameraManager:
     def capture_frame(self, stream="lores"):
         frame = self._capture_with_timeout(self.picam2.capture_array, stream)
         if frame is None:
+            self.logger.warning("Captured frame is None. Camera restart?")
             return None
 
         try:
-            w, h = self.detect_size
+            w, h = self.detect_size  # Should be (320, 240)
+            self.logger.debug(f"Raw frame shape: {frame.shape}, size: {frame.size}")
             # For YUV420, take the Y plane (first channel)
-            y_plane = frame[:, :, 0]
+            if len(frame.shape) == 3 and frame.shape[2] >= 1:
+                y_plane = frame[:, :, 0]
+            else:
+                self.logger.error(f"Unexpected frame shape: {frame.shape}")
+                return None
             self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
             return y_plane
         except Exception as e:
