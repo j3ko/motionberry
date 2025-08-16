@@ -2,6 +2,10 @@ import time
 import logging
 from collections import deque
 from threading import Thread
+from pathlib import Path
+import numpy as np
+from PIL import Image
+import io
 
 from .algorithms import get_motion_algorithm
 
@@ -16,8 +20,8 @@ class MotionDetector:
         min_clip_length=None,
         max_clip_length=None,
         notifiers=None,
-        algorithm="frame_diff",  # "frame_diff" or "background"
-        buffer_duration=2, # seconds
+        algorithm="frame_diff",
+        buffer_duration=2,
     ):
         self.logger = logging.getLogger(__name__)
         self.camera_manager = camera_manager
@@ -32,6 +36,7 @@ class MotionDetector:
             self.logger.warning("max_clip_length set to 0, treating as None.")
         self.notifiers = notifiers or []
         self.frame_buffer = deque(maxlen=int(buffer_duration * self.camera_manager.framerate))
+        self.preview_frame = None
         self.is_running = False
         self.last_motion_time = 0
         self.recording_start_time = None
@@ -40,6 +45,26 @@ class MotionDetector:
         self.thread = None
         self._notify("application_started")
 
+    def _save_buffer_frame_as_jpeg(self, frame):
+        """Convert a frame to JPEG binary data."""
+        if not frame:
+            self.logger.warning("No frame provided. Failed to generate preview.")
+            return None
+
+        try:
+            w, h = self.camera_manager.detect_size
+            yuv_image = Image.frombytes("L", (w, h), frame)
+            rgb_image = yuv_image.convert("RGB")
+
+            buffer = io.BytesIO()
+            rgb_image.save(buffer, format="JPEG")
+            jpeg_data = buffer.getvalue()
+            self.logger.info("Generated preview JPEG binary data")
+            return jpeg_data
+        except Exception as e:
+            self.logger.error(f"Failed to generate JPEG from frame: {e}", exc_info=True)
+            return None
+        
     def _motion_detection_loop(self):
         self.camera_manager.start_camera()
         time.sleep(5)
@@ -57,7 +82,6 @@ class MotionDetector:
                 self.frame_buffer.append(frame)
 
                 detected = self.algorithm.detect(frame)
-
                 current_time = time.time()
 
                 if self.camera_manager.is_recording:
@@ -67,7 +91,15 @@ class MotionDetector:
                     if self.max_clip_length and elapsed > self.max_clip_length:
                         self.logger.info("Max clip length reached. Stopping recording.")
                         path = self.camera_manager.stop_recording()
-                        self._notify("motion_stopped", {"filename": str(path.name)})
+                        preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
+                        self._notify(
+                            "motion_stopped",
+                            {
+                                "filename": str(path.name),
+                                "preview_jpeg": preview_jpeg,
+                                "clip_duration": elapsed,
+                            },
+                        )
                         self.recording_start_time = None
                         continue
 
@@ -80,7 +112,15 @@ class MotionDetector:
                     ):
                         self.logger.info("No motion for threshold. Stopping.")
                         path = self.camera_manager.stop_recording()
-                        self._notify("motion_stopped", {"filename": str(path.name)})
+                        preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
+                        self._notify(
+                            "motion_stopped",
+                            {
+                                "filename": str(path.name),
+                                "preview_jpeg": preview_jpeg,
+                                "clip_duration": elapsed,
+                            },
+                        )
                         self.recording_start_time = None
 
                 if detected:
@@ -89,6 +129,7 @@ class MotionDetector:
                     else:
                         if not self.camera_manager.is_recording:
                             self.camera_manager.start_recording()
+                            self.preview_frame = self.frame_buffer[0] if self.frame_buffer else None
                             self.recording_start_time = current_time
                             self._notify("motion_started")
                         self.last_motion_time = current_time
@@ -118,7 +159,15 @@ class MotionDetector:
                 elapsed = time.time() - self.recording_start_time
                 if self.min_clip_length is None or elapsed >= self.min_clip_length:
                     path = self.camera_manager.stop_recording()
-                    self._notify("motion_stopped", {"filename": str(path.name)})
+                    preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
+                    self._notify(
+                        "motion_stopped",
+                        {
+                            "filename": str(path.name),
+                            "preview_jpeg": preview_jpeg,
+                            "clip_duration": elapsed,
+                        },
+                    )
             self.thread.join()
             self._notify("detection_disabled")
 

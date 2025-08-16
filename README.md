@@ -146,7 +146,7 @@ notification:
 | `detection_disabled`  | Triggered when motion detection is disabled.                   |
 | `motion_started`      | Triggered when motion is detected and recording starts.        |
 | `motion_stopped`      | Triggered when motion has stopped and recording ends.          |
-| `motion_detected`     | Triggered when motion is detected (independent of recording).  |
+| `motion_detected`     | Triggered when motion is detected.  |
 | `motion_ended`        | Triggered when motion ends and a saved file becomes available. |
 
 ### Substitution Keys per Action
