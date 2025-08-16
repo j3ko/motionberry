@@ -27,7 +27,9 @@ class CameraManager:
         self.is_restarting = False
         self.restart_condition = threading.Condition()
         self.record_size = record_size
+        self.logger.debug(f"Initialized with record_size: {self.record_size}")
         self.detect_size = detect_size
+        self.logger.debug(f"Initialized with detect_size: {self.detect_size}")
         self.file_manager = file_manager
         self.video_processor = video_processor
         self.client_count = 0
@@ -94,6 +96,7 @@ class CameraManager:
                 "AwbEnable": True,     # Auto White Balance ON
             },
         )
+        self.logger.debug(f"Video config: {video_config}")
         self.picam2.configure(video_config)
         self.picam2.set_controls({
             "FrameRate": self.framerate
@@ -191,7 +194,7 @@ class CameraManager:
 
     def capture_image_array(self):
         """Captures an image array with timeout handling."""
-        return self._capture_with_timeout(self.picam2.capture_array, "lores")
+        return self._capture_with_timeout(self.picam2.capture_array, "main")
 
     def take_snapshot(self):
         """Takes a snapshot and saves it as a JPEG file with timeout handling."""
