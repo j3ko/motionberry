@@ -220,14 +220,11 @@ class CameraManager:
                 expected_size = w * h * 3  # 3 bytes per pixel for RGB
                 if len(buf) != expected_size:
                     self.logger.warning(f"Buffer size {len(buf)} does not match expected {expected_size} for RGB888")
-                # Reshape to (height, width, 3)
+                # Reshape to (height, width, 3) and return as RGB
                 image = np.frombuffer(buf, dtype=np.uint8).reshape(h, w, 3)
                 self.logger.debug(f"RGB image shape: {image.shape}")
-                # Convert to grayscale for consistency with lores (optional)
-                y_plane = np.dot(image[..., :3], [0.299, 0.587, 0.114]).astype(np.uint8)
-                self.logger.debug(f"Grayscale shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
-                return y_plane
-            else:  # Assume YUV420 for lores or other formats
+                return image
+            else:  # Assume YUV420 for lores or other formats, return grayscale Y plane
                 yuv_height = int(h * 1.5)  # Full YUV420 height
                 if len(buf) % yuv_height != 0:
                     self.logger.error(f"Buffer size {len(buf)} not divisible by YUV height {yuv_height}")
@@ -235,7 +232,7 @@ class CameraManager:
                 stride = len(buf) // yuv_height
                 self.logger.debug(f"Computed stride: {stride}")
                 image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
-                y_plane = image[:h, :w]
+                y_plane = image[:h, :w]  # Extract Y plane as grayscale
                 self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
                 return y_plane
         except Exception as e:
