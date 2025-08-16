@@ -132,7 +132,7 @@ class MotionDetector:
                     else:
                         if not self.camera_manager.is_recording:
                             self.camera_manager.start_recording()
-                            self.preview_frame = self.frame_buffer[0] if self.frame_buffer else None
+                            self.preview_frame = self.frame_buffer[-1] if self.frame_buffer else None
                             self.recording_start_time = current_time
                             self._notify("motion_started")
                         self.last_motion_time = current_time
