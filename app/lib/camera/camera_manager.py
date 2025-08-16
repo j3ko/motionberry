@@ -204,29 +204,42 @@ class CameraManager:
 
     def capture_image_array(self, stream="main"):
         """Captures an image array with timeout handling."""
-        self.logger.debug("Attempting to capture image array from lores stream using capture_buffer")
+        self.logger.debug(f"Attempting to capture image array from {stream} stream using capture_buffer")
         buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
         if buf is None:
-            self.logger.warning("Captured buffer is None. Camera restart?")
+            self.logger.warning(f"Captured buffer is None for {stream} stream. Camera restart?")
             return None
         self.logger.debug(f"Buffer size: {len(buf)}")
         try:
-            w, h = self.detect_size  # (320, 240)
-            # expected_y_size = w * h  # Size of Y plane data
-            yuv_height = int(h * 1.5)  # Full YUV420 height
-            if len(buf) % yuv_height != 0:
-                self.logger.error(f"Buffer size {len(buf)} not divisible by YUV height {yuv_height}")
-                return None
-            stride = len(buf) // yuv_height  # Compute effective stride
-            self.logger.debug(f"Computed stride: {stride}")
-            # Reshape buffer to (yuv_height, stride)
-            image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
-            # Extract Y plane (top h rows, left w columns)
-            y_plane = image[:h, :w]
-            self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
-            return y_plane
+            config = self.picam2.stream_configuration(stream)
+            w = config["size"][0]  # Width
+            h = config["size"][1]  # Height
+            self.logger.debug(f"Stream {stream} configuration: size={w}x{h}, format={config['format']}")
+            
+            if config["format"] == "RGB888":
+                expected_size = w * h * 3  # 3 bytes per pixel for RGB
+                if len(buf) != expected_size:
+                    self.logger.warning(f"Buffer size {len(buf)} does not match expected {expected_size} for RGB888")
+                # Reshape to (height, width, 3)
+                image = np.frombuffer(buf, dtype=np.uint8).reshape(h, w, 3)
+                self.logger.debug(f"RGB image shape: {image.shape}")
+                # Convert to grayscale for consistency with lores (optional)
+                y_plane = np.dot(image[..., :3], [0.299, 0.587, 0.114]).astype(np.uint8)
+                self.logger.debug(f"Grayscale shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
+                return y_plane
+            else:  # Assume YUV420 for lores or other formats
+                yuv_height = int(h * 1.5)  # Full YUV420 height
+                if len(buf) % yuv_height != 0:
+                    self.logger.error(f"Buffer size {len(buf)} not divisible by YUV height {yuv_height}")
+                    return None
+                stride = len(buf) // yuv_height
+                self.logger.debug(f"Computed stride: {stride}")
+                image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
+                y_plane = image[:h, :w]
+                self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
+                return y_plane
         except Exception as e:
-            self.logger.error(f"Failed to process buffer: {e}", exc_info=True)
+            self.logger.error(f"Failed to process buffer for {stream} stream: {e}", exc_info=True)
             return None
 
     def take_snapshot(self):
