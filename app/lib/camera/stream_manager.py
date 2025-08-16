@@ -15,7 +15,7 @@ class StreamManager:
         self.streaming_clients = 0
         self.client_lock = threading.Lock()
 
-    def generate_frames(self):
+    def generate_frames(self, stream="main"):
         """Generates frames for streaming."""
         with self.client_lock:
             self.streaming_clients += 1
@@ -25,7 +25,7 @@ class StreamManager:
 
         try:
             while True:
-                frame = self.camera_manager.capture_image_array()
+                frame = self.camera_manager.capture_image_array(stream)
 
                 if frame is None:
                     self.logger.warning("Captured frame is None. Skipping this frame.")

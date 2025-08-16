@@ -37,7 +37,7 @@
 
         <div class="card-image">
           <figure class="image">
-            <img class="video-stream" src="{{ url_for('ui.video_feed') }}" alt="Live Camera Feed">
+            <img class="video-stream" src="{{ url_for('ui.video_feed', stream=stream) }}" alt="Live Camera Feed">
           </figure>
         </div>
 
