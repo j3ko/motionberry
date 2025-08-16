@@ -47,15 +47,15 @@ class MotionDetector:
         self._notify("application_started")
 
     def _save_buffer_frame_as_jpeg(self, frame):
-        """Convert lores frame to a simple grayscale JPEG preview."""
+        """Convert lores YUV420 frame to JPEG preview correctly."""
         if frame is None:
-            self.logger.warning("No frame provided. Failed to generate preview.")
             return None
 
         try:
             w, h = self.camera_manager.detect_size
-            y_plane = frame[: w * h].reshape(h, w)
-            pil_img = Image.fromarray(y_plane, mode="L")
+            yuv = frame.reshape((int(h * 1.5), w))
+            rgb = cv2.cvtColor(yuv, cv2.COLOR_YUV2RGB_I420)
+            pil_img = Image.fromarray(rgb)
 
             buffer = io.BytesIO()
             pil_img.save(buffer, format="JPEG")
