@@ -1,4 +1,5 @@
 import time
+import np
 import threading
 import logging
 from picamera2 import Picamera2
@@ -168,13 +169,19 @@ class CameraManager:
         return capture_result[0]
 
     def capture_frame(self, stream="lores"):
-        arr = self._capture_with_timeout(self.picam2.capture_array, stream)
-        if arr is None:
+        """Capture grayscale frame from lores stream (Y plane only)."""
+        buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
+        if buf is None:
             return None
-        w, h = self.detect_size
-        # Y plane is always the top-left h x w
-        y_plane = arr[:h, :w]
-        return y_plane
+
+        try:
+            w, h = self.detect_size
+            # Only take the Y plane (first w*h bytes)
+            y_plane = np.frombuffer(buf, dtype=np.uint8, count=w*h).reshape(h, w)
+            return y_plane
+        except Exception as e:
+            self.logger.error(f"Failed to extract Y plane from frame: {e}", exc_info=True)
+            return None
 
     def capture_image_array(self):
         """Captures an image array with timeout handling."""

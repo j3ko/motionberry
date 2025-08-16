@@ -47,13 +47,20 @@ class MotionDetector:
         self._notify("application_started")
 
     def _save_buffer_frame_as_jpeg(self, frame):
+        """Generate a grayscale JPEG from a Y-plane frame."""
         if frame is None:
-            self.logger.warning("No frame to generate preview")
+            self.logger.warning("No frame provided. Failed to generate preview.")
             return None
-        pil_img = Image.fromarray(frame, mode="L")
-        buffer = io.BytesIO()
-        pil_img.save(buffer, format="JPEG")
-        return buffer.getvalue()
+
+        try:
+            # frame should already be (h, w)
+            pil_img = Image.fromarray(frame, mode="L")
+            buffer = io.BytesIO()
+            pil_img.save(buffer, format="JPEG")
+            return buffer.getvalue()
+        except Exception as e:
+            self.logger.error(f"Failed to generate JPEG from frame: {e}", exc_info=True)
+            return None
             
     def _motion_detection_loop(self):
         self.camera_manager.start_camera()
