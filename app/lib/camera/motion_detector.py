@@ -46,18 +46,24 @@ class MotionDetector:
         self.thread = None
         self._notify("application_started")
 
+
     def _save_buffer_frame_as_jpeg(self, frame):
-        """Generate simple grayscale preview from lores Y-plane."""
+        """Generate JPEG preview from the first buffer frame correctly."""
         if frame is None:
             self.logger.warning("No frame provided. Failed to generate preview.")
             return None
 
         try:
             w, h = self.camera_manager.detect_size
-            # copy to avoid any stride issues
-            y_plane = np.array(frame[: w*h], copy=True).reshape(h, w)
-            pil_img = Image.fromarray(y_plane, mode="L")
 
+            # The lores frame from Picamera2 is a contiguous YUV420 buffer
+            # OpenCV expects height*1.5 for I420 format
+            yuv = np.frombuffer(frame, dtype=np.uint8).reshape((h + h//2, w))
+
+            # Convert YUV420 to RGB
+            rgb = cv2.cvtColor(yuv, cv2.COLOR_YUV2RGB_I420)
+
+            pil_img = Image.fromarray(rgb)
             buffer = io.BytesIO()
             pil_img.save(buffer, format="JPEG")
             return buffer.getvalue()
