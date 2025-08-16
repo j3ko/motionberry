@@ -1,9 +1,7 @@
-import cv2
 import time
 import logging
 from collections import deque
 from threading import Thread
-from pathlib import Path
 import numpy as np
 from PIL import Image
 import io

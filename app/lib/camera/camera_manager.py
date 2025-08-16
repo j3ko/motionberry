@@ -155,7 +155,6 @@ class CameraManager:
 
         def capture():
             try:
-                # Explicitly log the function and args being called
                 self.logger.debug("Executing capture function %s with args %s", capture_function.__name__, args)
                 capture_result[0] = capture_function(*args)
                 self.logger.debug("Capture function returned with result: %s", "None" if capture_result[0] is None else "valid")
@@ -174,33 +173,6 @@ class CameraManager:
 
         self.logger.debug("Capture completed successfully, result: %s", "None" if capture_result[0] is None else "valid")
         return capture_result[0]
-
-    def capture_frame(self, stream="lores"):
-        self.logger.debug("Attempting to capture frame from stream: %s using capture_buffer", stream)
-        buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
-        if buf is None:
-            self.logger.warning("Captured buffer is None. Camera restart?")
-            return None
-        self.logger.debug(f"Buffer size: {len(buf)}")
-        try:
-            w, h = self.detect_size  # (320, 240)
-            yuv_height = int(h * 1.5)
-            if len(buf) % yuv_height != 0:
-                self.logger.error(f"Buffer size {len(buf)} not divisible by YUV height {yuv_height}")
-                return None
-            stride = len(buf) // yuv_height
-            self.logger.debug(f"Computed stride: {stride}")
-            image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
-            y_plane = image[:h, :w]
-            self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
-            return y_plane
-        except Exception as e:
-            self.logger.error(f"Failed to extract Y plane from buffer: {e}", exc_info=True)
-            return None
-
-    # def capture_image_array(self):
-    #     """Captures an image array with timeout handling."""
-    #     return self._capture_with_timeout(self.picam2.capture_array, "main")
 
     def capture_image_array(self, stream="main"):
         """Captures an image array with timeout handling."""
