@@ -138,12 +138,11 @@ class CameraManager:
         return result
 
     def _capture_with_timeout(self, capture_function, *args, timeout=10):
-        """Handles camera capture with timeout and waits if the camera is restarting."""
+        self.logger.debug("Entering _capture_with_timeout with function: %s", capture_function.__name__)
         with self.restart_condition:
             while self.is_restarting:
-                self.logger.info("Waiting for camera restart...")
+                self.logger.debug("Waiting for camera restart...")
                 self.restart_condition.wait()
-
         if not self.is_camera_running:
             self.logger.warning("Camera is not running. Attempting to start.")
             self.start_camera()
@@ -166,10 +165,11 @@ class CameraManager:
         capture_thread.start()
 
         if not capture_complete.wait(timeout):
-            self.logger.error("Capture timed out! Camera might be unresponsive. Restarting camera now...")
+            self.logger.error("Capture timed out! Restarting camera...")
             self.restart_camera()
             return None
 
+        self.logger.debug("Capture completed successfully")
         return capture_result[0]
 
     def capture_frame(self, stream="lores"):
