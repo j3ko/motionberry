@@ -101,6 +101,7 @@ class CameraManager:
         self.picam2.set_controls({
             "FrameRate": self.framerate
         })
+        self.logger.debug(f"Video config after apply: {self.picam2.camera_config}")
 
     def restart_camera(self):
         """Restarts the camera safely, ensuring only one restart happens at a time."""
@@ -206,6 +207,10 @@ class CameraManager:
             return None
         self.logger.debug(f"Raw frame shape: {frame.shape}, size: {frame.nbytes}, dtype: {frame.dtype}")
         try:
+            w, h = self.detect_size  # Should be (320, 240)
+            expected_size = w * h * 1.5  # Full YUV420 size
+            if frame.nbytes != expected_size:
+                self.logger.error(f"Buffer size {frame.nbytes} does not match expected {expected_size} for {w}x{h}")
             if len(frame.shape) == 3 and frame.shape[2] >= 1:
                 y_plane = frame[:, :, 0]
                 self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
