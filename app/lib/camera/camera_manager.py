@@ -138,7 +138,7 @@ class CameraManager:
         return result
 
     def _capture_with_timeout(self, capture_function, *args, timeout=10):
-        self.logger.debug("Entering _capture_with_timeout with function: %s", capture_function.__name__)
+        self.logger.debug("Entering _capture_with_timeout with function: %s, args: %s", capture_function.__name__, args)
         with self.restart_condition:
             while self.is_restarting:
                 self.logger.debug("Waiting for camera restart...")
@@ -155,7 +155,10 @@ class CameraManager:
 
         def capture():
             try:
+                # Explicitly log the function and args being called
+                self.logger.debug("Executing capture function %s with args %s", capture_function.__name__, args)
                 capture_result[0] = capture_function(*args)
+                self.logger.debug("Capture function returned with result: %s", "None" if capture_result[0] is None else "valid")
             except Exception as e:
                 self.logger.error(f"Error during capture: {e}", exc_info=True)
             finally:
@@ -198,26 +201,23 @@ class CameraManager:
     #     return self._capture_with_timeout(self.picam2.capture_array, "main")
 
     def capture_image_array(self):
-        """Captures an image array with timeout handling."""
-        self.logger.debug("Attempting to capture image array from lores stream using capture_buffer")
-        buf = self._capture_with_timeout(self.picam2.capture_buffer, "lores")
+        self.logger.debug("Attempting direct capture from lores stream")
+        buf = self.picam2.capture_buffer("lores")
+        self.logger.debug(f"Direct capture buffer size: {len(buf)}")
         if buf is None:
-            self.logger.warning("Captured buffer is None. Camera restart?")
+            self.logger.warning("Direct capture returned None. Camera issue?")
             return None
-        self.logger.debug(f"Buffer size: {len(buf)}")
         try:
-            w, h = self.detect_size  # Should be (320, 240)
-            expected_y_size = w * h  # Size of Y plane only
-            self.logger.debug(f"Expected Y plane size: {expected_y_size}")
-            if len(buf) < expected_y_size:
-                self.logger.error(f"Buffer size {len(buf)} too small for Y plane of {expected_y_size}")
-                return None
-            # Extract Y plane (first w * h bytes for YUV420)
-            y_plane = np.frombuffer(buf[:w * h], dtype=np.uint8).reshape(h, w)
+            w, h = self.detect_size
+            yuv_height = int(h * 1.5)
+            stride = len(buf) // yuv_height
+            self.logger.debug(f"Direct capture stride: {stride}")
+            image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
+            y_plane = image[:h, :w]
             self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
             return y_plane
         except Exception as e:
-            self.logger.error(f"Failed to process buffer: {e}", exc_info=True)
+            self.logger.error(f"Failed to process direct buffer: {e}", exc_info=True)
             return None
 
     def take_snapshot(self):
