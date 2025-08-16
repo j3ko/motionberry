@@ -75,7 +75,7 @@ class MotionDetector:
 
         while self.is_running:
             try:
-                frame = self.camera_manager.capture_frame("lores")
+                frame = self.camera_manager.capture_image_array("lores")
 
                 if frame is None:
                     self.logger.warning("Captured frame is None. Camera restart?")
