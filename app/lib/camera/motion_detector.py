@@ -95,6 +95,7 @@ class MotionDetector:
                         self._notify(
                             "motion_stopped",
                             {
+                                "filepath": str(path),
                                 "filename": str(path.name),
                                 "preview_jpeg": preview_jpeg,
                                 "clip_duration": elapsed,
@@ -116,6 +117,7 @@ class MotionDetector:
                         self._notify(
                             "motion_stopped",
                             {
+                                "filepath": str(path),
                                 "filename": str(path.name),
                                 "preview_jpeg": preview_jpeg,
                                 "clip_duration": elapsed,
@@ -163,6 +165,7 @@ class MotionDetector:
                     self._notify(
                         "motion_stopped",
                         {
+                            "filepath": str(path),
                             "filename": str(path.name),
                             "preview_jpeg": preview_jpeg,
                             "clip_duration": elapsed,
