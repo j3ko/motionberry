@@ -1,5 +1,5 @@
 import time
-import np
+import numpy as np
 import threading
 import logging
 from picamera2 import Picamera2
