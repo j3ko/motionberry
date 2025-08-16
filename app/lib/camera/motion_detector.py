@@ -47,8 +47,9 @@ class MotionDetector:
         self._notify("application_started")
 
     def _save_buffer_frame_as_jpeg(self, frame):
-        if frame is None or frame.size == 0:
-            self.logger.warning("Invalid frame provided. Failed to generate preview.")
+        """Generate grayscale JPEG preview from lores frame."""
+        if frame is None or frame.size == 0 or len(frame.shape) not in (2, 3):
+            self.logger.warning("Invalid frame shape or empty frame. Failed to generate preview.")
             return None
 
         try:
@@ -56,11 +57,14 @@ class MotionDetector:
                 y_plane = frame
             else:
                 y_plane = frame[:, :, 0]
+                self.logger.debug(f"Y plane extracted, shape: {y_plane.shape}")
+
             y_plane = np.clip(y_plane, 0, 255).astype(np.uint8)
             pil_img = Image.fromarray(y_plane, mode="L")
             buffer = io.BytesIO()
             pil_img.save(buffer, format="JPEG")
             return buffer.getvalue()
+
         except Exception as e:
             self.logger.error(f"Failed to generate JPEG from frame: {e}", exc_info=True)
             return None
