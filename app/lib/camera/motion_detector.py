@@ -47,7 +47,7 @@ class MotionDetector:
 
     def _save_buffer_frame_as_jpeg(self, frame):
         """Convert a frame to JPEG binary data."""
-        if not frame:
+        if frame is None:
             self.logger.warning("No frame provided. Failed to generate preview.")
             return None
 
