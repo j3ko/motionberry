@@ -202,7 +202,7 @@ class CameraManager:
     #     """Captures an image array with timeout handling."""
     #     return self._capture_with_timeout(self.picam2.capture_array, "main")
 
-    def capture_image_array(self, stream="lores"):
+    def capture_image_array(self, stream="main"):
         """Captures an image array with timeout handling."""
         self.logger.debug(f"Attempting to capture image array from {stream} stream using capture_buffer")
         buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
