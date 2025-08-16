@@ -176,24 +176,26 @@ class CameraManager:
         return capture_result[0]
 
     def capture_frame(self, stream="lores"):
-        frame = self._capture_with_timeout(self.picam2.capture_array, stream)
-        if frame is None:
-            self.logger.warning("Captured frame is None. Camera restart?")
+        self.logger.debug("Attempting to capture frame from stream: %s using capture_buffer", stream)
+        buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
+        if buf is None:
+            self.logger.warning("Captured buffer is None. Camera restart?")
             return None
-
+        self.logger.debug(f"Buffer size: {len(buf)}")
         try:
-            w, h = self.detect_size  # Should be (320, 240)
-            self.logger.debug(f"Raw frame shape: {frame.shape}, size: {frame.size}")
-            # For YUV420, take the Y plane (first channel)
-            if len(frame.shape) == 3 and frame.shape[2] >= 1:
-                y_plane = frame[:, :, 0]
-            else:
-                self.logger.error(f"Unexpected frame shape: {frame.shape}")
+            w, h = self.detect_size  # (320, 240)
+            yuv_height = int(h * 1.5)
+            if len(buf) % yuv_height != 0:
+                self.logger.error(f"Buffer size {len(buf)} not divisible by YUV height {yuv_height}")
                 return None
+            stride = len(buf) // yuv_height
+            self.logger.debug(f"Computed stride: {stride}")
+            image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
+            y_plane = image[:h, :w]
             self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
             return y_plane
         except Exception as e:
-            self.logger.error(f"Failed to extract Y plane from frame: {e}", exc_info=True)
+            self.logger.error(f"Failed to extract Y plane from buffer: {e}", exc_info=True)
             return None
 
     # def capture_image_array(self):
