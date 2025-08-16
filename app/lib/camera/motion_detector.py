@@ -1,3 +1,4 @@
+import cv2
 import time
 import logging
 from collections import deque
@@ -46,21 +47,20 @@ class MotionDetector:
         self._notify("application_started")
 
     def _save_buffer_frame_as_jpeg(self, frame):
-        """Convert a frame to JPEG binary data."""
+        """Convert lores frame to a simple grayscale JPEG preview."""
         if frame is None:
             self.logger.warning("No frame provided. Failed to generate preview.")
             return None
 
         try:
             w, h = self.camera_manager.detect_size
-            yuv_image = Image.frombytes("L", (w, h), frame)
-            rgb_image = yuv_image.convert("RGB")
+            y_plane = frame[: w * h].reshape(h, w)
+            pil_img = Image.fromarray(y_plane, mode="L")
 
             buffer = io.BytesIO()
-            rgb_image.save(buffer, format="JPEG")
-            jpeg_data = buffer.getvalue()
-            self.logger.info("Generated preview JPEG binary data")
-            return jpeg_data
+            pil_img.save(buffer, format="JPEG")
+            return buffer.getvalue()
+
         except Exception as e:
             self.logger.error(f"Failed to generate JPEG from frame: {e}", exc_info=True)
             return None
