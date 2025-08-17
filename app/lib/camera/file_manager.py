@@ -4,8 +4,6 @@ import tempfile
 import shutil
 from pathlib import Path
 
-
-
 class FileManager:
     def __init__(self, output_dir, max_size_mb=None, max_age_days=None):
         self.logger = logging.getLogger(__name__)
@@ -13,12 +11,12 @@ class FileManager:
         self.output_dir.mkdir(exist_ok=True)
         self.tmp_dir_base = Path(tempfile.gettempdir()) / "motionberry"
         self.tmp_dir_base.mkdir(exist_ok=True)
-        self.max_size_bytes = None if max_size_mb is None else max_size_mb * 1024 * 1024
-        self.max_age_seconds = None if max_age_days is None else max_age_days * 24 * 60 * 60
+        self.max_size_bytes = None if max_size_mb in (None, 0) else max_size_mb * 1024 * 1024
+        self.max_age_seconds = None if max_age_days in (None, 0) else max_age_days * 24 * 60 * 60
         self.logger.info(f"FileManager initialized with output directory: {self.output_dir}")
-        if self.max_size_bytes not in (None, 0):
+        if self.max_size_bytes is not None:
             self.logger.info(f"Max size: {self.max_size_bytes} bytes ({max_size_mb} MB)")
-        if self.max_age_seconds not in (None, 0):
+        if self.max_age_seconds is not None:
             self.logger.info(f"Max age: {self.max_age_seconds} seconds ({max_age_days} days)")
 
     def cleanup_output_directory(self):
@@ -30,7 +28,7 @@ class FileManager:
         ]
 
         # Enforce size limit
-        if self.max_size_bytes not in (None, 0):
+        if self.max_size_bytes is not None:
             total_size = sum(f.stat().st_size for f in files)
             for file in files:
                 if total_size <= self.max_size_bytes:
@@ -43,7 +41,7 @@ class FileManager:
                     self.logger.warning(f"File not found during cleanup: {file}")
 
         # Enforce age limit
-        if self.max_age_seconds not in (None, 0):
+        if self.max_age_seconds is not None:
             current_time = time.time()
             for file in files:
                 if file.exists():
@@ -94,4 +92,3 @@ class FileManager:
         self.logger.debug(f"Raw file path generated: {raw_file}")
         self.logger.debug(f"PTS file path generated: {pts_file}")
         return raw_file, pts_file
-

@@ -50,8 +50,8 @@ def initialize_components(app, config):
     webhook_notifier = WebhookNotifier(config.get("notification", {}))
     app.config["file_manager"] = FileManager(
         output_dir=str(config.get("capture", {}).get("directory", "captures")),
-        max_size_mb=int(config.get("capture", {}).get("max_size_mb", None)),
-        max_age_days=int(config.get("capture", {}).get("max_age_days", None)),
+        max_size_mb=int(config.get("capture", {}).get("max_size_mb", 0)),
+        max_age_days=int(config.get("capture", {}).get("max_age_days", 0)),
     )
 
     app.config["video_processor"] = VideoProcessor(
