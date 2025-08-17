@@ -17,8 +17,8 @@ needs_reboot=0
 print_header "Updating System and Firmware"
 echo "Updating package lists and performing full system upgrade..."
 sudo apt update && sudo apt -y full-upgrade
-echo "Running rpi-update to update firmware..."
-sudo rpi-update
+# echo "Running rpi-update to update firmware..."
+# sudo SKIP_SDK=1 rpi-update
 echo "System and firmware update completed."
 
 # Install Required Packages
