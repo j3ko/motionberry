@@ -37,18 +37,18 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 
 To install Motionberry as a systemd service on your Raspberry Pi, follow these steps:
 
-1. **Clone the repository**:
+1\. **Clone the repository**:
    ```bash
    git clone https://github.com/j3ko/motionberry.git
    ```
 
-2. **(Optional) Configure the system**:
+2\. **(Optional) Configure the system**:
    To optimize your Raspberry Pi for Motionberry you can run the configuration script. This script updates the system, disables unnecessary services, optimizes WiFi, and configures hardware settings for better performance and stability.
    ```bash
    sudo bash motionberry/scripts/configure.sh
    ```
 
-3. **Run the installation script**:
+3\. **Run the installation script**:
    ```bash
    sudo bash motionberry/scripts/install.sh
    ```
@@ -61,9 +61,9 @@ sudo bash motionberry/scripts/uninstall.sh
 ## Docker installation
 To install Motionberry using Docker on your Raspberry Pi, follow these steps:
 
-1\. Install [Docker](https://docs.docker.com/engine/install/debian/)
+1\. **Install [Docker](https://docs.docker.com/engine/install/debian/)**
 
-2\. Run the following command to deploy Motionberry: 
+2\. **Run the following command to deploy Motionberry**: 
 ```bash
 docker run --name motionberry \
   --privileged \
