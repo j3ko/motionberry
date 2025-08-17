@@ -16,10 +16,7 @@ needs_reboot=0
 # Update System and Firmware
 print_header "Updating System and Firmware"
 echo "Updating package lists and upgrading installed packages..."
-sudo apt update && sudo apt -y upgrade
-echo "Running rpi-update to update firmware..."
-sudo SKIP_SDK=1 rpi-update
-echo "System and firmware update completed."
+sudo apt update && sudo apt -y full-upgrade
 
 # Install Required Packages
 print_header "Installing Required Packages"
@@ -118,6 +115,23 @@ else
     echo "Frequencies already configured in /boot/config.txt."
 fi
 echo "Commenting out arm_boost if enabled..."
-sudo sed -i 's/^arm_boostCtrl+O', 'Enter', 'Ctrl+X').
-sudo reboot
-```
+sudo sed -i 's/^arm_boost=1/#arm_boost=1/' /boot/config.txt || echo "arm_boost not found, no changes made."
+echo "CPU/GPU/SDRAM frequencies configured."
+needs_reboot=1
+
+# Final Instructions
+print_header "Setup Complete"
+echo "All optimizations have been applied."
+if [ $needs_reboot -eq 1 ]; then
+    echo "A reboot is required to apply some changes."
+    echo "Would you like to reboot now? (y/n)"
+    read -r answer
+    if [ "$answer" = "y" ] || [ "$answer" = "Y" ]; then
+        echo "Rebooting now..."
+        sudo reboot
+    else
+        echo "Please reboot manually later to apply all changes."
+    fi
+else
+    echo "No reboot required."
+fi
