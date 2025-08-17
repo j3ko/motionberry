@@ -18,7 +18,7 @@ print_header "Updating System and Firmware"
 echo "Updating package lists and upgrading installed packages..."
 sudo apt update && sudo apt -y upgrade
 echo "Running rpi-update to update firmware..."
-sudo rpi-update
+sudo SKIP_SDK=1 rpi-update
 echo "System and firmware update completed."
 
 # Install Required Packages
