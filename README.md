@@ -120,21 +120,26 @@ notification:
       data:
         token: "${pushover_token}"
         user: "${pushover_user}"
-        message: "🚨🚨🚨 Motion Detected! 🚨🚨🚨"
+        message: "🚨‼️🚨 Motion Detected! 🚨‼️🚨"
 ```
 
 **Tip:** Environment variables like `${pushover_token}` can be used here.
 
 ### Dynamic Substitution
 
-Notifications support dynamic placeholders. For example, to send the filename of a recorded clip:
+Notifications support dynamic placeholders. For example, to send the preview and duration of a recorded clip:
 
 ```yaml
 notification:
   motion_stopped:
-    - type: http_post
-      url: "https://ntfy.sh/my-motionberry"
-      data: "Motion stopped. File saved: ${filename}"
+    - type: form_post
+      url: "https://api.pushover.net/1/messages.json"
+      data:
+        token: "${pushover_token}"
+        user: "${pushover_user}"
+        message: "🚨‼️🚨 Motion Detected (${clip_duration}s) 🚨‼️🚨"
+        attachment_base64: "${preview_base64}"
+        attachment_type: "image/jpeg"
 ```
 
 ### Supported Notification Actions

@@ -99,7 +99,7 @@ class MotionDetector:
                                 "filepath": str(path),
                                 "filename": str(path.name),
                                 "preview_jpeg": preview_jpeg,
-                                "clip_duration": elapsed,
+                                "clip_duration": round(elapsed),
                             },
                         )
                         self.recording_start_time = None
@@ -121,7 +121,7 @@ class MotionDetector:
                                 "filepath": str(path),
                                 "filename": str(path.name),
                                 "preview_jpeg": preview_jpeg,
-                                "clip_duration": elapsed,
+                                "clip_duration": round(elapsed),
                             },
                         )
                         self.recording_start_time = None
@@ -169,7 +169,7 @@ class MotionDetector:
                             "filepath": str(path),
                             "filename": str(path.name),
                             "preview_jpeg": preview_jpeg,
-                            "clip_duration": elapsed,
+                            "clip_duration": round(elapsed),
                         },
                     )
             self.thread.join()
