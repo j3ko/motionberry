@@ -87,17 +87,17 @@ class CameraManager:
                             self.logger.info("Camera stopped.")
 
     def _initialize_camera(self, tuning_file=None):
-        """Initializes the Picamera2 instance with optional tuning."""
+        """Initializes the Picamera2 instance."""
         tuning = self._load_tuning(tuning_file)
         self.picam2 = Picamera2(tuning=tuning)
 
         transform = Transform()
         if self.orientation == 90:
-            transform = Transform(hflip=1, vflip=0)
+            transform = Transform(hflip=0, vflip=1)
         elif self.orientation == 180:
             transform = Transform(hflip=1, vflip=1)
         elif self.orientation == 270:
-            transform = Transform(hflip=0, vflip=1)
+            transform = Transform(hflip=1, vflip=0)
         else:
             transform = Transform()
 
