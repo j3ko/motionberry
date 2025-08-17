@@ -35,7 +35,11 @@ logging:
 
 #   # Capture directory (Optional, Default captures)
 #   directory: captures
-  
+
+#   # Camera orientation in degrees (Optional, Default: 0)
+#   # Possible values: 0, 90, 180, 270
+#   orientation: 0
+
 #   # Resolution (Width x Height) for recorded videos. (Optional, Default [1024, 720])
 #   record_size: [1024, 720]
 

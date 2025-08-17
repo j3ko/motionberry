@@ -2,7 +2,7 @@ import time
 import numpy as np
 import threading
 import logging
-from picamera2 import Picamera2
+from picamera2 import Picamera2, Transform
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
 
@@ -17,6 +17,7 @@ class CameraManager:
         record_size=(1280, 720),
         detect_size=(320, 240),
         tuning_file=None,
+        orientation=0,
     ):
         self.logger = logging.getLogger(__name__)
         self.framerate = framerate
@@ -37,6 +38,8 @@ class CameraManager:
             bitrate=encoder_bitrate, framerate=framerate, enable_sps_framerate=True
         )
         self.tuning_file = tuning_file
+        self.orientation = orientation
+        self.logger.debug(f"Initialized with orientation: {self.orientation} degrees")
         self._initialize_camera(tuning_file)
 
     def _load_tuning(self, tuning_file=None):
@@ -87,9 +90,20 @@ class CameraManager:
         tuning = self._load_tuning(tuning_file)
         self.picam2 = Picamera2(tuning=tuning)
 
+        transform = Transform()
+        if self.orientation == 90:
+            transform = transform @ Transform(vflip=True) @ Transform(hflip=False) @ Transform(rotation=90)
+        elif self.orientation == 180:
+            transform = transform @ Transform(vflip=True) @ Transform(hflip=True) @ Transform(rotation=180)
+        elif self.orientation == 270:
+            transform = transform @ Transform(vflip=False) @ Transform(hflip=True) @ Transform(rotation=270)
+        else:
+            transform = Transform()
+
         video_config = self.picam2.create_video_configuration(
             main={"size": self.record_size, "format": "RGB888"},
             lores={"size": self.detect_size, "format": "YUV420"},
+            transform=transform,
             controls={
                 "FrameRate": self.framerate,
                 "AeEnable": True,      # Auto Exposure ON
