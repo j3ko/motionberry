@@ -106,7 +106,7 @@ def generate_webhook_spec(path, payload_schema=None):
     Generate a webhook spec for OpenAPI 3.0.
 
     Args:
-        path (str): The webhook path (e.g., "/motion_detected").
+        path (str): The webhook path (e.g., "/motion_started").
         payload_schema (dict, optional): The schema for the request payload, if applicable.
 
     Returns:
