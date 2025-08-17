@@ -1,4 +1,5 @@
 import os
+import base64
 import logging
 import threading
 import requests
@@ -19,6 +20,9 @@ class WebhookNotifier(EventNotifier):
         # Backward compatibility: single webhook_url
         if isinstance(actions, dict) and "webhook_url" in actions:
             actions = [{"type": "http_post", "url": actions["webhook_url"]}]
+
+        if data and data.get("preview_jpeg"):
+            data["preview_base64"] = base64.b64encode(data["preview_jpeg"]).decode("ascii")
 
         for action_def in actions:
             thread = threading.Thread(
@@ -102,7 +106,7 @@ def generate_webhook_spec(path, payload_schema=None):
     Generate a webhook spec for OpenAPI 3.0.
 
     Args:
-        path (str): The webhook path (e.g., "/motion_detected").
+        path (str): The webhook path (e.g., "/motion_started").
         payload_schema (dict, optional): The schema for the request payload, if applicable.
 
     Returns:

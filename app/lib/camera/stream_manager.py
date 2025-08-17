@@ -15,7 +15,7 @@ class StreamManager:
         self.streaming_clients = 0
         self.client_lock = threading.Lock()
 
-    def generate_frames(self):
+    def generate_frames(self, stream="main"):
         """Generates frames for streaming."""
         with self.client_lock:
             self.streaming_clients += 1
@@ -25,7 +25,7 @@ class StreamManager:
 
         try:
             while True:
-                frame = self.camera_manager.capture_image_array()
+                frame = self.camera_manager.capture_image_array(stream)
 
                 if frame is None:
                     self.logger.warning("Captured frame is None. Skipping this frame.")
@@ -33,13 +33,13 @@ class StreamManager:
                     continue
 
                 try:
-                    stream = io.BytesIO()
+                    stream_bytes = io.BytesIO()
                     image = Image.fromarray(frame)
-                    image.save(stream, format="JPEG")
-                    stream.seek(0)
+                    image.save(stream_bytes, format="JPEG")
+                    stream_bytes.seek(0)
 
                     yield (b'--frame\r\n'
-                        b'Content-Type: image/jpeg\r\n\r\n' + stream.getvalue() + b'\r\n')
+                        b'Content-Type: image/jpeg\r\n\r\n' + stream_bytes.getvalue() + b'\r\n')
                 except Exception as e:
                     self.logger.error("Error processing frame: %s", e, exc_info=True)
                 

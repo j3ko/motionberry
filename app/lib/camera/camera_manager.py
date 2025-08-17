@@ -1,4 +1,5 @@
 import time
+import numpy as np
 import threading
 import logging
 from picamera2 import Picamera2
@@ -26,7 +27,9 @@ class CameraManager:
         self.is_restarting = False
         self.restart_condition = threading.Condition()
         self.record_size = record_size
+        self.logger.debug(f"Initialized with record_size: {self.record_size}")
         self.detect_size = detect_size
+        self.logger.debug(f"Initialized with detect_size: {self.detect_size}")
         self.file_manager = file_manager
         self.video_processor = video_processor
         self.client_count = 0
@@ -93,10 +96,12 @@ class CameraManager:
                 "AwbEnable": True,     # Auto White Balance ON
             },
         )
+        self.logger.debug(f"Video config: {video_config}")
         self.picam2.configure(video_config)
         self.picam2.set_controls({
             "FrameRate": self.framerate
         })
+        self.logger.debug(f"Video config after apply: {self.picam2.camera_config}")
 
     def restart_camera(self):
         """Restarts the camera safely, ensuring only one restart happens at a time."""
@@ -133,12 +138,11 @@ class CameraManager:
         return result
 
     def _capture_with_timeout(self, capture_function, *args, timeout=10):
-        """Handles camera capture with timeout and waits if the camera is restarting."""
+        self.logger.debug("Entering _capture_with_timeout with function: %s, args: %s", capture_function.__name__, args)
         with self.restart_condition:
             while self.is_restarting:
-                self.logger.info("Waiting for camera restart...")
+                self.logger.debug("Waiting for camera restart...")
                 self.restart_condition.wait()
-
         if not self.is_camera_running:
             self.logger.warning("Camera is not running. Attempting to start.")
             self.start_camera()
@@ -151,7 +155,9 @@ class CameraManager:
 
         def capture():
             try:
+                self.logger.debug("Executing capture function %s with args %s", capture_function.__name__, args)
                 capture_result[0] = capture_function(*args)
+                self.logger.debug("Capture function returned with result: %s", "None" if capture_result[0] is None else "valid")
             except Exception as e:
                 self.logger.error(f"Error during capture: {e}", exc_info=True)
             finally:
@@ -161,28 +167,49 @@ class CameraManager:
         capture_thread.start()
 
         if not capture_complete.wait(timeout):
-            self.logger.error("Capture timed out! Camera might be unresponsive. Restarting camera now...")
+            self.logger.error("Capture timed out! Restarting camera...")
             self.restart_camera()
             return None
 
+        self.logger.debug("Capture completed successfully, result: %s", "None" if capture_result[0] is None else "valid")
         return capture_result[0]
 
-    def capture_frame(self, stream="lores"):
+    def capture_image_array(self, stream="main"):
+        """Captures an image array with timeout handling."""
+        self.logger.debug(f"Attempting to capture image array from {stream} stream using capture_buffer")
         buf = self._capture_with_timeout(self.picam2.capture_buffer, stream)
         if buf is None:
+            self.logger.warning(f"Captured buffer is None for {stream} stream. Camera restart?")
             return None
-        # reshape based on detect_size (w,h)
-        w, h = self.detect_size
+        self.logger.debug(f"Buffer size: {len(buf)}")
         try:
-            frame = buf[: w * h].reshape(h, w)
+            config = self.picam2.stream_configuration(stream)
+            w = config["size"][0]  # Width
+            h = config["size"][1]  # Height
+            self.logger.debug(f"Stream {stream} configuration: size={w}x{h}, format={config['format']}")
+            
+            if config["format"] == "RGB888":
+                expected_size = w * h * 3  # 3 bytes per pixel for RGB
+                if len(buf) != expected_size:
+                    self.logger.warning(f"Buffer size {len(buf)} does not match expected {expected_size} for RGB888")
+                # Reshape to (height, width, 3) and return as RGB
+                image = np.frombuffer(buf, dtype=np.uint8).reshape(h, w, 3)
+                self.logger.debug(f"RGB image shape: {image.shape}")
+                return image
+            else:  # Assume YUV420 for lores or other formats, return grayscale Y plane
+                yuv_height = int(h * 1.5)  # Full YUV420 height
+                if len(buf) % yuv_height != 0:
+                    self.logger.error(f"Buffer size {len(buf)} not divisible by YUV height {yuv_height}")
+                    return None
+                stride = len(buf) // yuv_height
+                self.logger.debug(f"Computed stride: {stride}")
+                image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
+                y_plane = image[:h, :w]  # Extract Y plane as grayscale
+                self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
+                return y_plane
         except Exception as e:
-            self.logger.error(f"Failed to reshape frame: {e}")
+            self.logger.error(f"Failed to process buffer for {stream} stream: {e}", exc_info=True)
             return None
-        return frame
-
-    def capture_image_array(self):
-        """Captures an image array with timeout handling."""
-        return self._capture_with_timeout(self.picam2.capture_array, "main")
 
     def take_snapshot(self):
         """Takes a snapshot and saves it as a JPEG file with timeout handling."""

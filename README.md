@@ -99,7 +99,7 @@ Send a plain-text notification via [ntfy.sh](https://ntfy.sh/):
 
 ```yaml
 notification:
-  motion_detected:
+  motion_started:
     - type: http_post
       url: "https://ntfy.sh/my-motionberry"
       headers:
@@ -114,27 +114,32 @@ Send an alert to your mobile via [Pushover](https://pushover.net/):
 
 ```yaml
 notification:
-  motion_detected:
+  motion_started:
     - type: form_post
       url: "https://api.pushover.net/1/messages.json"
       data:
         token: "${pushover_token}"
         user: "${pushover_user}"
-        message: "🚨🚨🚨 Motion Detected! 🚨🚨🚨"
+        message: "🚨‼️🚨 Motion Detected! 🚨‼️🚨"
 ```
 
 **Tip:** Environment variables like `${pushover_token}` can be used here.
 
 ### Dynamic Substitution
 
-Notifications support dynamic placeholders. For example, to send the filename of a recorded clip:
+Notifications support dynamic placeholders. For example, to send the preview and duration of a recorded clip:
 
 ```yaml
 notification:
   motion_stopped:
-    - type: http_post
-      url: "https://ntfy.sh/my-motionberry"
-      data: "Motion stopped. File saved: ${filename}"
+    - type: form_post
+      url: "https://api.pushover.net/1/messages.json"
+      data:
+        token: "${pushover_token}"
+        user: "${pushover_user}"
+        message: "🚨‼️🚨 Motion Detected (${clip_duration}s) 🚨‼️🚨"
+        attachment_base64: "${preview_base64}"
+        attachment_type: "image/jpeg"
 ```
 
 ### Supported Notification Actions
@@ -145,17 +150,18 @@ notification:
 | `detection_enabled`   | Triggered when motion detection is enabled.                    |
 | `detection_disabled`  | Triggered when motion detection is disabled.                   |
 | `motion_started`      | Triggered when motion is detected and recording starts.        |
-| `motion_stopped`      | Triggered when motion has stopped and recording ends.          |
-| `motion_detected`     | Triggered when motion is detected (independent of recording).  |
 | `motion_ended`        | Triggered when motion ends and a saved file becomes available. |
 
 ### Substitution Keys per Action
 
 These keys can be used inside strings with the `${key}` syntax (e.g., `${filename}`).
 
-| Action Name    | Substitution Key | Description                  |
-| -------------- | ---------------- | ---------------------------- |
-| `motion_ended` | `filename`       | The name of the saved video. |
+| Action Name       | Substitution Key   | Description                                      |
+| ----------------- | ------------------ | ------------------------------------------------ |
+| `motion_stopped`  | `filename`         | The name of the saved video.                     |
+| `motion_stopped`  | `filepath`         | The full path of the saved video.                |
+| `motion_stopped`  | `preview_base64`   | The JPEG preview of the clip in base64 encoding. |
+| `motion_stopped`  | `clip_duration`    | The duration of the recorded clip in seconds.    |
 
 ## Reporting Issues
 
