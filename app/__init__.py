@@ -68,7 +68,7 @@ def initialize_components(app, config):
         record_size=tuple(config.get("capture", {}).get("record_size", [1024, 720])),
         detect_size=tuple(config.get("capture", {}).get("detect_size", [320, 240])),
         tuning_file=config.get("capture", {}).get("tuning", None),
-        orientation=int(config.get("capture", {}).get("orientation", "normal")),
+        orientation=config.get("capture", {}).get("orientation", "normal"),
     )
 
     app.config["stream_manager"] = StreamManager(
