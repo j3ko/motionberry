@@ -18,7 +18,7 @@ class CameraManager:
         record_size=(1280, 720),
         detect_size=(320, 240),
         tuning_file=None,
-        orientation=0,
+        orientation="normal",
     ):
         self.logger = logging.getLogger(__name__)
         self.framerate = framerate
@@ -39,8 +39,8 @@ class CameraManager:
             bitrate=encoder_bitrate, framerate=framerate, enable_sps_framerate=True
         )
         self.tuning_file = tuning_file
-        self.orientation = orientation
-        self.logger.debug(f"Initialized with orientation: {self.orientation} degrees")
+        self.orientation = orientation.lower()
+        self.logger.debug(f"Initialized with orientation: {self.orientation}")
         self._initialize_camera(tuning_file)
 
     def _load_tuning(self, tuning_file=None):
@@ -92,14 +92,14 @@ class CameraManager:
         self.picam2 = Picamera2(tuning=tuning)
 
         transform = Transform()
-        if self.orientation == 90:
+        if self.orientation == "flipped_horizontal":
             transform = Transform(hflip=1, vflip=0)
-        elif self.orientation == 180:
+        elif self.orientation == "inverted":
             transform = Transform(hflip=1, vflip=1)
-        elif self.orientation == 270:
+        elif self.orientation == "flipped_vertical":
             transform = Transform(hflip=0, vflip=1)
-        else:
-            transform = Transform()
+        elif self.orientation != "normal":
+            self.logger.warning(f"Invalid orientation state '{self.orientation}'. Using 'normal'.")
 
         video_config = self.picam2.create_video_configuration(
             main={"size": self.record_size, "format": "RGB888"},
