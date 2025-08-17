@@ -93,11 +93,11 @@ class CameraManager:
 
         transform = Transform()
         if self.orientation == 90:
-            transform = transform @ Transform(vflip=True) @ Transform(hflip=False) @ Transform(rotation=90)
+            transform = Transform(hflip=1, vflip=0)
         elif self.orientation == 180:
-            transform = transform @ Transform(vflip=True) @ Transform(hflip=True) @ Transform(rotation=180)
+            transform = Transform(hflip=1, vflip=1)
         elif self.orientation == 270:
-            transform = transform @ Transform(vflip=False) @ Transform(hflip=True) @ Transform(rotation=270)
+            transform = Transform(hflip=0, vflip=1)
         else:
             transform = Transform()
 
