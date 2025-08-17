@@ -2,6 +2,7 @@ import time
 import numpy as np
 import threading
 import logging
+from libcamera import Transform
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
@@ -17,6 +18,7 @@ class CameraManager:
         record_size=(1280, 720),
         detect_size=(320, 240),
         tuning_file=None,
+        orientation="normal",
     ):
         self.logger = logging.getLogger(__name__)
         self.framerate = framerate
@@ -37,6 +39,8 @@ class CameraManager:
             bitrate=encoder_bitrate, framerate=framerate, enable_sps_framerate=True
         )
         self.tuning_file = tuning_file
+        self.orientation = orientation.lower()
+        self.logger.debug(f"Initialized with orientation: {self.orientation}")
         self._initialize_camera(tuning_file)
 
     def _load_tuning(self, tuning_file=None):
@@ -83,13 +87,24 @@ class CameraManager:
                             self.logger.info("Camera stopped.")
 
     def _initialize_camera(self, tuning_file=None):
-        """Initializes the Picamera2 instance with optional tuning."""
+        """Initializes the Picamera2 instance."""
         tuning = self._load_tuning(tuning_file)
         self.picam2 = Picamera2(tuning=tuning)
+
+        transform = Transform()
+        if self.orientation == "flipped_horizontal":
+            transform = Transform(hflip=1, vflip=0)
+        elif self.orientation == "inverted":
+            transform = Transform(hflip=1, vflip=1)
+        elif self.orientation == "flipped_vertical":
+            transform = Transform(hflip=0, vflip=1)
+        elif self.orientation != "normal":
+            self.logger.warning(f"Invalid orientation state '{self.orientation}'. Using 'normal'.")
 
         video_config = self.picam2.create_video_configuration(
             main={"size": self.record_size, "format": "RGB888"},
             lores={"size": self.detect_size, "format": "YUV420"},
+            transform=transform,
             controls={
                 "FrameRate": self.framerate,
                 "AeEnable": True,      # Auto Exposure ON

@@ -35,7 +35,16 @@ logging:
 
 #   # Capture directory (Optional, Default captures)
 #   directory: captures
-  
+
+#   # Camera orientation state (Optional, Default: normal)
+#   # Specifies the camera's output orientation using horizontal (hflip) and vertical (vflip) flips.
+#   # Values describe the resulting image state:
+#   # - normal: Default upright orientation (hflip=0, vflip=0).
+#   # - flipped_horizontal: Image mirrored horizontally (hflip=1, vflip=0).
+#   # - inverted: Image upside-down (hflip=1, vflip=1).
+#   # - flipped_vertical: Image mirrored vertically (hflip=0, vflip=1).
+#   orientation: normal
+
 #   # Resolution (Width x Height) for recorded videos. (Optional, Default [1024, 720])
 #   record_size: [1024, 720]
 
