@@ -37,6 +37,7 @@ logging:
 #   directory: captures
 
 #   # Camera orientation in degrees (Optional, Default: 0)
+#   # Note: These are flip-based transformations, not true rotations.
 #   # Possible values: 0, 90, 180, 270
 #   orientation: 0
 
