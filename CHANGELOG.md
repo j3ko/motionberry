@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/j3ko/motionberry/compare/v0.2.0...v0.3.0) (2025-08-18)
+
+
+### Features
+
+* background subtraction algorithm ([#38](https://github.com/j3ko/motionberry/issues/38)) ([e984bba](https://github.com/j3ko/motionberry/commit/e984bbafcdd70344362e1112e100fe1b76ef872a)), closes [#5](https://github.com/j3ko/motionberry/issues/5)
+* camera orientation config ([#46](https://github.com/j3ko/motionberry/issues/46)) ([67760bf](https://github.com/j3ko/motionberry/commit/67760bf61c101de2dcd9cc86af645a3c099d9b7d)), closes [#37](https://github.com/j3ko/motionberry/issues/37)
+* notification upgrades ([#43](https://github.com/j3ko/motionberry/issues/43)) ([aefef8e](https://github.com/j3ko/motionberry/commit/aefef8e395f31f18c53e7755168adbb54a04324b)), closes [#39](https://github.com/j3ko/motionberry/issues/39)
+* preview image for notifications ([#45](https://github.com/j3ko/motionberry/issues/45)) ([b792e7c](https://github.com/j3ko/motionberry/commit/b792e7c41a3eca6116288f477480e72e31688b0e)), closes [#41](https://github.com/j3ko/motionberry/issues/41)
+* system config script ([#47](https://github.com/j3ko/motionberry/issues/47)) ([c08bca8](https://github.com/j3ko/motionberry/commit/c08bca84e2e3c1f7449535a4c75afa82cb893287)), closes [#14](https://github.com/j3ko/motionberry/issues/14)
+
 ## [0.2.0](https://github.com/j3ko/motionberry/compare/v0.1.0...v0.2.0) (2025-02-22)
 
 
