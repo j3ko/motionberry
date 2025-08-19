@@ -79,7 +79,9 @@ class CameraManager:
 
     def update_config(self, file_manager, video_processor, encoder_bitrate, framerate, record_size, detect_size, tuning_file, orientation):
         """Update configuration and reinitialize the camera."""
+        self.logger.warning("before config_lock")
         with config_lock:
+            self.logger.warning("before restart_condition")
             with self.restart_condition:
                 if self.is_restarting:
                     self.logger.warning("Restart already in progress. Waiting...")
