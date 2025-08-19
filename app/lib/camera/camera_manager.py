@@ -6,7 +6,7 @@ from libcamera import Transform
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
-from app.utils import config_lock
+from ...utils import config_lock
 
 class CameraManager:
     def __init__(
@@ -88,7 +88,6 @@ class CameraManager:
                 self.is_restarting = True
                 try:
                     self.stop()
-
                     self.file_manager = file_manager
                     self.video_processor = video_processor
                     self.encoder_bitrate = encoder_bitrate
@@ -98,17 +97,13 @@ class CameraManager:
                     self.tuning_file = tuning_file
                     self.orientation = orientation.lower()
                     self.logger.debug(f"Updated config: record_size={self.record_size}, detect_size={self.detect_size}, orientation={self.orientation}")
-
                     self.encoder = H264Encoder(
                         bitrate=self.encoder_bitrate, framerate=self.framerate, enable_sps_framerate=True
                     )
-
                     self._initialize_camera(self.tuning_file)
-
                     if self.client_count > 0:
                         self.start_camera()
                         self.logger.info("Camera restarted with new configuration.")
-
                 except Exception as e:
                     self.logger.error(f"Failed to update configuration: {e}", exc_info=True)
                     raise

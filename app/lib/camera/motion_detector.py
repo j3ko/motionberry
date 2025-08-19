@@ -2,7 +2,7 @@ import time
 import logging
 from collections import deque
 from threading import Thread, Condition
-from app.utils import config_lock
+from ...utils import config_lock 
 from .algorithms import get_motion_algorithm
 import numpy as np
 from PIL import Image
@@ -21,7 +21,7 @@ class MotionDetector:
         notifiers=None,
         algorithm="frame_diff",
         buffer_duration=2,
-        enabled=False,  # New parameter
+        enabled=False,
     ):
         self.logger = logging.getLogger(__name__)
         self.camera_manager = camera_manager
