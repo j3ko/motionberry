@@ -8,6 +8,9 @@ logging:
 # # Motion detection settings
 # motion:
 
+#   # Enable or disable motion detection on startup (Optional, Default: false)
+#   enabled: false
+
 #   # "frame_diff" or "background" (Optional, Default: frame_diff)
 #   algorithm: frame_diff  
 

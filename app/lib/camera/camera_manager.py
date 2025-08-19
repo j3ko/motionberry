@@ -6,7 +6,7 @@ from libcamera import Transform
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
-
+from app.utils import config_lock
 
 class CameraManager:
     def __init__(
@@ -21,26 +21,23 @@ class CameraManager:
         orientation="normal",
     ):
         self.logger = logging.getLogger(__name__)
+        self.file_manager = file_manager
+        self.video_processor = video_processor
+        self.encoder_bitrate = encoder_bitrate
         self.framerate = framerate
+        self.record_size = record_size
+        self.detect_size = detect_size
+        self.tuning_file = tuning_file
+        self.orientation = orientation.lower()
         self.camera_lock = threading.Lock()
         self.client_lock = threading.Lock()
         self.is_camera_running = False
         self.is_recording = False
         self.is_restarting = False
         self.restart_condition = threading.Condition()
-        self.record_size = record_size
-        self.logger.debug(f"Initialized with record_size: {self.record_size}")
-        self.detect_size = detect_size
-        self.logger.debug(f"Initialized with detect_size: {self.detect_size}")
-        self.file_manager = file_manager
-        self.video_processor = video_processor
         self.client_count = 0
-        self.encoder = H264Encoder(
-            bitrate=encoder_bitrate, framerate=framerate, enable_sps_framerate=True
-        )
-        self.tuning_file = tuning_file
-        self.orientation = orientation.lower()
-        self.logger.debug(f"Initialized with orientation: {self.orientation}")
+        self.encoder = None
+        self.logger.debug(f"Initialized with record_size: {self.record_size}, detect_size: {self.detect_size}, orientation: {self.orientation}")
         self._initialize_camera(tuning_file)
 
     def _load_tuning(self, tuning_file=None):
@@ -54,12 +51,70 @@ class CameraManager:
         try:
             tuning = Picamera2.load_tuning_file(tuning_file)
             self.logger.info(f"Loading tuning file '{tuning_file}'")
+            return tuning
         except FileNotFoundError:
-            self.logger.error(
-                f"Tuning file '{tuning_file}' not found. Using default settings."
-            )
-            tuning = None
-        return tuning
+            self.logger.error(f"Tuning file '{tuning_file}' not found. Using default settings.")
+            return None
+
+    def start(self):
+        """Start or restart the camera with current configuration."""
+        with self.camera_lock:
+            if self.is_camera_running:
+                self.logger.debug("Camera already running, ensuring correct configuration.")
+                return
+            self.start_camera()
+
+    def stop(self):
+        """Stop the camera and recording, preparing for reinitialization."""
+        with self.camera_lock:
+            if self.is_recording:
+                self.logger.info("Stopping active recording before shutdown.")
+                self.stop_recording()
+            if self.is_camera_running:
+                self.logger.info("Stopping camera before reinitialization.")
+                self.picam2.stop()
+                self.is_camera_running = False
+            self.client_count = 0
+            self.logger.debug("Camera stopped and client count reset.")
+
+    def update_config(self, file_manager, video_processor, encoder_bitrate, framerate, record_size, detect_size, tuning_file, orientation):
+        """Update configuration and reinitialize the camera."""
+        with config_lock:
+            with self.restart_condition:
+                if self.is_restarting:
+                    self.logger.warning("Restart already in progress. Waiting...")
+                    self.restart_condition.wait()
+
+                self.is_restarting = True
+                try:
+                    self.stop()
+
+                    self.file_manager = file_manager
+                    self.video_processor = video_processor
+                    self.encoder_bitrate = encoder_bitrate
+                    self.framerate = framerate
+                    self.record_size = tuple(record_size)
+                    self.detect_size = tuple(detect_size)
+                    self.tuning_file = tuning_file
+                    self.orientation = orientation.lower()
+                    self.logger.debug(f"Updated config: record_size={self.record_size}, detect_size={self.detect_size}, orientation={self.orientation}")
+
+                    self.encoder = H264Encoder(
+                        bitrate=self.encoder_bitrate, framerate=self.framerate, enable_sps_framerate=True
+                    )
+
+                    self._initialize_camera(self.tuning_file)
+
+                    if self.client_count > 0:
+                        self.start_camera()
+                        self.logger.info("Camera restarted with new configuration.")
+
+                except Exception as e:
+                    self.logger.error(f"Failed to update configuration: {e}", exc_info=True)
+                    raise
+                finally:
+                    self.is_restarting = False
+                    self.restart_condition.notify_all()
 
     def start_camera(self):
         """Starts the camera or increments the client count."""
@@ -89,6 +144,13 @@ class CameraManager:
     def _initialize_camera(self, tuning_file=None):
         """Initializes the Picamera2 instance."""
         tuning = self._load_tuning(tuning_file)
+        try:
+            if hasattr(self, 'picam2') and self.picam2:
+                self.picam2.close()
+                self.logger.debug("Closed existing Picamera2 instance.")
+        except Exception as e:
+            self.logger.error(f"Error closing existing camera: {e}")
+
         self.picam2 = Picamera2(tuning=tuning)
 
         transform = Transform()
@@ -107,8 +169,8 @@ class CameraManager:
             transform=transform,
             controls={
                 "FrameRate": self.framerate,
-                "AeEnable": True,      # Auto Exposure ON
-                "AwbEnable": True,     # Auto White Balance ON
+                "AeEnable": True,
+                "AwbEnable": True,
             },
         )
         self.logger.debug(f"Video config: {video_config}")
@@ -199,27 +261,26 @@ class CameraManager:
         self.logger.debug(f"Buffer size: {len(buf)}")
         try:
             config = self.picam2.stream_configuration(stream)
-            w = config["size"][0]  # Width
-            h = config["size"][1]  # Height
+            w = config["size"][0]
+            h = config["size"][1]
             self.logger.debug(f"Stream {stream} configuration: size={w}x{h}, format={config['format']}")
             
             if config["format"] == "RGB888":
-                expected_size = w * h * 3  # 3 bytes per pixel for RGB
+                expected_size = w * h * 3
                 if len(buf) != expected_size:
                     self.logger.warning(f"Buffer size {len(buf)} does not match expected {expected_size} for RGB888")
-                # Reshape to (height, width, 3) and return as RGB
                 image = np.frombuffer(buf, dtype=np.uint8).reshape(h, w, 3)
                 self.logger.debug(f"RGB image shape: {image.shape}")
                 return image
-            else:  # Assume YUV420 for lores or other formats, return grayscale Y plane
-                yuv_height = int(h * 1.5)  # Full YUV420 height
+            else:
+                yuv_height = int(h * 1.5)
                 if len(buf) % yuv_height != 0:
                     self.logger.error(f"Buffer size {len(buf)} not divisible by YUV height {yuv_height}")
                     return None
                 stride = len(buf) // yuv_height
                 self.logger.debug(f"Computed stride: {stride}")
                 image = np.frombuffer(buf, dtype=np.uint8).reshape(yuv_height, stride)
-                y_plane = image[:h, :w]  # Extract Y plane as grayscale
+                y_plane = image[:h, :w]
                 self.logger.debug(f"Y plane shape: {y_plane.shape}, min: {y_plane.min()}, max: {y_plane.max()}")
                 return y_plane
         except Exception as e:

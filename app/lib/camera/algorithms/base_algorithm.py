@@ -1,6 +1,3 @@
-import numpy as np
-
-
 class BaseAlgorithm:
     def __init__(self, normalized_threshold: float):
         """
