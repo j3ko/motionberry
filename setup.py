@@ -18,7 +18,7 @@ install_requires = [
     "apispec==6.8.1",
     "apispec-webframeworks==1.2.0",
     "marshmallow==3.24.1",
-    "opencv-python==4.12.0.88",
+    "opencv-python==4.10.0.84",
     "watchdog==6.0.0",
 ]
 
