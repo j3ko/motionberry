@@ -3,7 +3,8 @@ import time
 from threading import Timer
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from .utils import load_config, configure_logging, initialize_components, config_lock
+from .utils import load_config, configure_logging, initialize_components
+from .locks import config_lock
 
 class ConfigFileHandler(FileSystemEventHandler):
     """Handles file system events for config file changes."""

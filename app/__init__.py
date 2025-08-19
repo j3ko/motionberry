@@ -6,7 +6,8 @@ from .api import api_bp
 from .ui import ui_bp
 from .version import __version__
 from .config_watcher import start_config_watcher
-from .utils import load_config, configure_logging, initialize_components, config_lock
+from .utils import load_config, configure_logging, initialize_components
+from .locks import config_lock
 
 def create_app(config_file=None):
     # Temporary logging config

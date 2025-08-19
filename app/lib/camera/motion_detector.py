@@ -2,7 +2,7 @@ import time
 import logging
 from collections import deque
 from threading import Thread, Condition
-from ...utils import config_lock 
+from ...locks import config_lock
 from .algorithms import get_motion_algorithm
 import numpy as np
 from PIL import Image

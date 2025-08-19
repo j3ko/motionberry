@@ -6,7 +6,7 @@ from libcamera import Transform
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 from picamera2.outputs import FileOutput
-from ...utils import config_lock
+from ...locks import config_lock
 
 class CameraManager:
     def __init__(
