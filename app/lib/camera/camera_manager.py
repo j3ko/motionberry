@@ -140,7 +140,7 @@ class CameraManager:
         """Initializes the Picamera2 instance."""
         tuning = self._load_tuning(tuning_file)
         try:
-            if hasattr(self, 'picam2') and self.picam2:
+            if self.picam2:
                 self.picam2.close()
                 self.logger.debug("Closed existing Picamera2 instance.")
         except Exception as e:
