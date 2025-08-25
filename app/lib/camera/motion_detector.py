@@ -92,6 +92,21 @@ class MotionDetector:
                     if self.max_clip_length and elapsed > self.max_clip_length:
                         self.logger.info("Max clip length reached. Stopping recording.")
                         path = self.camera_manager.stop_recording()
+                        if path is None:
+                            self.logger.error("Failed to stop recording: stop_recording returned None")
+                            self.camera_manager.is_recording = False
+                            self.recording_start_time = None
+                            self._notify(
+                                "motion_stopped", 
+                                {
+                                    "filepath": None, 
+                                    "filename": None, 
+                                    "preview_jpeg": None, 
+                                    "clip_duration": round(elapsed)
+                                }
+                            )
+                            continue
+
                         preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
                         self._notify(
                             "motion_stopped",
