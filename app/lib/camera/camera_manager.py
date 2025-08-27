@@ -277,6 +277,9 @@ class CameraManager:
                     )
                     self.logger.info(f"Video saved: {final_path}")
                     return final_path
+                except Exception as e:
+                    self.logger.error(f"Failed to stop recording: {e}", exc_info=True)
+                    return None
                 finally:
                     self.is_recording = False
                     self.file_manager.cleanup_tmp_dir(self.current_raw_path.parent)
