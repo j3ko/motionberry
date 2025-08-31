@@ -8,7 +8,6 @@ import io
 
 from .algorithms import get_motion_algorithm
 
-
 class MotionDetector:
     def __init__(
         self,
@@ -65,7 +64,7 @@ class MotionDetector:
         except Exception as e:
             self.logger.error(f"Failed to generate JPEG from frame: {e}", exc_info=True)
             return None
-            
+
     def _motion_detection_loop(self):
         self.camera_manager.start_camera()
         time.sleep(5)
@@ -93,33 +92,19 @@ class MotionDetector:
                         self.logger.info("Max clip length reached. Stopping recording.")
                         path = self.camera_manager.stop_recording()
                         self.recording_start_time = None
+                        preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
+                        notify_data = {
+                            "filepath": str(path) if path else None,
+                            "filename": str(path.name) if path else None,
+                            "preview_jpeg": preview_jpeg,
+                            "clip_duration": round(elapsed),
+                        }
                         if path is None:
                             self.logger.error("Failed to stop recording: stop_recording returned None")
                             self.camera_manager.is_recording = False
-                            self._notify(
-                                "motion_stopped", 
-                                {
-                                    "filepath": None, 
-                                    "filename": None, 
-                                    "preview_jpeg": None, 
-                                    "clip_duration": round(elapsed)
-                                }
-                            )
-                            continue
-                        else:
-                            preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
-                            self._notify(
-                                "motion_stopped",
-                                {
-                                    "filepath": str(path),
-                                    "filename": str(path.name),
-                                    "preview_jpeg": preview_jpeg,
-                                    "clip_duration": round(elapsed),
-                                },
-                            )
-                            continue
+                        self._notify("motion_stopped", notify_data)
 
-                    if not detected and (
+                    elif not detected and (
                         time_since_motion > self.motion_gap
                         and (
                             self.min_clip_length is None
@@ -128,17 +113,18 @@ class MotionDetector:
                     ):
                         self.logger.info("No motion for threshold. Stopping.")
                         path = self.camera_manager.stop_recording()
-                        preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
-                        self._notify(
-                            "motion_stopped",
-                            {
-                                "filepath": str(path),
-                                "filename": str(path.name),
-                                "preview_jpeg": preview_jpeg,
-                                "clip_duration": round(elapsed),
-                            },
-                        )
                         self.recording_start_time = None
+                        preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
+                        notify_data = {
+                            "filepath": str(path) if path else None,
+                            "filename": str(path.name) if path else None,
+                            "preview_jpeg": preview_jpeg,
+                            "clip_duration": round(elapsed),
+                        }
+                        if path is None:
+                            self.logger.error("Failed to stop recording: stop_recording returned None")
+                            self.camera_manager.is_recording = False
+                        self._notify("motion_stopped", notify_data)
 
                 if detected:
                     if time.time() - self.start_time < self.grace_period:
@@ -177,15 +163,16 @@ class MotionDetector:
                 if self.min_clip_length is None or elapsed >= self.min_clip_length:
                     path = self.camera_manager.stop_recording()
                     preview_jpeg = self._save_buffer_frame_as_jpeg(self.preview_frame)
-                    self._notify(
-                        "motion_stopped",
-                        {
-                            "filepath": str(path),
-                            "filename": str(path.name),
-                            "preview_jpeg": preview_jpeg,
-                            "clip_duration": round(elapsed),
-                        },
-                    )
+                    notify_data = {
+                        "filepath": str(path) if path else None,
+                        "filename": str(path.name) if path else None,
+                        "preview_jpeg": preview_jpeg,
+                        "clip_duration": round(elapsed),
+                    }
+                    if path is None:
+                        self.logger.error("Failed to stop recording: stop_recording returned None")
+                        self.camera_manager.is_recording = False
+                    self._notify("motion_stopped", notify_data)
             self.thread.join()
             self._notify("detection_disabled")
 
