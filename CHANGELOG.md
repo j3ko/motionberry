@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/j3ko/motionberry/compare/v0.3.0...v0.3.1) (2025-09-03)
+
+
+### Bug Fixes
+
+* recording loop doesn't stop on error ([#48](https://github.com/j3ko/motionberry/issues/48)) ([f51c71c](https://github.com/j3ko/motionberry/commit/f51c71ce4688da0bd343e34b04ac1299e2458d56))
+
 ## [0.3.0](https://github.com/j3ko/motionberry/compare/v0.2.0...v0.3.0) (2025-08-18)
 
 
