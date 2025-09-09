@@ -19,8 +19,6 @@ def get_motion_algorithm(name, motion_threshold, blur_strength, detection_frames
     logger = logging.getLogger(__name__)
     name = name.lower()
 
-    logger.debug(f"Creating algorithm '{name}' with kwargs: {kwargs}")
-
     if name == "frame_diff":
         return FrameDiffAlgorithm(
             motion_threshold,
