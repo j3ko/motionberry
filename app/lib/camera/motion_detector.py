@@ -22,7 +22,6 @@ class MotionDetector:
         notifiers=None,
         algorithm="frame_diff",
         buffer_duration=2,
-        detection_frames=3
     ):
         """Initialize the MotionDetector with camera and motion detection settings.
 
@@ -36,18 +35,12 @@ class MotionDetector:
             notifiers (list, optional): List of notifier objects for events.
             algorithm (str): Motion detection algorithm name (default: 'frame_diff').
             buffer_duration (float): Duration of frame buffer in seconds.
-            detection_frames (int): Number of consecutive frames for motion detection.
         """
         self.logger = logging.getLogger(__name__)
         self.camera_manager = camera_manager
         self.motion_threshold = motion_threshold
         self.motion_gap = motion_gap
-        self.algorithm = get_motion_algorithm(
-            algorithm,
-            motion_threshold,
-            blur_strength,
-            detection_frames
-        )
+        self.algorithm = get_motion_algorithm(algorithm, motion_threshold, blur_strength)
         self.min_clip_length = None if min_clip_length == 0 else min_clip_length
         self.max_clip_length = None if max_clip_length == 0 else max_clip_length
         if min_clip_length == 0:
