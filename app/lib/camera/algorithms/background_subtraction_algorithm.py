@@ -10,15 +10,17 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
         normalized_threshold: float,
         blur_strength: int = 0,
         pixel_ratio_min: float = 0.0001,
-        pixel_ratio_max: float = 0.10
+        pixel_ratio_max: float = 0.10,
+        history: int = 100,
+        var_threshold: float = 25,
     ):
         super().__init__(normalized_threshold)
         self.logger = logging.getLogger(__name__)
         self.blur_strength = blur_strength
 
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
-            history=150,
-            varThreshold=16,
+            history=history,
+            varThreshold=var_threshold,
             detectShadows=False
         )
 
