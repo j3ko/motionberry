@@ -44,9 +44,9 @@ class MotionDetector:
         self.motion_gap = motion_gap
         self.algorithm = get_motion_algorithm(
             algorithm,
-            motion_threshold=motion_threshold,
-            blur_strength=blur_strength,
-            detection_frames=detection_frames
+            motion_threshold,
+            blur_strength,
+            detection_frames
         )
         self.min_clip_length = None if min_clip_length == 0 else min_clip_length
         self.max_clip_length = None if max_clip_length == 0 else max_clip_length

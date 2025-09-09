@@ -3,7 +3,7 @@ from .base_algorithm import BaseAlgorithm
 from .frame_diff_algorithm import FrameDiffAlgorithm
 from .background_subtraction_algorithm import BackgroundSubtractionAlgorithm
 
-def get_motion_algorithm(name, **kwargs) -> BaseAlgorithm:
+def get_motion_algorithm(name, motion_threshold, blur_strength, detection_frames) -> BaseAlgorithm:
     """Instantiate a motion detection algorithm based on the given name.
 
     Args:
@@ -23,15 +23,15 @@ def get_motion_algorithm(name, **kwargs) -> BaseAlgorithm:
 
     if name == "frame_diff":
         return FrameDiffAlgorithm(
-            motion_threshold=kwargs.get("motion_threshold", 5),
-            blur_strength=kwargs.get("blur_strength", 0),
-            detection_frames=kwargs.get("detection_frames", 3)
+            motion_threshold,
+            blur_strength,
+            detection_frames
         )
     elif name == "background":
         return BackgroundSubtractionAlgorithm(
-            motion_threshold=kwargs.get("motion_threshold", 5),
-            blur_strength=kwargs.get("blur_strength", 0),
-            detection_frames=kwargs.get("detection_frames", 3)
+            motion_threshold,
+            blur_strength,
+            detection_frames
         )
     else:
         logger.error(f"Unknown motion detection algorithm: {name}")
