@@ -107,8 +107,8 @@ class CameraManager:
             transform=transform,
             controls={
                 "FrameRate": self.framerate,
-                "AeEnable": False,      # Auto Exposure ON
-                "AwbEnable": False,     # Auto White Balance ON
+                "AeEnable": True,      # Auto Exposure ON
+                "AwbEnable": True,     # Auto White Balance ON
             },
         )
         self.logger.debug(f"Video config: {video_config}")
