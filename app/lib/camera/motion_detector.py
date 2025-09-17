@@ -134,7 +134,11 @@ class MotionDetector:
                     elapsed = current_time - self.recording_start_time
                     time_since_motion = current_time - self.last_motion_time
 
-                    if self.max_clip_length and elapsed > self.max_clip_length:
+                    if self.max_clip_length and elapsed > (self.max_clip_length * 2):
+                        self.logger.error("Recording stuck beyond max_clip_length. Forcing stop.")
+                        self._stop_recording("timeout", elapsed)
+                    
+                    elif self.max_clip_length and elapsed > self.max_clip_length:
                         self._stop_recording("max_clip_length", elapsed)
 
                     elif not detected and (
@@ -146,9 +150,7 @@ class MotionDetector:
                     ):
                         self._stop_recording("motion_gap", elapsed)
 
-                    elif self.max_clip_length and elapsed > (self.max_clip_length * 2):
-                        self.logger.error("Recording stuck beyond max_clip_length. Forcing stop.")
-                        self._stop_recording("timeout", elapsed)
+
 
                 if detected:
                     if time.time() - self.start_time < self.grace_period:
@@ -156,8 +158,8 @@ class MotionDetector:
                     else:
                         if not self.camera_manager.is_recording:
                             self.camera_manager.start_recording()
-                            self.preview_frame = self.frame_buffer[-1] if self.frame_buffer else None
                             self.recording_start_time = current_time
+                            self.preview_frame = self.frame_buffer[-1] if self.frame_buffer else None
                             self._notify("motion_started")
                         self.last_motion_time = current_time
 
