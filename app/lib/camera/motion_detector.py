@@ -125,9 +125,14 @@ class MotionDetector:
                     time.sleep(0.5)
                     continue
 
-                self.frame_buffer.append(frame)
+                if frame.std() > 1e-6:
+                    normalized_frame = (frame - frame.mean()) / frame.std()
+                else:
+                    normalized_frame = frame - frame.mean()
 
-                detected = self.algorithm.detect(frame)
+                self.frame_buffer.append(normalized_frame)
+
+                detected = self.algorithm.detect(normalized_frame)
                 current_time = time.time()
 
                 if self.camera_manager.is_recording:
