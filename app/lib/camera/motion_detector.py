@@ -157,11 +157,6 @@ class MotionDetector:
 
                 self.frame_buffer.append(frame)
 
-                # Skip motion detection during adjustment
-                if self.is_adjusting:
-                    time.sleep(0.1)
-                    continue
-
                 detected = self.algorithm.detect(frame)
 
                 if self.camera_manager.is_recording:
@@ -185,6 +180,8 @@ class MotionDetector:
                         self._stop_recording("motion_gap", elapsed)
 
                 if detected:
+                    if self.is_adjusting:
+                        self.logger.info("AE/AWB adjusting period active: ignoring detected motion.")
                     if current_time - self.start_time < self.grace_period:
                         self.logger.info("Grace period active: ignoring detected motion.")
                     else:
