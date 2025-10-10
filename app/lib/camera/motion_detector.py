@@ -179,7 +179,7 @@ class MotionDetector:
                     ):
                         self._stop_recording("motion_gap", elapsed)
 
-                if detected:
+                elif detected:
                     if self.is_adjusting:
                         self.logger.info("AE/AWB adjusting period active: ignoring detected motion.")
                     if current_time - self.start_time < self.grace_period:
