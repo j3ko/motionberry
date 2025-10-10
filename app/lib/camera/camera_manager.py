@@ -118,6 +118,30 @@ class CameraManager:
         })
         self.logger.debug(f"Video config after apply: {self.picam2.camera_config}")
 
+    def enable_ae_awb(self):
+        """Enable Auto Exposure and Auto White Balance."""
+        with self.camera_lock:
+            try:
+                self.picam2.set_controls({
+                    "AeEnable": True,
+                    "AwbEnable": True,
+                })
+                self.logger.info("AE and AWB enabled.")
+            except Exception as e:
+                self.logger.error(f"Failed to enable AE/AWB: {e}")
+
+    def disable_ae_awb(self):
+        """Disable Auto Exposure and Auto White Balance."""
+        with self.camera_lock:
+            try:
+                self.picam2.set_controls({
+                    "AeEnable": False,
+                    "AwbEnable": False,
+                })
+                self.logger.info("AE and AWB disabled.")
+            except Exception as e:
+                self.logger.error(f"Failed to disable AE/AWB: {e}")
+
     def restart_camera(self):
         """Restarts the camera safely, ensuring only one restart happens at a time."""
         with self.restart_condition:
