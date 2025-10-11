@@ -23,7 +23,7 @@ class MotionDetector:
         algorithm="frame_diff",
         buffer_duration=2,
         ae_awb_adjust_interval=300,
-        adjustment_duration=3,
+        adjustment_duration=5,
     ):
         """Initialize the MotionDetector with camera and motion detection settings.
 
