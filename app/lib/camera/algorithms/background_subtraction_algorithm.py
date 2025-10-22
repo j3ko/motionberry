@@ -54,7 +54,7 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
             return False
 
         current_mean = float(frame.mean())
-        self.logger.log(f"[A] Global mean: {current_mean:.2f}")
+        self.logger.info(f"[A] Global mean: {current_mean:.2f}")
         if not hasattr(self, "prev_mean"):
             self.prev_mean = current_mean
 
