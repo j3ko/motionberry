@@ -16,6 +16,7 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
     ):
         super().__init__(normalized_threshold)
         self.logger = logging.getLogger(__name__)
+        self.logger.info("Initializing BackgroundSubtractionAlgorithm")
         self.blur_strength = blur_strength
 
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(

@@ -14,6 +14,7 @@ class FrameDiffAlgorithm(BaseAlgorithm):
     ):
         super().__init__(normalized_threshold)
         self.logger = logging.getLogger(__name__)
+        self.logger.info("Initializing FrameDiffAlgorithm")
         self.prev_frame: np.ndarray | None = None
         self.blur_strength = blur_strength
 
