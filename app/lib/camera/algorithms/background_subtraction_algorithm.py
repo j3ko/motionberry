@@ -53,6 +53,11 @@ class BackgroundSubtractionAlgorithm(BaseAlgorithm):
             )
             return False
 
+        current_mean = float(frame.mean())
+        self.logger.log(f"[A] Global mean: {current_mean:.2f}")
+        if not hasattr(self, "prev_mean"):
+            self.prev_mean = current_mean
+
         blurred = self.apply_blur(frame)
         fg_mask = self.bg_subtractor.apply(blurred)
 
