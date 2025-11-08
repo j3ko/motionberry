@@ -39,7 +39,7 @@ sudo apt install -y --no-install-recommends \
     python3-picamera2
 
 # Install GPAC from source if OS is Bookworm
-if [ "$OS_VERSION" = "bookworm" || "$OS_VERSION" = "trixie" ]; then
+if [ "$OS_VERSION" = "bookworm" ] || [ "$OS_VERSION" = "trixie" ]; then
     echo "Detected Debian Bookworm. Building GPAC from source..."
     sudo apt install -y --no-install-recommends build-essential cmake
 
