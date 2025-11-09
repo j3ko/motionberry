@@ -56,9 +56,9 @@ class FFmpegTranscoder(VideoTranscoder):
             args.extend(["-framerate", str(self.framerate)])
 
             # Apply timecodes only if MKV + pts_file present
-            if video_format == "mkv" and pts_file and Path(pts_file).exists():
-                self.normalize_pts_file(pts_file)
-                args.extend(["-timecodes", f"0:{pts_file}"])
+            # if video_format == "mkv" and pts_file and Path(pts_file).exists():
+            #     self.normalize_pts_file(pts_file)
+            #     args.extend(["-timecodes", f"0:{pts_file}"])
 
             args.extend([
                 "-i", str(raw_path),
