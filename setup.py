@@ -11,14 +11,12 @@ with open("README.md", encoding="utf-8") as f:
 
 install_requires = [
     "Flask==3.1.0",
-    "numpy==1.25.2",
     "Pillow==11.0.0",
     "PyYAML==6.0.2",
     "Requests==2.32.3",
     "apispec==6.8.1",
     "apispec-webframeworks==1.2.0",
     "marshmallow==3.24.1",
-    "opencv-python==4.10.0.84",
 ]
 
 setup(
