@@ -22,6 +22,8 @@ class MotionDetector:
         notifiers=None,
         algorithm="frame_diff",
         buffer_duration=2,
+        ae_awb_adjust_interval=300,
+        adjustment_duration=5,
     ):
         """Initialize the MotionDetector with camera and motion detection settings.
 
@@ -35,6 +37,8 @@ class MotionDetector:
             notifiers (list, optional): List of notifier objects for events.
             algorithm (str): Motion detection algorithm name (default: 'frame_diff').
             buffer_duration (float): Duration of frame buffer in seconds.
+            ae_awb_adjust_interval (float): Interval in seconds to re-enable AE/AWB for adjustment.
+            adjustment_duration (float): Duration in seconds to allow AE/AWB to adjust before disabling.
         """
         self.logger = logging.getLogger(__name__)
         self.camera_manager = camera_manager
@@ -56,6 +60,11 @@ class MotionDetector:
         self.grace_period = 5
         self.start_time = None
         self.thread = None
+        self.ae_awb_adjust_interval = ae_awb_adjust_interval
+        self.adjustment_duration = adjustment_duration
+        self.last_adjustment_time = None
+        self.is_adjusting = False
+        self.adjustment_start_time = None
         self._notify("application_started")
 
     def _save_buffer_frame_as_jpeg(self, frame):
@@ -115,9 +124,30 @@ class MotionDetector:
         self.camera_manager.start_camera()
         time.sleep(5)
         self.start_time = time.time()
+        self.camera_manager.disable_ae_awb()
+        self.last_adjustment_time = time.time()
 
         while self.is_running:
             try:
+                current_time = time.time()
+
+                # Check for periodic AE/AWB adjustment
+                if (self.last_adjustment_time is not None and
+                    current_time - self.last_adjustment_time > self.ae_awb_adjust_interval and
+                    not self.is_adjusting):
+                    self.logger.info("Starting AE/AWB adjustment period.")
+                    self.camera_manager.enable_ae_awb()
+                    self.is_adjusting = True
+                    self.adjustment_start_time = current_time
+
+                # Check if adjustment period is over
+                if self.is_adjusting:
+                    if current_time - self.adjustment_start_time > self.adjustment_duration:
+                        self.camera_manager.disable_ae_awb()
+                        self.is_adjusting = False
+                        self.last_adjustment_time = current_time
+                        self.logger.info("AE/AWB adjustment completed.")
+
                 frame = self.camera_manager.capture_image_array("lores")
 
                 if frame is None:
@@ -128,13 +158,16 @@ class MotionDetector:
                 self.frame_buffer.append(frame)
 
                 detected = self.algorithm.detect(frame)
-                current_time = time.time()
 
                 if self.camera_manager.is_recording:
                     elapsed = current_time - self.recording_start_time
                     time_since_motion = current_time - self.last_motion_time
 
-                    if self.max_clip_length and elapsed > self.max_clip_length:
+                    if self.max_clip_length and elapsed > (self.max_clip_length * 2):
+                        self.logger.error("Recording stuck beyond max_clip_length. Forcing stop.")
+                        self._stop_recording("timeout", elapsed)
+                    
+                    elif self.max_clip_length and elapsed > self.max_clip_length:
                         self._stop_recording("max_clip_length", elapsed)
 
                     elif not detected and (
@@ -146,18 +179,16 @@ class MotionDetector:
                     ):
                         self._stop_recording("motion_gap", elapsed)
 
-                    elif self.max_clip_length and elapsed > (self.max_clip_length * 2):
-                        self.logger.error("Recording stuck beyond max_clip_length. Forcing stop.")
-                        self._stop_recording("timeout", elapsed)
-
                 if detected:
-                    if time.time() - self.start_time < self.grace_period:
+                    if self.is_adjusting:
+                        self.logger.info("AE/AWB adjusting period active: ignoring detected motion.")
+                    if current_time - self.start_time < self.grace_period:
                         self.logger.info("Grace period active: ignoring detected motion.")
                     else:
                         if not self.camera_manager.is_recording:
                             self.camera_manager.start_recording()
-                            self.preview_frame = self.frame_buffer[-1] if self.frame_buffer else None
                             self.recording_start_time = current_time
+                            self.preview_frame = self.frame_buffer[-1] if self.frame_buffer else None
                             self._notify("motion_started")
                         self.last_motion_time = current_time
 
@@ -183,6 +214,7 @@ class MotionDetector:
     def stop(self):
         """Stop the motion detection loop and clean up."""
         self.is_running = False
+        self.camera_manager.enable_ae_awb()
         if self.thread and self.thread.is_alive():
             if self.camera_manager.is_recording:
                 elapsed = time.time() - self.recording_start_time if self.recording_start_time else 0
