@@ -36,6 +36,7 @@ sudo apt install -y --no-install-recommends \
     python3-venv \
     python3-pip \
     python3-numpy \
+    python3-opencv \
     python3-picamera2
 
 echo "Setting up Python virtual environment..."
@@ -43,7 +44,7 @@ cd "$APP_DIR"
 python3 -m venv --system-site-packages "$PYTHON_ENV_DIR"
 . "$PYTHON_ENV_DIR/bin/activate"
 pip install --default-timeout=100 --upgrade pip
-pip install --default-timeout=100 .
+pip install --default-timeout=100 --no-deps .
 
 # Skip logging and systemd service setup if --no-service flag is provided
 if [ "$SKIP_SERVICE" = false ]; then
