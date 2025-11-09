@@ -11,7 +11,7 @@ with open("README.md", encoding="utf-8") as f:
 
 install_requires = [
     "Flask==3.1.0",
-    "numpy==1.26.3",
+    "numpy==1.25.2",
     "Pillow==11.0.0",
     "PyYAML==6.0.2",
     "Requests==2.32.3",
