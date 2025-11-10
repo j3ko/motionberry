@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/j3ko/motionberry/compare/v0.3.1...v0.3.2) (2025-11-10)
+
+
+### Bug Fixes
+
+* false positive improvements ([#50](https://github.com/j3ko/motionberry/issues/50)) ([08dacd8](https://github.com/j3ko/motionberry/commit/08dacd8865768fa4541bce4bb099995b2898b0ff))
+
 ## [0.3.1](https://github.com/j3ko/motionberry/compare/v0.3.0...v0.3.1) (2025-09-03)
 
 
