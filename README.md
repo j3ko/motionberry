@@ -31,7 +31,7 @@ A lightweight solution for motion detection and video streaming on Raspberry Pi,
 
 - A Raspberry Pi (tested on Raspberry Pi Zero 2W and compatible with other models)
 - A camera module compatible with picamera2 (e.g., Raspberry Pi Camera Module 3).
-- Raspberry Pi OS 64-bit (Bullseye recommended)
+- Raspberry Pi OS 64-bit
 
 ## Bare Metal Installation (Recommended)
 
@@ -42,13 +42,7 @@ To install Motionberry as a systemd service on your Raspberry Pi, follow these s
 git clone https://github.com/j3ko/motionberry.git
 ```
 
-2\. **(Optional) Configure the system**:
-To optimize your Raspberry Pi for Motionberry you can run the configuration script. This script updates the system, disables unnecessary services, optimizes WiFi, and configures hardware settings for better performance and stability.
-```bash
-sudo bash motionberry/scripts/configure.sh
-```
-
-3\. **Run the installation script**:
+2\. **Run the installation script**:
 ```bash
 sudo bash motionberry/scripts/install.sh
 ```

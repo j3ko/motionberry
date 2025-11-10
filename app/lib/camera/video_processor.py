@@ -1,7 +1,6 @@
 import logging
 
-from app.lib.transcode.mkv_transcoder import MKVTranscoder
-from app.lib.transcode.mp4_transcoder import MP4Transcoder
+from app.lib.transcode.ffmpeg_transcoder import FFmpegTranscoder
 from app.lib.transcode.null_transcoder import NullTranscoder
 
 class VideoProcessor:
@@ -16,9 +15,9 @@ class VideoProcessor:
     def _get_transcoder(self):
         """Returns the appropriate transcoder based on the video format."""
         if self.video_format == "mp4":
-            return MP4Transcoder(self.file_manager, self.framerate)
+            return FFmpegTranscoder(self.file_manager, self.framerate, video_format="mp4")
         elif self.video_format == "mkv":
-            return MKVTranscoder(self.file_manager, self.framerate)
+            return FFmpegTranscoder(self.file_manager, self.framerate, video_format="mkv")
         else:
             return NullTranscoder(self.file_manager, self.framerate)
 

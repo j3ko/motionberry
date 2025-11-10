@@ -31,76 +31,20 @@ echo "Installing required libraries..."
 sudo apt update
 sudo apt install -y --no-install-recommends \
     util-linux \
-    mkvtoolnix \
+    ffmpeg \
     python3-dev \
     python3-venv \
     python3-pip \
     python3-numpy \
+    python3-opencv \
     python3-picamera2
-
-# Install GPAC from source if OS is Bookworm
-if [ "$OS_VERSION" = "bookworm" ]; then
-    echo "Detected Debian Bookworm. Building GPAC from source..."
-    sudo apt install -y --no-install-recommends build-essential cmake
-
-    sudo apt install -y --no-install-recommends \
-        git \
-        zlib1g-dev \
-        libfreetype6-dev \
-        libjpeg62-turbo-dev \
-        libpng-dev \
-        libmad0-dev \
-        libfaad-dev \
-        libogg-dev \
-        libvorbis-dev \
-        libtheora-dev \
-        liba52-0.7.4-dev \
-        libavcodec-dev \
-        libavformat-dev \
-        libavutil-dev \
-        libswscale-dev \
-        libavdevice-dev \
-        libnghttp2-dev \
-        libopenjp2-7-dev \
-        libcaca-dev \
-        libxv-dev \
-        x11proto-video-dev \
-        libgl1-mesa-dev \
-        libglu1-mesa-dev \
-        x11proto-gl-dev \
-        libxvidcore-dev \
-        libssl-dev \
-        libjack-jackd2-dev \
-        libasound2-dev \
-        libpulse-dev \
-        libsdl2-dev \
-        dvb-apps \
-        mesa-utils \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-    echo "Building GPAC..."
-    cd /tmp
-    git clone https://github.com/gpac/gpac.git
-    cd gpac
-    ./configure --static-bin --use-zlib=no
-    make -j$(nproc)
-    sudo make install
-    make clean
-    cd ..
-    rm -rf gpac
-    cd "$APP_DIR"
-else
-    echo "Installing GPAC from package..."
-    sudo apt install -y --no-install-recommends gpac
-fi
 
 echo "Setting up Python virtual environment..."
 cd "$APP_DIR"
 python3 -m venv --system-site-packages "$PYTHON_ENV_DIR"
 . "$PYTHON_ENV_DIR/bin/activate"
-pip install --default-timeout=100 --upgrade pip
-pip install --default-timeout=100 .
+pip install --upgrade pip setuptools wheel
+pip install --default-timeout=100 --no-build-isolation --no-binary=numpy,opencv-python .
 
 # Skip logging and systemd service setup if --no-service flag is provided
 if [ "$SKIP_SERVICE" = false ]; then
